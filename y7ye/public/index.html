@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>حوّل | خدمات التحويل والبطاقات الرقمية</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+ 
+:root{
+  --green:#0A7C4E;--green-dark:#065C39;--green-light:#E8F5EE;--green-mid:#12A368;
+  --gold:#D4A853;--gold-light:#FBF4E3;
+  --ink:#0F1F17;--mid:#4A6357;--muted:#8BA898;
+  --bg:#F4F9F6;--white:#FFFFFF;--sand:#EEF5F1;
+  --radius:16px;--shadow:0 4px 28px rgba(10,124,78,.10);--shadow-lg:0 16px 48px rgba(10,124,78,.18);
+  --card-bg:#FFFFFF;--input-bg:#FFFFFF;--input-border:#DDE8E3;--nav-bg:rgba(255,255,255,.95);
+}
+ 
+/* ══ DARK MODE ══ */
+body.dark{
+  --bg:#0A1510;--white:#111E16;--sand:#162118;--ink:#E8F4EE;--mid:#8BB89F;--muted:#4A7A5E;
+  --green-light:#0D2218;--gold-light:#1A1408;--card-bg:#111E16;--input-bg:#0F1A12;
+  --input-border:#1E3526;--nav-bg:rgba(10,21,16,.96);
+}
+body.dark .hero-visual{box-shadow:0 16px 48px rgba(0,0,0,.5)}
+body.dark .calc-box{background:#0D2218;border-color:rgba(10,124,78,.2)}
+body.dark .info-note{background:#1A1408;border-color:rgba(212,168,83,.2);color:#C4A060}
+body.dark .game-card{border-color:#162118}
+body.dark .pkg{border-color:#1E3526}
+body.dark .modal{background:#111E16}
+body.dark .modal-header{border-color:#162118}
+body.dark .bank-btn{border-color:#1E3526}
+body.dark .bank-btn:hover,.bank-btn.selected{background:#0D2218}
+body.dark .steps::before{background:linear-gradient(to left,#162118,var(--green),#162118)}
+body.dark footer{background:#060E09}
+body.dark .footer-bottom{border-color:rgba(255,255,255,.05)}
+body.dark .soc{background:rgba(255,255,255,.05)}
+body.dark .stats-bar{background:#111E16;border-color:#162118}
+body.dark nav{border-bottom-color:#162118}
+body.dark .trust-banner{box-shadow:0 8px 32px rgba(0,0,0,.4)}
+ 
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--ink);direction:rtl;overflow-x:hidden;transition:background .3s,color .3s}
+ 
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:var(--sand)}
+::-webkit-scrollbar-thumb{background:var(--green-mid);border-radius:99px}
+ 
+/* ══ NAV ══ */
+nav{
+  position:sticky;top:0;z-index:200;
+  background:var(--nav-bg);backdrop-filter:blur(18px);
+  border-bottom:1.5px solid var(--green-light);
+  padding:0 5%;display:flex;align-items:center;justify-content:space-between;height:68px;
+  transition:background .3s,border-color .3s;
+}
+.logo{font-size:1.7rem;font-weight:900;color:var(--green);text-decoration:none;letter-spacing:-.03em;display:flex;align-items:center;gap:.4rem}
+.logo-icon{width:36px;height:36px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1.1rem}
+.nav-tabs{display:flex;gap:.3rem}
+.nav-tab{padding:.5rem 1.2rem;border:none;border-radius:99px;font-family:inherit;font-size:.9rem;font-weight:600;cursor:pointer;background:transparent;color:var(--mid);transition:all .2s}
+.nav-tab.active,.nav-tab:hover{background:var(--green-light);color:var(--green)}
+.nav-right{display:flex;align-items:center;gap:.8rem}
+.whatsapp-btn{display:flex;align-items:center;gap:.4rem;background:var(--green);color:#fff;border:none;border-radius:99px;padding:.5rem 1.2rem;font-family:inherit;font-size:.88rem;font-weight:700;cursor:pointer;transition:background .2s,transform .15s}
+.whatsapp-btn:hover{background:var(--green-dark);transform:translateY(-1px)}
+.dark-toggle{width:38px;height:38px;border-radius:50%;background:var(--green-light);border:1.5px solid rgba(10,124,78,.2);cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;transition:all .2s;flex-shrink:0}
+.dark-toggle:hover{background:var(--sand);transform:rotate(20deg)}
+ 
+/* ══ PAGES ══ */
+.page{display:none;animation:fadeIn .35s ease}
+.page.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+ 
+/* ══ HERO ══ */
+.hero{padding:5rem 5% 4rem;max-width:1300px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:.4rem;background:var(--green-light);color:var(--green);border-radius:99px;padding:.35rem 1rem;font-size:.82rem;font-weight:700;margin-bottom:1.4rem;border:1px solid rgba(10,124,78,.15)}
+.hero h1{font-size:clamp(2rem,3.5vw,3rem);font-weight:900;line-height:1.18;letter-spacing:-.03em;margin-bottom:1.2rem}
+.hero h1 em{color:var(--green);font-style:normal}
+.hero-sub{color:var(--mid);font-size:1.05rem;line-height:1.85;margin-bottom:2rem}
+.hero-features{display:flex;flex-direction:column;gap:.7rem;margin-bottom:2rem}
+.hero-feat{display:flex;align-items:center;gap:.7rem;font-size:.9rem;color:var(--mid)}
+.feat-check{width:22px;height:22px;background:var(--green-light);border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.7rem}
+.hero-cta{display:flex;gap:1rem;flex-wrap:wrap}
+.btn-main{background:var(--green);color:#fff;border:none;border-radius:99px;padding:.9rem 2.2rem;font-family:inherit;font-size:.95rem;font-weight:800;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(10,124,78,.35)}
+.btn-main:hover{background:var(--green-dark);transform:translateY(-2px);box-shadow:0 8px 28px rgba(10,124,78,.4)}
+.btn-outline{background:transparent;color:var(--green);border:2px solid var(--green);border-radius:99px;padding:.9rem 2.2rem;font-family:inherit;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-outline:hover{background:var(--green-light);transform:translateY(-2px)}
+.hero-visual{background:linear-gradient(135deg,var(--green-dark),var(--green),var(--green-mid));border-radius:28px;padding:2.5rem;color:#fff;position:relative;overflow:hidden;box-shadow:var(--shadow-lg)}
+.hero-visual::before{content:'';position:absolute;top:-60px;left:-60px;width:250px;height:250px;border-radius:50%;background:rgba(255,255,255,.07)}
+.hero-visual::after{content:'';position:absolute;bottom:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:rgba(212,168,83,.15)}
+.visual-card{background:rgba(255,255,255,.12);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);border-radius:16px;padding:1.4rem;position:relative;z-index:1}
+.visual-card-title{font-size:.8rem;opacity:.75;margin-bottom:.4rem;font-weight:500}
+.visual-amount{font-size:2.2rem;font-weight:900;margin-bottom:.3rem;letter-spacing:-.02em}
+.visual-sub{font-size:.82rem;opacity:.7}
+.visual-arrow{display:flex;align-items:center;justify-content:center;margin:1rem 0;font-size:1.5rem}
+.visual-result{background:rgba(212,168,83,.2);border:1px solid rgba(212,168,83,.4);border-radius:16px;padding:1.4rem;position:relative;z-index:1}
+.visual-result-label{font-size:.8rem;opacity:.75;margin-bottom:.4rem}
+.visual-result-amount{font-size:2rem;font-weight:900;color:var(--gold)}
+.visual-banks{display:flex;gap:.6rem;margin-top:1.2rem;position:relative;z-index:1;flex-wrap:wrap}
+.vbank{background:rgba(255,255,255,.15);border-radius:8px;padding:.3rem .7rem;font-size:.75rem;font-weight:600}
+ 
+/* ══ STATS ══ */
+.stats-bar{background:var(--white);border-top:1px solid var(--green-light);border-bottom:1px solid var(--green-light);padding:1.8rem 5%;transition:background .3s,border-color .3s}
+.stats-inner{max-width:1300px;margin:0 auto;display:flex;justify-content:space-around;flex-wrap:wrap;gap:1.5rem}
+.stat{text-align:center}
+.stat-val{font-size:1.8rem;font-weight:900;color:var(--green);letter-spacing:-.02em}
+.stat-label{font-size:.82rem;color:var(--muted);margin-top:.2rem}
+ 
+/* ══ SECTION ══ */
+.section{padding:3.5rem 5%;max-width:1300px;margin:0 auto}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:2rem}
+.section-title{font-size:1.5rem;font-weight:800;letter-spacing:-.02em}
+.section-title span{color:var(--green)}
+.see-all{color:var(--green);font-size:.88rem;font-weight:700;text-decoration:none;transition:opacity .2s}
+.see-all:hover{opacity:.7}
+ 
+/* ══ TRANSFER FORM ══ */
+.transfer-page{padding:3rem 5%;max-width:900px;margin:0 auto}
+.transfer-header{text-align:center;margin-bottom:3rem}
+.transfer-header h2{font-size:2rem;font-weight:900;margin-bottom:.6rem;letter-spacing:-.02em}
+.transfer-header p{color:var(--mid);font-size:1rem;line-height:1.7}
+.form-card{background:var(--card-bg);border-radius:24px;padding:2.5rem;box-shadow:var(--shadow);border:1.5px solid var(--green-light);transition:background .3s,border-color .3s}
+.form-section-title{display:flex;align-items:center;gap:.6rem;font-size:1rem;font-weight:800;color:var(--ink);margin-bottom:1.4rem;padding-bottom:.8rem;border-bottom:1.5px solid var(--sand)}
+.form-section-icon{width:32px;height:32px;background:var(--green-light);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.5rem}
+.form-group{display:flex;flex-direction:column;gap:.4rem}
+.form-group.full{grid-column:1/-1}
+label{font-size:.85rem;font-weight:700;color:var(--ink)}
+.form-input,.form-select{width:100%;padding:.75rem 1rem;border:1.5px solid var(--input-border);border-radius:10px;font-family:inherit;font-size:.93rem;color:var(--ink);background:var(--input-bg);transition:border-color .2s,box-shadow .2s,background .3s;outline:none}
+.form-input:focus,.form-select:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(10,124,78,.1)}
+.form-input::placeholder{color:var(--muted)}
+.calc-box{background:var(--green-light);border-radius:14px;padding:1.4rem 1.6rem;margin-bottom:1.5rem;border:1.5px solid rgba(10,124,78,.15);transition:background .3s}
+.calc-row{display:flex;justify-content:space-between;align-items:center;padding:.4rem 0}
+.calc-row:not(:last-child){border-bottom:1px solid rgba(10,124,78,.1)}
+.calc-label{font-size:.85rem;color:var(--mid)}
+.calc-val{font-size:.9rem;font-weight:700;color:var(--ink)}
+.calc-total .calc-label{color:var(--green);font-weight:800;font-size:.95rem}
+.calc-total .calc-val{color:var(--green);font-size:1.2rem;font-weight:900}
+.banks-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;margin-bottom:1.5rem}
+.bank-btn{border:2px solid var(--input-border);border-radius:12px;padding:.8rem .6rem;background:var(--input-bg);cursor:pointer;text-align:center;transition:all .2s;font-family:inherit}
+.bank-btn:hover,.bank-btn.selected{border-color:var(--green);background:var(--green-light)}
+.bank-btn.selected .bank-name{color:var(--green)}
+.bank-icon{font-size:1.6rem;margin-bottom:.3rem}
+.bank-name{font-size:.78rem;font-weight:700;color:var(--ink)}
+.divider{display:flex;align-items:center;gap:1rem;margin:1.8rem 0;color:var(--muted);font-size:.85rem}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--sand)}
+.submit-btn{width:100%;padding:1rem;background:var(--green);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:800;cursor:pointer;transition:all .2s;box-shadow:0 4px 20px rgba(10,124,78,.3);display:flex;align-items:center;justify-content:center;gap:.5rem}
+.submit-btn:hover:not(:disabled){background:var(--green-dark);transform:translateY(-2px);box-shadow:0 8px 28px rgba(10,124,78,.4)}
+.submit-btn:disabled{opacity:.7;cursor:not-allowed;transform:none}
+.info-note{background:var(--gold-light);border:1.5px solid rgba(212,168,83,.3);border-radius:12px;padding:1rem 1.2rem;margin-top:1.2rem;display:flex;gap:.7rem;align-items:flex-start;font-size:.85rem;line-height:1.65;color:#7A5C1E;transition:background .3s}
+ 
+/* ══ GAMES ══ */
+.games-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1.2rem}
+.game-card{background:var(--card-bg);border-radius:var(--radius);overflow:hidden;border:1.5px solid var(--sand);transition:all .25s;cursor:pointer}
+.game-card:hover{transform:translateY(-5px);box-shadow:var(--shadow-lg);border-color:var(--green-light)}
+.game-cover{width:100%;aspect-ratio:16/9;display:flex;align-items:center;justify-content:center;font-size:3.5rem;position:relative}
+.game-badge{position:absolute;top:.6rem;right:.6rem;background:var(--gold);color:#fff;border-radius:6px;padding:.15rem .5rem;font-size:.7rem;font-weight:800}
+.game-body{padding:1rem 1.1rem 1.2rem}
+.game-name{font-size:.95rem;font-weight:800;margin-bottom:.3rem}
+.game-desc{font-size:.78rem;color:var(--muted);margin-bottom:.8rem;line-height:1.5}
+.packages-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+.pkg{border:1.5px solid var(--input-border);border-radius:10px;padding:.6rem .5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--input-bg)}
+.pkg:hover,.pkg.selected{border-color:var(--green);background:var(--green-light)}
+.pkg-amount{font-size:.85rem;font-weight:800;color:var(--ink)}
+.pkg-price{font-size:.72rem;color:var(--mid);margin-top:.1rem}
+ 
+/* ══ MODAL ══ */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:center;justify-content:center;padding:1rem;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex;animation:fadeIn .2s ease}
+.modal{background:var(--card-bg);border-radius:24px;width:100%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 64px rgba(0,0,0,.2);transition:background .3s}
+.modal-header{padding:1.5rem 1.8rem 1rem;border-bottom:1.5px solid var(--sand);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:1.1rem;font-weight:800}
+.modal-close{width:36px;height:36px;border-radius:50%;background:var(--sand);border:none;cursor:pointer;font-size:1.2rem;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.modal-close:hover{background:var(--green-light)}
+.modal-body{padding:1.5rem 1.8rem}
+.modal-game-info{display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem}
+.modal-icon{font-size:3rem;width:70px;height:70px;border-radius:16px;display:flex;align-items:center;justify-content:center}
+.modal-game-name{font-size:1.2rem;font-weight:800}
+.modal-game-sub{font-size:.85rem;color:var(--muted)}
+.modal-pkgs{display:grid;grid-template-columns:repeat(3,1fr);gap:.7rem;margin-bottom:1.4rem}
+.modal-pkg{border:2px solid var(--input-border);border-radius:12px;padding:.8rem .5rem;text-align:center;cursor:pointer;transition:all .2s;background:var(--input-bg)}
+.modal-pkg:hover,.modal-pkg.active{border-color:var(--green);background:var(--green-light)}
+.modal-pkg-amount{font-size:.95rem;font-weight:800}
+.modal-pkg-price{font-size:.8rem;color:var(--mid);margin-top:.2rem}
+.modal-pkg.active .modal-pkg-price{color:var(--green)}
+ 
+/* ══ STEPS ══ */
+.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;position:relative}
+.steps::before{content:'';position:absolute;top:40px;right:calc(12.5% + 20px);width:calc(75% - 40px);height:2px;background:linear-gradient(to left,var(--green-light),var(--green),var(--green-light))}
+.step{text-align:center;position:relative}
+.step-num{width:60px;height:60px;border-radius:50%;background:var(--green);color:#fff;font-size:1.3rem;font-weight:900;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;box-shadow:0 4px 16px rgba(10,124,78,.35);position:relative;z-index:1}
+.step-title{font-size:.95rem;font-weight:800;margin-bottom:.4rem}
+.step-desc{font-size:.82rem;color:var(--mid);line-height:1.6}
+ 
+/* ══ TRUST BANNER ══ */
+.trust-banner{background:linear-gradient(135deg,var(--green-dark),var(--green));border-radius:24px;padding:3rem 3.5rem;color:#fff;display:flex;align-items:center;justify-content:space-between;gap:2rem;margin:0 5%;max-width:1300px;position:relative;overflow:hidden}
+.trust-banner::before{content:'';position:absolute;top:-80px;left:-80px;width:300px;height:300px;border-radius:50%;background:rgba(255,255,255,.06)}
+.trust-banner h2{font-size:1.7rem;font-weight:900;margin-bottom:.5rem}
+.trust-banner p{opacity:.75;font-size:.9rem;line-height:1.7}
+.trust-btn{background:var(--gold);color:var(--ink);border:none;border-radius:99px;padding:.9rem 2.2rem;font-family:inherit;font-size:.95rem;font-weight:800;cursor:pointer;transition:all .2s;white-space:nowrap;flex-shrink:0;box-shadow:0 4px 16px rgba(212,168,83,.4)}
+.trust-btn:hover{transform:translateY(-2px);opacity:.9}
+ 
+/* ══ SUCCESS ══ */
+.success-card{background:var(--card-bg);border-radius:24px;padding:3rem;text-align:center;max-width:500px;margin:3rem auto;box-shadow:var(--shadow);border:1.5px solid var(--green-light);display:none}
+.success-icon{font-size:4rem;margin-bottom:1rem}
+.success-title{font-size:1.5rem;font-weight:900;color:var(--green);margin-bottom:.6rem}
+.success-sub{color:var(--mid);font-size:.95rem;line-height:1.7;margin-bottom:1.5rem}
+.success-ref{background:var(--green-light);border-radius:10px;padding:.8rem 1.2rem;font-size:.9rem;font-weight:700;color:var(--green);margin-bottom:1.5rem}
+ 
+/* ══ FOOTER ══ */
+footer{margin-top:5rem;background:var(--ink);color:rgba(255,255,255,.65);padding:3.5rem 5% 2rem;transition:background .3s}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:3rem;max-width:1300px;margin:0 auto}
+.footer-logo{font-size:1.5rem;font-weight:900;color:#fff;margin-bottom:.8rem;display:flex;align-items:center;gap:.4rem}
+.footer-logo-icon{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.footer-desc{font-size:.85rem;line-height:1.8;margin-bottom:1.2rem}
+.footer-contact{display:flex;flex-direction:column;gap:.5rem}
+.footer-contact-item{display:flex;align-items:center;gap:.5rem;font-size:.85rem}
+.fh{font-size:.9rem;font-weight:700;color:#fff;margin-bottom:1rem}
+.fl{list-style:none;display:flex;flex-direction:column;gap:.6rem}
+.fl a{color:rgba(255,255,255,.6);text-decoration:none;font-size:.85rem;transition:color .2s}
+.fl a:hover{color:var(--gold)}
+.footer-bottom{max-width:1300px;margin:2.5rem auto 0;padding-top:1.5rem;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;font-size:.82rem;flex-wrap:wrap;gap:1rem}
+.footer-social{display:flex;gap:.6rem}
+.soc{width:36px;height:36px;border-radius:8px;background:rgba(255,255,255,.08);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1rem;transition:background .2s}
+.soc:hover{background:var(--green)}
+ 
+/* ══ TOAST ══ */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--green-dark);color:#fff;border-radius:99px;padding:.75rem 1.8rem;font-size:.9rem;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,.25);z-index:999;transition:transform .4s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:0;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+ 
+/* ══ RESPONSIVE ══ */
+@media(max-width:960px){
+  .hero{grid-template-columns:1fr}
+  .games-grid{grid-template-columns:repeat(2,1fr)}
+  .steps{grid-template-columns:repeat(2,1fr)}
+  .steps::before{display:none}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .trust-banner{flex-direction:column;text-align:center}
+}
+@media(max-width:640px){
+  .nav-tabs{display:none}
+  .hero h1{font-size:1.8rem}
+  .games-grid{grid-template-columns:1fr}
+  .form-grid{grid-template-columns:1fr}
+  .banks-grid{grid-template-columns:repeat(2,1fr)}
+  .steps{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr}
+  .trust-banner{padding:2rem 1.5rem}
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.hero>*{animation:slideUp .6s ease both}
+.hero>*:nth-child(2){animation-delay:.15s}
+</style>
+</head>
+<body>
+ 
+<nav>
+  <a href="#" class="logo">
+    <div class="logo-icon">💱</div>حوّل
+  </a>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('home')">الرئيسية</button>
+    <button class="nav-tab" onclick="showPage('transfer')">التحويل البنكي</button>
+    <button class="nav-tab" onclick="showPage('cards')">البطاقات الرقمية</button>
+  </div>
+  <div class="nav-right">
+    <button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="الوضع الليلي">🌙</button>
+    <button class="whatsapp-btn" onclick="window.open('https://wa.me/0022234362534','_blank')">📞 تواصل معنا</button>
+  </div>
+</nav>
+ 
+<!-- ══ HOME ══ -->
+<div class="page active" id="page-home">
+  <div style="max-width:1300px;margin:0 auto">
+    <div class="hero">
+      <div>
+        <div class="hero-badge">🇲🇷 خدمات مالية موريتانية موثوقة</div>
+        <h1>حوّل أموالك بين<br/><em>البنوك الموريتانية</em><br/>بكل سهولة</h1>
+        <p class="hero-sub">منصة آمنة وسريعة لتحويل الأموال بين البنوك مع خصم عمولة شفافة، وكذلك شراء بطاقات الألعاب والشحن الرقمي.</p>
+        <div class="hero-features">
+          <div class="hero-feat"><div class="feat-check">✓</div>تحويل بين جميع البنوك الموريتانية</div>
+          <div class="hero-feat"><div class="feat-check">✓</div>عمولة واضحة وشفافة بدون رسوم مخفية</div>
+          <div class="hero-feat"><div class="feat-check">✓</div>بطاقات رقمية فورية لجميع الألعاب</div>
+          <div class="hero-feat"><div class="feat-check">✓</div>خدمة عملاء على مدار الساعة</div>
+        </div>
+        <div class="hero-cta">
+          <button class="btn-main" onclick="showPage('transfer')">🏦 ابدأ التحويل الآن</button>
+          <button class="btn-outline" onclick="showPage('cards')">🎮 تسوق البطاقات</button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="visual-card">
+          <div class="visual-card-title">المبلغ المُرسَل</div>
+          <div class="visual-amount">50,000 <span style="font-size:1rem;opacity:.7">أوقية</span></div>
+          <div class="visual-sub">بنك الراجحي ← حوّل</div>
+        </div>
+        <div class="visual-arrow">⬇️</div>
+        <div class="visual-result">
+          <div class="visual-result-label">المبلغ الذي تستلمه</div>
+          <div class="visual-result-amount">47,500 أوقية</div>
+          <div style="font-size:.78rem;opacity:.7;margin-top:.3rem">بعد خصم عمولة 5%</div>
+        </div>
+        <div class="visual-banks">
+          <div class="vbank">🏦 BCI</div><div class="vbank">🏦 BMCI</div>
+          <div class="vbank">🏦 GBM</div><div class="vbank">🏦 Attijari</div>
+          <div class="vbank">🏦 Banque Populaire</div>
+        </div>
+      </div>
+    </div>
+  </div>
+ 
+  <div class="stats-bar">
+    <div class="stats-inner">
+      <div class="stat"><div class="stat-val">+10,000</div><div class="stat-label">عملية تحويل ناجحة</div></div>
+      <div class="stat"><div class="stat-val">5%</div><div class="stat-label">عمولة شفافة فقط</div></div>
+      <div class="stat"><div class="stat-val">24س</div><div class="stat-label">دعم متواصل</div></div>
+      <div class="stat"><div class="stat-val">100%</div><div class="stat-label">أمان مضمون</div></div>
+    </div>
+  </div>
+ 
+  <div class="section">
+    <div class="section-head"><h2 class="section-title">كيف <span>يعمل</span> التحويل؟</h2></div>
+    <div class="steps">
+      <div class="step"><div class="step-num">١</div><div class="step-title">أرسل المبلغ</div><div class="step-desc">أرسل المبلغ المطلوب إلى رقم حسابنا في أي بنك موريتاني</div></div>
+      <div class="step"><div class="step-num">٢</div><div class="step-title">أرسل الطلب</div><div class="step-desc">أرسل لنا معلومات التحويل عبر الموقع أو واتساب</div></div>
+      <div class="step"><div class="step-num">٣</div><div class="step-title">نُراجع الطلب</div><div class="step-desc">نتحقق من الإيداع ونحسب المبلغ بعد خصم العمولة</div></div>
+      <div class="step"><div class="step-num">٤</div><div class="step-title">تستلم المبلغ</div><div class="step-desc">نحوّل المبلغ فوراً للبنك الذي تختاره مع إشعار تأكيد</div></div>
+    </div>
+  </div>
+ 
+  <div class="section">
+    <div class="section-head">
+      <h2 class="section-title">البطاقات <span>الرقمية</span></h2>
+      <a href="#" class="see-all" onclick="showPage('cards');return false">عرض الكل ←</a>
+    </div>
+    <div class="games-grid" id="homeGamesGrid"></div>
+  </div>
+ 
+  <div style="max-width:1300px;margin:0 auto">
+    <div class="trust-banner">
+      <div>
+        <h2>ابدأ التحويل الآن بكل ثقة</h2>
+        <p>نخدم آلاف العملاء في موريتانيا يومياً بأعلى معايير الأمان والشفافية.<br/>عمولتنا ثابتة وواضحة — لا رسوم مخفية أبداً.</p>
+      </div>
+      <button class="trust-btn" onclick="showPage('transfer')">🏦 ابدأ التحويل الآن</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ══ TRANSFER ══ -->
+<div class="page" id="page-transfer">
+  <div class="transfer-page">
+    <div class="transfer-header">
+      <div style="display:inline-flex;align-items:center;gap:.5rem;background:var(--green-light);color:var(--green);border-radius:99px;padding:.35rem 1rem;font-size:.82rem;font-weight:700;margin-bottom:1rem;border:1px solid rgba(10,124,78,.15)">🏦 خدمة التحويل البنكي</div>
+      <h2>تحويل بين البنوك الموريتانية</h2>
+      <p>أرسل لنا المبلغ وسنحوله لأي بنك تختاره بعد خصم عمولة 5% فقط</p>
+    </div>
+ 
+    <div class="form-card" id="transferForm">
+      <div class="form-section-title"><div class="form-section-icon">👤</div>بيانات العميل</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>الاسم الكامل</label>
+          <input class="form-input" id="clientName" type="text" placeholder="محمد ولد أحمد"/>
+        </div>
+        <div class="form-group">
+          <label>رقم الهاتف</label>
+          <input class="form-input" id="clientPhone" type="tel" placeholder="2222 00 222"/>
+        </div>
+      </div>
+ 
+      <div class="form-section-title" style="margin-top:1.5rem"><div class="form-section-icon">💰</div>المبلغ والعمولة</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>المبلغ المُرسَل (أوقية)</label>
+          <input class="form-input" id="sendAmount" type="number" placeholder="10000" oninput="calcAmount()"/>
+        </div>
+        <div class="form-group">
+          <label>نسبة العمولة</label>
+          <select class="form-select" id="commRate" onchange="calcAmount()">
+            <option value="5">5% — عادي</option>
+            <option value="3">3% — VIP</option>
+          </select>
+        </div>
+      </div>
+ 
+      <div class="calc-box">
+        <div class="calc-row"><span class="calc-label">المبلغ المُرسَل</span><span class="calc-val" id="calcSent">—</span></div>
+        <div class="calc-row"><span class="calc-label">العمولة</span><span class="calc-val" id="calcComm" style="color:#C0392B">—</span></div>
+        <div class="calc-row calc-total"><span class="calc-label">✅ المبلغ الذي يستلمه العميل</span><span class="calc-val" id="calcReceive">—</span></div>
+      </div>
+ 
+      <div class="form-section-title" style="margin-top:1.5rem"><div class="form-section-icon">📤</div>بنك الإرسال</div>
+      <div class="banks-grid" id="fromBanks"></div>
+      <div class="divider">⬇ سيتم التحويل إلى</div>
+      <div class="form-section-title"><div class="form-section-icon">📥</div>بنك الاستلام</div>
+      <div class="banks-grid" id="toBanks"></div>
+ 
+      <div class="form-group" style="margin-top:1.2rem">
+        <label>رقم الحساب / IBAN في بنك الاستلام</label>
+        <input class="form-input" id="toAccount" type="text" placeholder="MR12 0000 0000 0000 0000 0000 00"/>
+      </div>
+      <div class="form-group" style="margin-top:.8rem">
+        <label>ملاحظات إضافية (اختياري)</label>
+        <input class="form-input" id="notes" type="text" placeholder="أي معلومات إضافية..."/>
+      </div>
+
+    <!-- ════════════════ MODAL: SCREENSHOT ════════════════ -->
+<div class="overlay" id="screenshotModal">
+  <div class="modal">
+    <div class="form-group">
+      <label class="form-label">رقم العملية / المرجع</label>
+      <input class="form-input" id="proofRef" placeholder="مثال: TXN-2024-00123">
+    </div>
+    <div class="form-group">
+      <label class="form-label">لقطة الشاشة (الدليل)</label>
+      <div class="upload-area" id="uploadArea">
+        <input type="file" accept="image/*" id="proofFile" onchange="previewProof(event)">
+        <div class="upload-icon">📤</div>
+        <div class="upload-text">اسحب الصورة هنا أو <strong>انقر للتحديد</strong></div>
+    </div>
+  </div>
+</div>
+
+      <div class="info-note" style="margin-top:1.2rem">
+        ⚠️ <div>يُرجى إرسال الحوالة أولاً إلى رقم حسابنا، ثم إرسال صورة الإيصال مع هذا الطلب عبر واتساب حتى نتمكن من إتمام التحويل.</div>
+      </div>
+ 
+      <button class="submit-btn" id="transferSubmitBtn" style="margin-top:1.5rem" onclick="submitTransfer()">
+        ✅ إرسال طلب التحويل
+      </button>
+    </div>
+ 
+    <div class="success-card" id="successCard">
+      <div class="success-icon">✅</div>
+      <div class="success-title">تم استلام طلبك بنجاح!</div>
+      <div class="success-sub">سيتم مراجعة طلبك وإتمام التحويل في أقرب وقت ممكن. تابع واتساب للتأكيد.</div>
+      <div class="success-ref" id="successRef">رقم الطلب: #——</div>
+      <button class="btn-main" onclick="resetTransfer()" style="width:100%">طلب تحويل جديد</button>
+    </div>
+  </div>
+</div>
+ 
+<!-- ══ CARDS ══ -->
+<div class="page" id="page-cards">
+  <div class="section" style="padding-top:3rem">
+    <div class="transfer-header" style="margin-bottom:2.5rem">
+      <div style="display:inline-flex;align-items:center;gap:.5rem;background:var(--green-light);color:var(--green);border-radius:99px;padding:.35rem 1rem;font-size:.82rem;font-weight:700;margin-bottom:1rem;border:1px solid rgba(10,124,78,.15)">🎮 بطاقات رقمية فورية</div>
+      <h2>اشترِ بطاقاتك الآن</h2>
+      <p style="color:var(--mid);font-size:1rem">اختر اللعبة وحدة الشحن وسنرسل لك الكود فوراً</p>
+    </div>
+    <div class="games-grid" id="fullGamesGrid"></div>
+  </div>
+</div>
+ 
+<!-- MODAL -->
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle">اختر الباقة</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-game-info">
+        <div class="modal-icon" id="modalIcon"></div>
+        <div><div class="modal-game-name" id="modalGameName"></div><div class="modal-game-sub">اختر الكمية المناسبة</div></div>
+      </div>
+      <div class="modal-pkgs" id="modalPkgs"></div>
+      <div class="form-group" style="margin-bottom:1rem">
+        <label>معرّف اللاعب / ID</label>
+        <input class="form-input" id="modalPlayerId" type="text" placeholder="أدخل معرفك في اللعبة"/>
+      </div>
+      <div class="form-group" style="margin-bottom:1.2rem">
+        <label>رقم هاتفك للتأكيد</label>
+        <input class="form-input" id="modalPhone" type="tel" placeholder="2222 00 222"/>
+      </div>
+      <div class="calc-box" style="margin-bottom:1.2rem">
+        <div class="calc-row calc-total">
+          <span class="calc-label">💰 إجمالي المبلغ</span>
+          <span class="calc-val" id="modalTotal">اختر باقة أولاً</span>
+        </div>
+      </div>
+      <button class="submit-btn" id="cardSubmitBtn" onclick="submitCard()">🛒 اطلب الآن</button>
+    </div>
+  </div>
+</div>
+ 
+<div class="toast" id="toast"></div>
+ 
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-logo"><div class="footer-logo-icon">💱</div>حوّل</div>
+      <p class="footer-desc">منصة موريتانية متخصصة في خدمات التحويل بين البنوك وبيع البطاقات الرقمية بأسعار تنافسية وخدمة موثوقة.</p>
+      <div class="footer-contact">
+        <div class="footer-contact-item">📱 واتساب: 0022234362534</div>
+        <div class="footer-contact-item">🕐 متاح: ٨ص – ١٢م</div>
+      </div>
+    </div>
+    <div>
+      <div class="fh">الخدمات</div>
+      <ul class="fl">
+        <li><a href="#" onclick="showPage('transfer');return false">التحويل البنكي</a></li>
+        <li><a href="#" onclick="showPage('cards');return false">البطاقات الرقمية</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="fh">دعم</div>
+      <ul class="fl">
+        <li><a href="#">الأسئلة الشائعة</a></li>
+        <li><a href="#">سياسة الخصوصية</a></li>
+        <li><a href="#">تواصل معنا</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div>© ٢٠٢٦ حوّل — جميع الحقوق محفوظة</div>
+    <div class="footer-social">
+      <button class="soc" onclick="window.open('https://wa.me/0022234362534','_blank')">💬</button>
+    </div>
+  </div>
+</footer>
+ 
+<!-- ══ FIREBASE + JS ══ -->
+<script type="module">
+import { initializeApp }   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+ 
+
+  // ─── SCREENSHOT ────────────────────────────────────────
+function previewProof(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const prev = document.getElementById('proofPreview');
+  prev.src = URL.createObjectURL(file);
+  prev.style.display = 'block';
+}
+
+function sendProof() {
+  const ref = document.getElementById('proofRef').value.trim();
+  const file = document.getElementById('proofFile').files[0];
+  if (!ref || !file) { showToast('⚠️ أدخل المرجع والصورة', 'var(--warning)'); return; }
+  closeModal('screenshotModal');
+  showToast('📤 تم إرسال الدليل بنجاح');
+}
+
+
+const firebaseConfig = {
+  apiKey:"AIzaSyCov8KnTUdzywlejDGk74WODUEbZfx1nIc",
+  authDomain:"hawwil.firebaseapp.com",
+  projectId:"hawwil",
+  storageBucket:"hawwil.firebasestorage.app",
+  messagingSenderId:"797332872661",
+  appId:"1:797332872661:web:5c1da802f0bad15332715c"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+ 
+/* ══ DATA ══ */
+const BANKS = [
+  {id:'bci',  name:'BCI',         icon:'🏦'},
+  {id:'bmci', name:'BMCI',        icon:'🏦'},
+  {id:'gbm',  name:'GBM',         icon:'🏦'},
+  {id:'att',  name:'Attijari',    icon:'🏦'},
+  {id:'bp',   name:'Banque Pop.', icon:'🏦'},
+  {id:'bim',  name:'BIM',         icon:'🏦'},
+];
+const GAMES = [
+  {id:'pubg', name:'شدات ببجي',       icon:'🎯', desc:'شحن UC لحساب ببجي موبايل',       bg:'#1A1A2E', badge:'الأكثر طلباً',
+   pkgs:[{amount:'60 UC',price:35},{amount:'325 UC',price:200},{amount:'660 UC',price:410},{amount:'1800 UC',price:1120},{amount:'3850 UC',price:2390},{amount:'8100 UC',price:5030}]},
+  {id:'ps',   name:'PlayStation',      icon:'🎮', desc:'بطاقات PSN لكل المتاجر',         bg:'#003087', badge:'',
+   pkgs:[{amount:'10$',price:3700},{amount:'20$',price:7400},{amount:'50$',price:18500},{amount:'100$',price:37000}]},
+  {id:'itunes',name:'iTunes / App Store',icon:'🍎',desc:'بطاقات آبل للتطبيقات والألعاب',bg:'#1C1C1E', badge:'',
+   pkgs:[{amount:'10$',price:3750},{amount:'25$',price:9375},{amount:'50$',price:18750},{amount:'100$',price:37500}]},
+  {id:'ff',   name:'Free Fire',         icon:'🔥', desc:'جواهر فري فاير بأسرع وقت',     bg:'#FF6B00', badge:'عرض',
+   pkgs:[{amount:'100 💎',price:60},{amount:'310 💎',price:195},{amount:'520 💎',price:325},{amount:'1060 💎',price:660},{amount:'2180 💎',price:1355}]},
+];
+ 
+let selectedFrom = null, selectedTo = null, selectedGame = null, selectedPkg = null;
+ 
+/* ══ DARK MODE ══ */
+window.toggleDark = function(){
+  const isDark = document.body.classList.toggle('dark');
+  document.getElementById('darkToggle').textContent = isDark ? '☀️' : '🌙';
+  localStorage.setItem('hawwil-theme', isDark ? 'dark' : 'light');
+};
+if(localStorage.getItem('hawwil-theme') === 'dark'){
+  document.body.classList.add('dark');
+  document.getElementById('darkToggle').textContent = '☀️';
+}
+ 
+/* ══ NAV ══ */
+window.showPage = function(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  const map={home:0,transfer:1,cards:2};
+  document.querySelectorAll('.nav-tab')[map[name]]?.classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+};
+ 
+/* ══ BANKS ══ */
+function renderBanks(id, type){
+  document.getElementById(id).innerHTML = BANKS.map(b=>`
+    <button class="bank-btn" id="${type}-${b.id}" onclick="selectBank('${type}','${b.id}')">
+      <div class="bank-icon">${b.icon}</div>
+      <div class="bank-name">${b.name}</div>
+    </button>`).join('');
+}
+window.selectBank = function(type, id){
+  BANKS.forEach(b=>document.getElementById(type+'-'+b.id)?.classList.remove('selected'));
+  document.getElementById(type+'-'+id)?.classList.add('selected');
+  if(type==='from') selectedFrom=id; else selectedTo=id;
+};
+ 
+/* ══ CALC ══ */
+window.calcAmount = function(){
+  const amt  = parseFloat(document.getElementById('sendAmount').value)||0;
+  const rate = parseFloat(document.getElementById('commRate').value)/100;
+  const comm = amt*rate, recv = amt-comm;
+  document.getElementById('calcSent').textContent    = amt ? fmt(amt)+' أوقية' : '—';
+  document.getElementById('calcComm').textContent    = amt ? '-'+fmt(comm)+' أوقية' : '—';
+  document.getElementById('calcReceive').textContent = amt ? fmt(recv)+' أوقية' : '—';
+};
+function fmt(n){return Number(n).toLocaleString('ar-MA')}
+ 
+/* ══ SUBMIT TRANSFER → Firestore ══ */
+window.submitTransfer = async function(){
+  const name    = document.getElementById('clientName').value.trim();
+  const phone   = document.getElementById('clientPhone').value.trim();
+  const amount  = parseFloat(document.getElementById('sendAmount').value)||0;
+  const rate    = parseFloat(document.getElementById('commRate').value)/100;
+  const account = document.getElementById('toAccount').value.trim();
+  const notes   = document.getElementById('notes').value.trim();
+ 
+  if(!name||!phone||!amount||!selectedFrom||!selectedTo||!account){
+    showToast('⚠️ يرجى ملء جميع الحقول واختيار البنوك'); return;
+  }
+  if(selectedFrom===selectedTo){
+    showToast('⚠️ بنك الإرسال والاستلام لا يمكن أن يكونا نفس البنك'); return;
+  }
+ 
+  const commission = amount*rate;
+  const receive    = amount-commission;
+  const ref        = 'HW-'+Math.floor(Math.random()*90000+10000);
+  const btn = document.getElementById('transferSubmitBtn');
+  btn.textContent='⏳ جاري الإرسال...'; btn.disabled=true;
+ 
+  try {
+    await addDoc(collection(db,'transfers'),{
+      ref, name, phone, amount, commission, receive,
+      fromBank: BANKS.find(b=>b.id===selectedFrom)?.name||selectedFrom,
+      toBank:   BANKS.find(b=>b.id===selectedTo)?.name||selectedTo,
+      account, notes,
+      status:'pending',
+      createdAt: serverTimestamp(),
+    });
+    document.getElementById('successRef').textContent = 'رقم الطلب: #'+ref;
+    document.getElementById('transferForm').style.display='none';
+    document.getElementById('successCard').style.display='block';
+    showToast('✅ تم إرسال طلبك بنجاح!');
+  } catch(e){
+    console.error(e);
+    showToast('❌ حدث خطأ، تحقق من اتصالك وحاول مجدداً');
+    btn.textContent='✅ إرسال طلب التحويل'; btn.disabled=false;
+  }
+};
+ 
+window.resetTransfer = function(){
+  document.getElementById('transferForm').style.display='block';
+  document.getElementById('successCard').style.display='none';
+  const btn=document.getElementById('transferSubmitBtn');
+  btn.textContent='✅ إرسال طلب التحويل'; btn.disabled=false;
+  ['clientName','clientPhone','sendAmount','toAccount','notes'].forEach(id=>document.getElementById(id).value='');
+  ['calcSent','calcComm','calcReceive'].forEach(id=>document.getElementById(id).textContent='—');
+  selectedFrom=null; selectedTo=null;
+  document.querySelectorAll('.bank-btn').forEach(b=>b.classList.remove('selected'));
+};
+ 
+/* ══ GAMES ══ */
+function renderGames(id, limit){
+  const list = limit ? GAMES.slice(0,limit) : GAMES;
+  document.getElementById(id).innerHTML = list.map(g=>`
+    <div class="game-card" onclick="openModal('${g.id}')">
+      <div class="game-cover" style="background:${g.bg}">
+        <span>${g.icon}</span>
+        ${g.badge?`<div class="game-badge">${g.badge}</div>`:''}
+      </div>
+      <div class="game-body">
+        <div class="game-name">${g.name}</div>
+        <div class="game-desc">${g.desc}</div>
+        <div class="packages-grid">
+          ${g.pkgs.slice(0,3).map(p=>`
+            <div class="pkg"><div class="pkg-amount">${p.amount}</div><div class="pkg-price">${fmt(p.price)} أوقية</div></div>
+          `).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+ 
+/* ══ MODAL ══ */
+window.openModal = function(gameId){
+  selectedGame=GAMES.find(g=>g.id===gameId); selectedPkg=null;
+  if(!selectedGame) return;
+  document.getElementById('modalTitle').textContent    = selectedGame.name;
+  document.getElementById('modalIcon').textContent     = selectedGame.icon;
+  document.getElementById('modalIcon').style.background= selectedGame.bg;
+  document.getElementById('modalGameName').textContent = selectedGame.name;
+  document.getElementById('modalPlayerId').value='';
+  document.getElementById('modalPhone').value='';
+  document.getElementById('modalTotal').textContent='اختر باقة أولاً';
+  document.getElementById('modalPkgs').innerHTML = selectedGame.pkgs.map((p,i)=>`
+    <div class="modal-pkg" onclick="selectPkg(${i})">
+      <div class="modal-pkg-amount">${p.amount}</div>
+      <div class="modal-pkg-price">${fmt(p.price)} أوقية</div>
+    </div>`).join('');
+  document.getElementById('modal').classList.add('open');
+};
+window.selectPkg = function(i){
+  selectedPkg=selectedGame.pkgs[i];
+  document.querySelectorAll('.modal-pkg').forEach((el,idx)=>el.classList.toggle('active',idx===i));
+  document.getElementById('modalTotal').textContent=fmt(selectedPkg.price)+' أوقية';
+};
+window.closeModal = function(e){
+  if(!e||e.target===document.getElementById('modal'))
+    document.getElementById('modal').classList.remove('open');
+};
+ 
+/* ══ SUBMIT CARD → Firestore ══ */
+window.submitCard = async function(){
+  const playerId = document.getElementById('modalPlayerId').value.trim();
+  const phone    = document.getElementById('modalPhone').value.trim();
+  if(!selectedPkg){showToast('⚠️ اختر باقة أولاً');return}
+  if(!playerId)   {showToast('⚠️ أدخل معرف اللاعب');return}
+  if(!phone)      {showToast('⚠️ أدخل رقم هاتفك');return}
+ 
+  const ref = 'GC-'+Math.floor(Math.random()*90000+10000);
+  const btn = document.getElementById('cardSubmitBtn');
+  btn.textContent='⏳ جاري الإرسال...'; btn.disabled=true;
+ 
+  try {
+    await addDoc(collection(db,'cards'),{
+      ref, game:selectedGame.name, package:selectedPkg.amount,
+      price:selectedPkg.price, playerId, phone,
+      status:'pending', createdAt:serverTimestamp(),
+    });
+    document.getElementById('modal').classList.remove('open');
+    showToast('✅ تم استلام طلبك! سنتواصل معك قريباً');
+    const msg=encodeURIComponent(`طلب بطاقة #${ref}\nاللعبة: ${selectedGame.name}\nالباقة: ${selectedPkg.amount}\nالسعر: ${selectedPkg.price} أوقية\nمعرف اللاعب: ${playerId}\nهاتف: ${phone}`);
+    setTimeout(()=>window.open(`https://wa.me/0022234362534?text=${msg}`,'_blank'),600);
+  } catch(e){
+    console.error(e);
+    showToast('❌ حدث خطأ، حاول مجدداً');
+  } finally {
+    btn.textContent='🛒 اطلب الآن'; btn.disabled=false;
+  }
+};
+ 
+/* ══ TOAST ══ */
+window.showToast = function(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3500);
+};
+ 
+/* ══ INIT ══ */
+renderBanks('fromBanks','from');
+renderBanks('toBanks','to');
+renderGames('homeGamesGrid',4);
+renderGames('fullGamesGrid',0);
+</script>
+</body>
+</html>

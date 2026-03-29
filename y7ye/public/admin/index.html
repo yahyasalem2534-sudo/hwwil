@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>لوحة الأدمن | حوّل</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#0A7C4E;--green-dark:#065C39;--green-light:#E8F5EE;
+  --gold:#D4A853;--red:#DC2626;--red-light:#FEF2F2;
+  --ink:#0F1F17;--mid:#4A6357;--muted:#8BA898;
+  --bg:#F0F4F2;--white:#fff;--sand:#E8EFeb;
+  --shadow:0 2px 16px rgba(10,124,78,.08);
+  --shadow-lg:0 8px 32px rgba(10,124,78,.14);
+}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--ink);direction:rtl;min-height:100vh}
+
+/* LOGIN */
+.login-wrap{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,var(--green-dark),var(--green));
+}
+.login-card{
+  background:var(--white);border-radius:24px;padding:2.5rem;width:100%;max-width:380px;
+  box-shadow:0 24px 64px rgba(0,0,0,.2);
+}
+.login-logo{text-align:center;margin-bottom:2rem}
+.login-logo-icon{width:60px;height:60px;background:var(--green);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto .8rem}
+.login-logo h1{font-size:1.4rem;font-weight:900;color:var(--green)}
+.login-logo p{font-size:.85rem;color:var(--muted);margin-top:.2rem}
+.login-field{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
+.login-field label{font-size:.85rem;font-weight:700}
+.login-input{
+  padding:.75rem 1rem;border:1.5px solid #DDE8E3;border-radius:10px;
+  font-family:inherit;font-size:.93rem;outline:none;
+  transition:border-color .2s;
+}
+.login-input:focus{border-color:var(--green)}
+.login-btn{
+  width:100%;padding:.9rem;background:var(--green);color:#fff;border:none;
+  border-radius:12px;font-family:inherit;font-size:1rem;font-weight:800;cursor:pointer;
+  transition:background .2s;margin-top:.5rem;
+}
+.login-btn:hover{background:var(--green-dark)}
+.login-err{color:var(--red);font-size:.85rem;text-align:center;margin-top:.5rem;display:none}
+
+/* LAYOUT */
+.app{display:none;min-height:100vh;flex-direction:column}
+.app.show{display:flex}
+
+/* TOPBAR */
+.topbar{
+  background:var(--white);border-bottom:1.5px solid var(--sand);
+  padding:0 1.5rem;height:64px;display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:100;
+}
+.topbar-logo{font-size:1.3rem;font-weight:900;color:var(--green);display:flex;align-items:center;gap:.5rem}
+.topbar-logo-icon{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.live-badge{
+  display:flex;align-items:center;gap:.4rem;
+  background:var(--green-light);color:var(--green);
+  border-radius:99px;padding:.3rem .8rem;font-size:.8rem;font-weight:700;
+}
+.live-dot{width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.logout-btn{
+  background:var(--red-light);color:var(--red);border:none;border-radius:8px;
+  padding:.4rem .9rem;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;
+  transition:background .2s;
+}
+.logout-btn:hover{background:#FCA5A5}
+
+/* MAIN */
+.main{flex:1;padding:1.5rem;max-width:1400px;width:100%;margin:0 auto}
+
+/* TABS */
+.tabs{display:flex;gap:.4rem;margin-bottom:1.5rem;background:var(--white);padding:.4rem;border-radius:12px;box-shadow:var(--shadow)}
+.tab{
+  flex:1;padding:.6rem;border:none;border-radius:8px;font-family:inherit;
+  font-size:.9rem;font-weight:700;cursor:pointer;background:transparent;color:var(--mid);
+  transition:all .2s;
+}
+.tab.active{background:var(--green);color:#fff}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{
+  background:var(--white);border-radius:16px;padding:1.2rem 1.4rem;
+  box-shadow:var(--shadow);border:1.5px solid var(--sand);
+}
+.stat-icon{font-size:1.6rem;margin-bottom:.6rem}
+.stat-val{font-size:1.7rem;font-weight:900;color:var(--ink);letter-spacing:-.02em}
+.stat-label{font-size:.8rem;color:var(--muted);margin-top:.2rem}
+.stat-card.green .stat-val{color:var(--green)}
+.stat-card.gold  .stat-val{color:var(--gold)}
+
+/* TABLE */
+.table-card{
+  background:var(--white);border-radius:16px;box-shadow:var(--shadow);
+  border:1.5px solid var(--sand);overflow:hidden;
+}
+.table-header{
+  padding:1rem 1.4rem;border-bottom:1.5px solid var(--sand);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem;
+}
+.table-title{font-size:1rem;font-weight:800}
+.search-input{
+  padding:.5rem .9rem;border:1.5px solid var(--sand);border-radius:8px;
+  font-family:inherit;font-size:.85rem;outline:none;width:200px;
+  transition:border-color .2s;
+}
+.search-input:focus{border-color:var(--green)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th{
+  background:var(--bg);padding:.8rem 1rem;text-align:right;
+  font-size:.8rem;font-weight:800;color:var(--mid);
+  border-bottom:1.5px solid var(--sand);white-space:nowrap;
+}
+td{
+  padding:.85rem 1rem;border-bottom:1px solid var(--sand);
+  font-size:.85rem;vertical-align:middle;
+}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+
+/* STATUS BADGE */
+.status{
+  display:inline-flex;align-items:center;gap:.3rem;
+  border-radius:99px;padding:.25rem .75rem;font-size:.75rem;font-weight:700;
+}
+.status.pending {background:#FEF3C7;color:#D97706}
+.status.done    {background:var(--green-light);color:var(--green)}
+.status.rejected{background:var(--red-light);color:var(--red)}
+
+/* STATUS SELECT */
+.status-select{
+  border:1.5px solid var(--sand);border-radius:8px;padding:.3rem .6rem;
+  font-family:inherit;font-size:.8rem;cursor:pointer;outline:none;
+  background:var(--white);color:var(--ink);font-weight:600;
+}
+
+/* REF */
+.ref{font-family:monospace;font-size:.8rem;background:var(--bg);
+  border-radius:6px;padding:.15rem .5rem;color:var(--green);font-weight:700}
+
+/* EMPTY */
+.empty{text-align:center;padding:3rem;color:var(--muted)}
+.empty-icon{font-size:3rem;margin-bottom:.8rem}
+
+/* LOADING */
+.loading{text-align:center;padding:3rem;color:var(--muted)}
+
+/* STOCK BTN */
+.stock-btn{
+  background:var(--green);color:#fff;border:none;border-radius:8px;
+  padding:.4rem .9rem;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;
+  transition:background .2s;display:flex;align-items:center;gap:.4rem;
+}
+.stock-btn:hover{background:var(--green-dark)}
+
+/* STOCK MODAL */
+.modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);
+  z-index:500;align-items:flex-start;justify-content:center;
+  padding:1.5rem 1rem;overflow-y:auto;backdrop-filter:blur(4px);
+}
+.modal-overlay.open{display:flex}
+.modal-box{
+  background:var(--white);border-radius:24px;width:100%;max-width:580px;
+  box-shadow:0 24px 64px rgba(0,0,0,.22);margin:auto;
+}
+.modal-hdr{
+  padding:1.2rem 1.5rem;border-bottom:1.5px solid var(--sand);
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;background:var(--white);border-radius:24px 24px 0 0;z-index:1;
+}
+.modal-x{
+  width:34px;height:34px;border-radius:50%;background:var(--sand);
+  border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center;
+}
+.modal-x:hover{background:var(--red-light);color:var(--red)}
+.modal-bod{padding:1.5rem}
+
+/* FORM */
+.form-row{margin-bottom:1.2rem}
+.flabel{display:block;font-size:.85rem;font-weight:800;margin-bottom:.5rem;color:var(--ink)}
+.finput{
+  width:100%;padding:.7rem 1rem;border:1.5px solid #DDE8E3;border-radius:10px;
+  font-family:inherit;font-size:.9rem;color:var(--ink);outline:none;
+  transition:border-color .2s;background:var(--white);
+}
+.finput:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(10,124,78,.08)}
+
+/* CAT GRID */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
+.cat-btn{
+  border:2px solid #DDE8E3;border-radius:10px;padding:.55rem .4rem;
+  text-align:center;cursor:pointer;font-size:.82rem;font-weight:700;
+  transition:all .15s;background:var(--white);color:var(--mid);
+}
+.cat-btn:hover{border-color:var(--green);color:var(--green)}
+.cat-btn.active{border-color:var(--green);background:var(--green-light);color:var(--green)}
+
+/* PREVIEW */
+.preview-box{
+  background:var(--green-light);border:1.5px solid rgba(10,124,78,.2);
+  border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem;
+}
+.code-preview{
+  font-family:monospace;font-size:.82rem;background:var(--white);
+  border-radius:6px;padding:.3rem .6rem;margin:.2rem 0;
+  display:inline-block;color:var(--ink);border:1px solid var(--sand);
+}
+
+/* SAVE BTN */
+.save-btn{
+  width:100%;padding:.9rem;background:var(--green);color:#fff;
+  border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:800;
+  cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(10,124,78,.25);
+}
+.save-btn:hover{background:var(--green-dark);transform:translateY(-1px)}
+.save-btn:disabled{background:var(--muted);cursor:not-allowed;transform:none}
+
+/* STOCK TABLE CODE */
+.code-cell{
+  font-family:monospace;font-size:.78rem;background:var(--bg);
+  border-radius:6px;padding:.2rem .5rem;color:var(--ink);
+  cursor:pointer;border:1px solid var(--sand);transition:background .15s;
+}
+.code-cell:hover{background:var(--green-light);border-color:var(--green)}
+
+/* DEL BTN */
+.del-btn{
+  background:var(--red-light);color:var(--red);border:none;border-radius:6px;
+  padding:.25rem .6rem;font-size:.75rem;font-weight:700;cursor:pointer;
+  transition:background .15s;
+}
+.del-btn:hover{background:#FCA5A5}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--ink);color:#fff;border-radius:99px;
+  padding:.7rem 1.6rem;font-size:.9rem;font-weight:700;
+  box-shadow:0 8px 30px rgba(0,0,0,.2);z-index:999;
+  transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  opacity:0;white-space:nowrap;
+}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+@media(max-width:768px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .main{padding:1rem}
+  .search-input{width:140px}
+}
+@media(max-width:480px){
+  .stats{grid-template-columns:1fr 1fr}
+  .topbar-logo span{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ LOGIN ══ -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-icon">💱</div>
+      <h1>لوحة الأدمن</h1>
+      <p>حوّل — إدارة الطلبات</p>
+    </div>
+    <div class="login-field">
+      <label>اسم المستخدم</label>
+      <input class="login-input" id="loginUser" type="text" placeholder="admin" autocomplete="username"/>
+    </div>
+    <div class="login-field">
+      <label>كلمة المرور</label>
+      <input class="login-input" id="loginPass" type="password" placeholder="••••••••" autocomplete="current-password"/>
+    </div>
+    <button class="login-btn" onclick="doLogin()">🔐 تسجيل الدخول</button>
+    <div class="login-err" id="loginErr">❌ اسم المستخدم أو كلمة المرور غير صحيحة</div>
+  </div>
+</div>
+
+<!-- ══ APP ══ -->
+<div class="app" id="app">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="topbar-logo">
+      <div class="topbar-logo-icon">💱</div>
+      <span>حوّل — لوحة الأدمن</span>
+    </div>
+    <div class="topbar-right">
+      <div class="live-badge"><div class="live-dot"></div> مباشر</div>
+      <button class="stock-btn" onclick="openStockModal()">📦 إدارة المخزون</button>
+      <button class="logout-btn" onclick="doLogout()">خروج</button>
+    </div>
+  </div>
+
+  <div class="main">
+
+    <!-- STATS -->
+    <div class="stats" id="statsGrid">
+      <div class="stat-card green">
+        <div class="stat-icon">📋</div>
+        <div class="stat-val" id="sTotal">—</div>
+        <div class="stat-label">إجمالي الطلبات</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-val" id="sPending">—</div>
+        <div class="stat-label">طلبات معلقة</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">✅</div>
+        <div class="stat-val" id="sDone">—</div>
+        <div class="stat-label">طلبات مكتملة</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-icon">💰</div>
+        <div class="stat-val" id="sAmount">—</div>
+        <div class="stat-label">إجمالي المبالغ (أوقية)</div>
+      </div>
+    </div>
+
+    <!-- TABS -->
+    <div class="tabs">
+      <button class="tab active" onclick="switchTab('transfers')">🏦 طلبات التحويل</button>
+      <button class="tab" onclick="switchTab('cards')">🎮 طلبات البطاقات</button>
+      <button class="tab" onclick="switchTab('stock')">📦 المخزون</button>
+    </div>
+
+    <!-- TRANSFERS TABLE -->
+    <div id="tabTransfers" class="table-card">
+      <div class="table-header">
+        <div class="table-title">طلبات التحويل البنكي</div>
+        <input class="search-input" id="searchTransfer" placeholder="🔍 بحث..." oninput="filterTable('transfers')"/>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>رقم الطلب</th>
+              <th>الاسم</th>
+              <th>الهاتف</th>
+              <th>المبلغ</th>
+              <th>العمولة</th>
+              <th>يستلم</th>
+              <th>من بنك</th>
+              <th>إلى بنك</th>
+              <th>رقم الحساب</th>
+              <th>التاريخ</th>
+              <th>الحالة</th>
+            </tr>
+          </thead>
+          <tbody id="transfersBody">
+            <tr><td colspan="11" class="loading">⏳ جاري التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- CARDS TABLE -->
+    <div id="tabCards" class="table-card" style="display:none">
+      <div class="table-header">
+        <div class="table-title">طلبات البطاقات الرقمية</div>
+        <input class="search-input" id="searchCards" placeholder="🔍 بحث..." oninput="filterTable('cards')"/>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>رقم الطلب</th>
+              <th>اللعبة</th>
+              <th>الباقة</th>
+              <th>السعر</th>
+              <th>معرف اللاعب</th>
+              <th>الهاتف</th>
+              <th>التاريخ</th>
+              <th>الحالة</th>
+            </tr>
+          </thead>
+          <tbody id="cardsBody">
+            <tr><td colspan="8" class="loading">⏳ جاري التحميل...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- STOCK TAB -->
+    <div id="tabStock" style="display:none">
+
+      <!-- Stock Stats -->
+      <div class="stats" style="margin-bottom:1.2rem">
+        <div class="stat-card green">
+          <div class="stat-icon">🃏</div>
+          <div class="stat-val" id="stTotal">—</div>
+          <div class="stat-label">إجمالي البطاقات</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">✅</div>
+          <div class="stat-val" id="stAvail">—</div>
+          <div class="stat-label">متاح</div>
+        </div>
+        <div class="stat-card gold">
+          <div class="stat-icon">📤</div>
+          <div class="stat-val" id="stUsed">—</div>
+          <div class="stat-label">مستخدم</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🏷️</div>
+          <div class="stat-val" id="stCategories">—</div>
+          <div class="stat-label">فئات</div>
+        </div>
+      </div>
+
+      <!-- Add Card Button -->
+      <div style="display:flex;justify-content:flex-end;margin-bottom:1rem">
+        <button class="stock-btn" onclick="openStockModal()" style="font-size:.95rem;padding:.6rem 1.4rem">
+          ➕ إضافة بطاقات جديدة
+        </button>
+      </div>
+
+      <!-- Filter Bar -->
+      <div class="table-card" style="margin-bottom:1rem">
+        <div style="padding:1rem 1.4rem;display:flex;gap:.8rem;flex-wrap:wrap;align-items:center">
+          <select class="status-select" id="filterCat" onchange="renderStock()" style="padding:.5rem .8rem;font-size:.85rem">
+            <option value="">كل الفئات</option>
+          </select>
+          <select class="status-select" id="filterStatus" onchange="renderStock()" style="padding:.5rem .8rem;font-size:.85rem">
+            <option value="">كل الحالات</option>
+            <option value="available">✅ متاح</option>
+            <option value="used">📤 مستخدم</option>
+          </select>
+          <input class="search-input" id="searchStock" placeholder="🔍 بحث بالكود..." oninput="renderStock()" style="width:200px"/>
+        </div>
+      </div>
+
+      <!-- Stock Table -->
+      <div class="table-card">
+        <div class="table-header">
+          <div class="table-title">📦 مخزون البطاقات</div>
+          <span id="stockCount" style="font-size:.82rem;color:var(--muted)"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>الفئة</th>
+                <th>البطاقة</th>
+                <th>الباقة/القيمة</th>
+                <th>المورد</th>
+                <th>الكود</th>
+                <th>تاريخ الإضافة</th>
+                <th>الحالة</th>
+                <th>إجراء</th>
+              </tr>
+            </thead>
+            <tbody id="stockBody">
+              <tr><td colspan="8" class="loading">⏳ جاري التحميل...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ STOCK MODAL ══ -->
+<div class="modal-overlay" id="stockModal" onclick="closeStockModal(event)">
+  <div class="modal-box">
+
+    <div class="modal-hdr">
+      <div style="font-size:1.1rem;font-weight:900">📦 إضافة بطاقات للمخزون</div>
+      <button class="modal-x" onclick="closeStockModal()">✕</button>
+    </div>
+
+    <div class="modal-bod">
+
+      <!-- Step 1: Category -->
+      <div class="form-row">
+        <label class="flabel">١ — الفئة الكبيرة</label>
+        <div class="cat-grid" id="catGrid">
+          <div class="cat-btn active" data-cat="Apple" onclick="selectCat(this)">🍎 Apple</div>
+          <div class="cat-btn" data-cat="Google Play" onclick="selectCat(this)">🎮 Google Play</div>
+          <div class="cat-btn" data-cat="Netflix" onclick="selectCat(this)">🎬 Netflix</div>
+          <div class="cat-btn" data-cat="PlayStation" onclick="selectCat(this)">🕹️ PlayStation</div>
+          <div class="cat-btn" data-cat="PUBG" onclick="selectCat(this)">🎯 PUBG</div>
+          <div class="cat-btn" data-cat="Free Fire" onclick="selectCat(this)">🔥 Free Fire</div>
+          <div class="cat-btn" data-cat="Steam" onclick="selectCat(this)">🖥️ Steam</div>
+          <div class="cat-btn" data-cat="أخرى" onclick="selectCat(this)">➕ أخرى</div>
+        </div>
+        <input class="finput" id="customCat" placeholder="اكتب فئة مخصصة..." style="display:none;margin-top:.5rem" oninput="updateCardOptions()"/>
+      </div>
+
+      <!-- Step 2: Card Type -->
+      <div class="form-row">
+        <label class="flabel">٢ — نوع البطاقة / الباقة</label>
+        <select class="finput" id="cardType" onchange="updateCardOptions()">
+          <option value="">— اختر نوع البطاقة —</option>
+        </select>
+      </div>
+
+      <!-- Step 3: Supplier -->
+      <div class="form-row">
+        <label class="flabel">٣ — المورد</label>
+        <input class="finput" id="supplier" type="text" placeholder="مثال: محمد، Supplier A، ..."/>
+      </div>
+
+      <!-- Step 4: Codes -->
+      <div class="form-row">
+        <label class="flabel">٤ — كودات البطاقات <span style="color:var(--muted);font-weight:400;font-size:.8rem">(كل كود في سطر)</span></label>
+        <textarea class="finput" id="codesArea" rows="6" placeholder="XXXX-XXXX-XXXX-XXXX&#10;YYYY-YYYY-YYYY-YYYY&#10;ZZZZ-ZZZZ-ZZZZ-ZZZZ" style="resize:vertical;line-height:1.8;font-family:monospace;font-size:.88rem"></textarea>
+        <div style="display:flex;justify-content:space-between;margin-top:.3rem">
+          <span style="font-size:.78rem;color:var(--muted)" id="codesCount">٠ كود</span>
+          <button onclick="clearCodes()" style="background:none;border:none;color:var(--red);font-size:.78rem;cursor:pointer;font-family:inherit">مسح الكل</button>
+        </div>
+      </div>
+
+      <!-- Preview -->
+      <div class="preview-box" id="previewBox" style="display:none">
+        <div style="font-size:.82rem;font-weight:800;margin-bottom:.5rem;color:var(--green)">📋 معاينة قبل الحفظ</div>
+        <div id="previewContent"></div>
+      </div>
+
+      <button class="save-btn" onclick="saveStock()" id="saveStockBtn">
+        💾 حفظ البطاقات في المخزون
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, onSnapshot, doc, updateDoc,
+         orderBy, query, addDoc, deleteDoc, serverTimestamp }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCov8KnTUdzywlejDGk74WODUEbZfx1nIc",
+  authDomain: "hawwil.firebaseapp.com",
+  projectId: "hawwil",
+  storageBucket: "hawwil.firebasestorage.app",
+  messagingSenderId: "797332872661",
+  appId: "1:797332872661:web:5c1da802f0bad15332715c"
+};
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+/* ══ AUTH ══ */
+const ADMIN_USER = 'admin';
+const ADMIN_PASS = 'hawwil2026';
+
+window.doLogin = function(){
+  const u = document.getElementById('loginUser').value.trim();
+  const p = document.getElementById('loginPass').value.trim();
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    document.getElementById('loginWrap').style.display='none';
+    document.getElementById('app').classList.add('show');
+    startListeners();
+  } else {
+    document.getElementById('loginErr').style.display='block';
+  }
+};
+window.doLogout = function(){
+  document.getElementById('loginWrap').style.display='flex';
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+};
+document.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && document.getElementById('loginWrap').style.display!=='none')
+    window.doLogin();
+});
+
+/* ══ DATA ══ */
+let allTransfers = [];
+let allCards     = [];
+let allStock     = [];
+
+function startListeners(){
+  const tq = query(collection(db,'transfers'), orderBy('createdAt','desc'));
+  onSnapshot(tq, snap=>{
+    allTransfers = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderTransfers(allTransfers); updateStats();
+  });
+  const cq = query(collection(db,'cards'), orderBy('createdAt','desc'));
+  onSnapshot(cq, snap=>{
+    allCards = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderCards(allCards); updateStats();
+  });
+  const sq = query(collection(db,'stock'), orderBy('createdAt','desc'));
+  onSnapshot(sq, snap=>{
+    allStock = snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderStock(); updateStockStats(); updateCatFilter();
+  });
+}
+
+/* ══ STATS ══ */
+function updateStats(){
+  const all      = [...allTransfers,...allCards];
+  const pending  = all.filter(r=>r.status==='pending').length;
+  const done     = all.filter(r=>r.status==='done').length;
+  const totalAmt = allTransfers.reduce((s,r)=>s+(r.amount||0),0)
+                 + allCards.reduce((s,r)=>s+(r.price||0),0);
+  document.getElementById('sTotal').textContent   = fmt(all.length);
+  document.getElementById('sPending').textContent = fmt(pending);
+  document.getElementById('sDone').textContent    = fmt(done);
+  document.getElementById('sAmount').textContent  = fmt(Math.round(totalAmt));
+}
+
+function updateStockStats(){
+  const avail = allStock.filter(s=>s.status==='available').length;
+  const used  = allStock.filter(s=>s.status==='used').length;
+  const cats  = new Set(allStock.map(s=>s.category)).size;
+  document.getElementById('stTotal').textContent      = fmt(allStock.length);
+  document.getElementById('stAvail').textContent      = fmt(avail);
+  document.getElementById('stUsed').textContent       = fmt(used);
+  document.getElementById('stCategories').textContent = fmt(cats);
+}
+
+/* ══ RENDER TRANSFERS ══ */
+function renderTransfers(data){
+  const tbody = document.getElementById('transfersBody');
+  if(!data.length){
+    tbody.innerHTML=`<tr><td colspan="11"><div class="empty"><div class="empty-icon">📭</div>لا توجد طلبات</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(r=>`
+    <tr>
+      <td><span class="ref">${r.ref||'—'}</span></td>
+      <td><strong>${r.name||'—'}</strong></td>
+      <td dir="ltr">${r.phone||'—'}</td>
+      <td><strong>${fmt(r.amount||0)} أوقية</strong></td>
+      <td style="color:#DC2626">-${fmt(r.commission||0)}</td>
+      <td style="color:var(--green);font-weight:800">${fmt(r.receive||0)}</td>
+      <td>${r.fromBank||'—'}</td>
+      <td>${r.toBank||'—'}</td>
+      <td dir="ltr" style="font-size:.78rem">${r.account||'—'}</td>
+      <td style="font-size:.78rem">${fmtDate(r.createdAt)}</td>
+      <td>
+        <select class="status-select" onchange="changeStatus('transfers','${r.id}',this.value)">
+          <option value="pending"  ${r.status==='pending'  ?'selected':''}>⏳ معلق</option>
+          <option value="done"     ${r.status==='done'     ?'selected':''}>✅ مكتمل</option>
+          <option value="rejected" ${r.status==='rejected' ?'selected':''}>❌ مرفوض</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+/* ══ RENDER CARDS ══ */
+function renderCards(data){
+  const tbody = document.getElementById('cardsBody');
+  if(!data.length){
+    tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-icon">🎮</div>لا توجد طلبات</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(r=>`
+    <tr>
+      <td><span class="ref">${r.ref||'—'}</span></td>
+      <td><strong>${r.game||'—'}</strong></td>
+      <td>${r.package||'—'}</td>
+      <td style="color:var(--green);font-weight:800">${fmt(r.price||0)} أوقية</td>
+      <td dir="ltr">${r.playerId||'—'}</td>
+      <td dir="ltr">${r.phone||'—'}</td>
+      <td style="font-size:.78rem">${fmtDate(r.createdAt)}</td>
+      <td>
+        <select class="status-select" onchange="changeStatus('cards','${r.id}',this.value)">
+          <option value="pending"  ${r.status==='pending'  ?'selected':''}>⏳ معلق</option>
+          <option value="done"     ${r.status==='done'     ?'selected':''}>✅ مكتمل</option>
+          <option value="rejected" ${r.status==='rejected' ?'selected':''}>❌ مرفوض</option>
+        </select>
+      </td>
+    </tr>`).join('');
+}
+
+/* ══ RENDER STOCK ══ */
+window.renderStock = function(){
+  const catF    = document.getElementById('filterCat')?.value    || '';
+  const statF   = document.getElementById('filterStatus')?.value || '';
+  const searchF = (document.getElementById('searchStock')?.value || '').toLowerCase();
+
+  let data = allStock.filter(s=>{
+    if(catF   && s.category !== catF) return false;
+    if(statF  && s.status   !== statF) return false;
+    if(searchF && !(s.code||'').toLowerCase().includes(searchF)) return false;
+    return true;
+  });
+
+  document.getElementById('stockCount').textContent = `${fmt(data.length)} بطاقة`;
+
+  const tbody = document.getElementById('stockBody');
+  if(!data.length){
+    tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-icon">📭</div>لا توجد بطاقات بهذه الفلاتر</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = data.map(s=>`
+    <tr>
+      <td><strong>${s.category||'—'}</strong></td>
+      <td>${s.cardType||'—'}</td>
+      <td>${s.value||'—'}</td>
+      <td>${s.supplier||'—'}</td>
+      <td>
+        <span class="code-cell" onclick="copyCode('${s.code}')" title="انقر للنسخ">
+          ${s.code||'—'}
+        </span>
+      </td>
+      <td style="font-size:.78rem">${fmtDate(s.createdAt)}</td>
+      <td>
+        <select class="status-select" onchange="changeStatus('stock','${s.id}',this.value)">
+          <option value="available" ${s.status==='available'?'selected':''}>✅ متاح</option>
+          <option value="used"      ${s.status==='used'     ?'selected':''}>📤 مستخدم</option>
+        </select>
+      </td>
+      <td><button class="del-btn" onclick="deleteStock('${s.id}')">🗑️</button></td>
+    </tr>`).join('');
+};
+
+function updateCatFilter(){
+  const sel = document.getElementById('filterCat');
+  if(!sel) return;
+  const cats = [...new Set(allStock.map(s=>s.category).filter(Boolean))];
+  const cur  = sel.value;
+  sel.innerHTML = '<option value="">كل الفئات</option>'
+    + cats.map(c=>`<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('');
+}
+
+/* ══ COPY CODE ══ */
+window.copyCode = function(code){
+  navigator.clipboard.writeText(code).then(()=>showToast('📋 تم نسخ الكود: '+code));
+};
+
+/* ══ DELETE STOCK ══ */
+window.deleteStock = async function(id){
+  if(!confirm('هل أنت متأكد من حذف هذه البطاقة؟')) return;
+  try{
+    await deleteDoc(doc(db,'stock',id));
+    showToast('🗑️ تم حذف البطاقة');
+  }catch(e){ showToast('❌ خطأ في الحذف'); }
+};
+
+/* ══ CHANGE STATUS ══ */
+window.changeStatus = async function(col, docId, status){
+  try{
+    await updateDoc(doc(db,col,docId),{status});
+    const labels={pending:'معلق',done:'مكتمل',rejected:'مرفوض',available:'متاح',used:'مستخدم'};
+    showToast(`✅ تم تغيير الحالة إلى: ${labels[status]}`);
+  }catch(e){ showToast('❌ خطأ في التحديث'); }
+};
+
+/* ══ FILTER TABLES ══ */
+window.filterTable = function(type){
+  if(type==='transfers'){
+    const q=document.getElementById('searchTransfer').value.toLowerCase();
+    renderTransfers(allTransfers.filter(r=>
+      (r.name||'').toLowerCase().includes(q)||(r.phone||'').includes(q)||(r.ref||'').toLowerCase().includes(q)
+    ));
+  } else {
+    const q=document.getElementById('searchCards').value.toLowerCase();
+    renderCards(allCards.filter(r=>
+      (r.game||'').toLowerCase().includes(q)||(r.playerId||'').toLowerCase().includes(q)||(r.ref||'').toLowerCase().includes(q)
+    ));
+  }
+};
+
+/* ══ TAB ══ */
+window.switchTab = function(tab){
+  document.querySelectorAll('.tab').forEach((t,i)=>{
+    t.classList.toggle('active',
+      (tab==='transfers'&&i===0)||(tab==='cards'&&i===1)||(tab==='stock'&&i===2)
+    );
+  });
+  document.getElementById('tabTransfers').style.display = tab==='transfers'?'block':'none';
+  document.getElementById('tabCards').style.display     = tab==='cards'    ?'block':'none';
+  document.getElementById('tabStock').style.display     = tab==='stock'    ?'block':'none';
+};
+
+/* ══════════════ STOCK MODAL ══════════════ */
+const CARD_OPTIONS = {
+  'Apple':       ['iTunes 10$','iTunes 25$','iTunes 50$','iTunes 100$','App Store 5$','App Store 15$','App Store 25$'],
+  'Google Play': ['Google Play 5$','Google Play 10$','Google Play 25$','Google Play 50$'],
+  'Netflix':     ['Netflix 1 شهر','Netflix 3 أشهر','Netflix 6 أشهر','Netflix سنة'],
+  'PlayStation': ['PSN 10$','PSN 20$','PSN 50$','PSN 100$','PS Plus شهر','PS Plus سنة'],
+  'PUBG':        ['60 UC','325 UC','660 UC','1800 UC','3850 UC','8100 UC'],
+  'Free Fire':   ['100 جوهرة','310 جوهرة','520 جوهرة','1060 جوهرة','2180 جوهرة'],
+  'Steam':       ['Steam 5$','Steam 10$','Steam 20$','Steam 50$','Steam 100$'],
+  'أخرى':        ['مخصص'],
+};
+
+let selectedCat = 'Apple';
+
+window.openStockModal = function(){
+  document.getElementById('stockModal').classList.add('open');
+  document.getElementById('codesArea').value='';
+  document.getElementById('supplier').value='';
+  document.getElementById('codesCount').textContent='٠ كود';
+  document.getElementById('previewBox').style.display='none';
+  updateCardOptions();
+};
+
+window.closeStockModal = function(e){
+  if(!e || e.target===document.getElementById('stockModal'))
+    document.getElementById('stockModal').classList.remove('open');
+};
+
+window.selectCat = function(el){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  selectedCat = el.dataset.cat;
+  const customEl = document.getElementById('customCat');
+  customEl.style.display = selectedCat==='أخرى' ? 'block' : 'none';
+  updateCardOptions();
+};
+
+window.updateCardOptions = function(){
+  const cat  = selectedCat==='أخرى'
+    ? (document.getElementById('customCat').value.trim()||'أخرى')
+    : selectedCat;
+  const opts = CARD_OPTIONS[selectedCat] || ['مخصص'];
+  const sel  = document.getElementById('cardType');
+  sel.innerHTML = '<option value="">— اختر نوع البطاقة —</option>'
+    + opts.map(o=>`<option value="${o}">${o}</option>`).join('');
+  updatePreview();
+};
+
+// Live code count + preview
+document.getElementById('codesArea').addEventListener('input', ()=>{
+  const codes = getCodes();
+  document.getElementById('codesCount').textContent = fmt(codes.length)+' كود';
+  updatePreview();
+});
+
+function getCodes(){
+  return document.getElementById('codesArea').value
+    .split('\n').map(c=>c.trim()).filter(c=>c.length>0);
+}
+
+function updatePreview(){
+  const codes    = getCodes();
+  const cardType = document.getElementById('cardType').value;
+  const supplier = document.getElementById('supplier').value.trim();
+  const box      = document.getElementById('previewBox');
+  const content  = document.getElementById('previewContent');
+  if(!codes.length||!cardType){ box.style.display='none'; return; }
+  box.style.display='block';
+  const preview  = codes.slice(0,3).map(c=>`<div class="code-preview">${c}</div>`).join('');
+  const more     = codes.length>3 ? `<div style="font-size:.78rem;color:var(--muted);margin-top:.3rem">+${codes.length-3} كود إضافي...</div>` : '';
+  content.innerHTML=`
+    <div style="font-size:.82rem;color:var(--mid);margin-bottom:.5rem">
+      <strong>${selectedCat}</strong> — ${cardType} ${supplier?'| المورد: '+supplier:''}
+    </div>
+    ${preview}${more}
+    <div style="margin-top:.6rem;font-size:.82rem;font-weight:800;color:var(--green)">
+      إجمالي: ${codes.length} بطاقة
+    </div>`;
+}
+
+window.clearCodes = function(){
+  document.getElementById('codesArea').value='';
+  document.getElementById('codesCount').textContent='٠ كود';
+  document.getElementById('previewBox').style.display='none';
+};
+
+window.saveStock = async function(){
+  const cardType = document.getElementById('cardType').value;
+  const supplier = document.getElementById('supplier').value.trim();
+  const codes    = getCodes();
+  const cat      = selectedCat==='أخرى'
+    ? (document.getElementById('customCat').value.trim()||'أخرى')
+    : selectedCat;
+
+  if(!cardType){ showToast('⚠️ اختر نوع البطاقة أولاً'); return; }
+  if(!codes.length){ showToast('⚠️ أدخل كود واحد على الأقل'); return; }
+
+  const btn = document.getElementById('saveStockBtn');
+  btn.disabled=true; btn.textContent='⏳ جاري الحفظ...';
+
+  try{
+    const promises = codes.map(code =>
+      addDoc(collection(db,'stock'),{
+        category: cat,
+        cardType,
+        value: cardType,
+        supplier: supplier||'غير محدد',
+        code,
+        status: 'available',
+        createdAt: serverTimestamp()
+      })
+    );
+    await Promise.all(promises);
+    showToast(`✅ تم حفظ ${fmt(codes.length)} بطاقة بنجاح!`);
+    document.getElementById('stockModal').classList.remove('open');
+    window.clearCodes();
+  }catch(e){
+    showToast('❌ خطأ في الحفظ، حاول مجدداً');
+    console.error(e);
+  }
+  btn.disabled=false; btn.textContent='💾 حفظ البطاقات في المخزون';
+};
+
+/* ══ HELPERS ══ */
+function fmt(n){ return Number(n).toLocaleString('ar-MA'); }
+function fmtDate(ts){
+  if(!ts) return '—';
+  try{
+    const d=ts.toDate?ts.toDate():new Date(ts);
+    return d.toLocaleDateString('ar-MA',{day:'2-digit',month:'2-digit',year:'numeric'})
+      +' '+d.toLocaleTimeString('ar-MA',{hour:'2-digit',minute:'2-digit'});
+  }catch(e){ return '—'; }
+}
+
+/* ══ TOAST ══ */
+window.showToast = function(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+};
+</script>
+</body>
+</html>
