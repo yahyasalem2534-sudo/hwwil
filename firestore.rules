@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // 1. قواعد المنتجات (التي تظهر للعملاء)
+    match /products/{productId} {
+      // الجميع يمكنهم رؤية المنتجات وأسعارها
+      allow read: if true;
+      // السماح بالكتابة فقط إذا كان المستخدم هو الأدمن (عبر UID الخاص بك)
+      allow write: if request.auth != null && request.auth.uid == "ضـع_هنا_UID_الخاص_بك";
+    }
+
+    // 2. قواعد الطلبات (Orders)
+    match /orders/{orderId} {
+      // المستخدم يرى طلباته فقط، والأدمن يرى كل شيء
+      allow read: if request.auth != null && (request.auth.uid == resource.data.userId || request.auth.uid == "ضـع_هنا_UID_الخاص_بك");
+      // إنشاء طلب جديد مسموح لأي مستخدم مسجل
+      allow create: if request.auth != null;
+      // التحديث (تغيير الحالة لـ "مكتمل") مسموح للأدمن فقط
+      allow update: if request.auth != null && request.auth.uid == "ضـع_هنا_UID_الخاص_بك";
+    }
+
+    // 3. قواعد بيانات المستخدمين
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // 4. قواعد المهام (Tasks) - للأدمن فقط
+    match /tasks/{taskId} {
+      allow read, write: if request.auth != null && request.auth.uid == "ضـع_هنا_UID_الخاص_بك";
+    }
+  }
+}

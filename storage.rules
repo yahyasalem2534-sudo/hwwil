@@ -1,0 +1,26 @@
+rules_version = '2';
+
+// قواعد الوصول إلى Firebase Storage لمتجر Seconds-Card
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // 1. مجلد صور البطاقات (Cards): الجميع يرى، والآدمن فقط يرفع
+    match /cards/{cardId} {
+      allow read: if true; // السماح للزوار برؤية صور البطاقات لتصفح المتجر
+      allow write: if request.auth != null && request.auth.uid == "ضع_هنا_UID_الخاص_بك"; 
+      // الرفع فقط لمن لديه خاصية admin في التوكن (أو يمكنك استبدالها بـ UID الخاص بك)
+    }
+
+    // 2. مجلد صور المستخدمين (Profile): كل مستخدم يتحكم بصورته فقط
+    match /users/{userId}/{allPaths=**} {
+      allow read: if true; // السماح برؤية صور الملفات الشخصية
+      allow write: if request.auth != null && request.auth.uid == userId;
+      // السماح بالرفع فقط إذا كان المستخدم هو صاحب المجلد
+    }
+
+    // 3. قاعدة عامة للحماية (منع أي وصول غير محدد أعلاه)
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
