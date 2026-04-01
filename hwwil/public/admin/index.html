@@ -629,18 +629,21 @@ document.getElementById('saveBankBtn').addEventListener('click', async () => {
   const logo  = document.getElementById('bankLogo').value.trim();
   const color = document.getElementById('bankColor').value;
   const order = parseInt(document.getElementById('bankOrder').value)||0;
-  const bid   = document.getElementById('bankId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const rawId = document.getElementById('bankId').value.trim()
+    || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const finalId = rawId || 'bank-' + Date.now();
   if (!name) { showToast('⚠️ أدخل اسم البنك'); return; }
   const btn = document.getElementById('saveBankBtn');
   btn.disabled=true; btn.textContent='⏳...';
   try {
     if (editingBankId) await updateDoc(doc(db,'banks',editingBankId),{name,logo,color,order});
-    else await setDoc(doc(db,'banks',bid),{name,logo,color,order,createdAt:serverTimestamp()});
+    else await setDoc(doc(db,'banks',finalId),{name,logo,color,order,createdAt:serverTimestamp()});
     showToast('✅ تم حفظ البنك');
     document.getElementById('bankModal').classList.remove('open');
   } catch(e) { showToast('❌ '+e.message); }
   btn.disabled=false; btn.textContent='💾 حفظ البنك';
 });
+
 
 // ── GAME MODAL ──
 let editingGameId = null;

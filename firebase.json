@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "public": "public",
+    "public": "y7ye/public",
     "ignore": [
       "firebase.json",
       "**/.*",
@@ -8,9 +8,22 @@
     ],
     "rewrites": [
       {
-        "source": "/",
-        "destination": "/dashboard.html"
+        "source": "/admin",
+        "destination": "/admin/index.html"
+      }
+    ],
+    "headers": [
+      {
+        "source": "**/*.js",
+        "headers": [{ "key": "Cache-Control", "value": "no-cache" }]
       }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
   }
 }
