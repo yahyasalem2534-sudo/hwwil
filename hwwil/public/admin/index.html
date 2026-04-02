@@ -637,7 +637,7 @@ document.getElementById('saveBankBtn').addEventListener('click', async () => {
   btn.disabled=true; btn.textContent='⏳...';
   try {
     if (editingBankId) await updateDoc(doc(db,'banks',editingBankId),{name,logo,color,order});
-    else await setDoc(doc(db,'banks',finalId),{name,logo,color,order,createdAt:serverTimestamp()});
+    else await addDoc(collection(db,'banks'),{name,logo,color,order});
     showToast('✅ تم حفظ البنك');
     document.getElementById('bankModal').classList.remove('open');
   } catch(e) { showToast('❌ '+e.message); }
