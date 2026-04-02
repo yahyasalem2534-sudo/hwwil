@@ -473,11 +473,11 @@ function startListeners() {
     allStock = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderStock(); updateStockStats(); updateCatFilter();
   });
-  onSnapshot(query(collection(db,'banks'), orderBy('order','asc')), snap => {
+  onSnapshot(collection(db,'banks'), snap => {
     allBanks = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderBanksTable();
   });
-  onSnapshot(query(collection(db,'games'), orderBy('order','asc')), snap => {
+  onSnapshot(collection(db,'games'), snap => {
     allGames = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderGamesTable();
   });
