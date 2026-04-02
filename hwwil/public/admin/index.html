@@ -744,7 +744,7 @@ document.getElementById('saveStockBtn').addEventListener('click', async () => {
     })));
     showToast(`✅ تم حفظ ${codes.length} بطاقة!`);
     document.getElementById('stockModal').classList.remove('open');
-  } catch(e) { showToast('❌ خطأ في الحفظ: '+e.message); }
+  } catch(e) { console.error("BANK ERROR:", e); showToast('❌ خطأ في الحفظ: '+e.message); }
   btn.disabled=false; btn.textContent='💾 حفظ البطاقات في المخزون';
 });
 
@@ -810,7 +810,7 @@ document.getElementById('saveBankBtn').addEventListener('click', async () => {
     }
     showToast('✅ تم حفظ البنك');
     document.getElementById('bankModal').classList.remove('open');
-  } catch(e) { showToast('❌ '+e.message); }
+  } catch(e) { console.error("BANK ERROR:", e); showToast('❌ '+e.message); }
   btn.disabled=false; btn.textContent='💾 حفظ البنك';
 });
 
@@ -900,7 +900,7 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
     }
     showToast('✅ تم حفظ اللعبة');
     document.getElementById('gameModal').classList.remove('open');
-  } catch(e) { showToast('❌ '+e.message); }
+  } catch(e) { console.error("BANK ERROR:", e); showToast('❌ '+e.message); }
   btn.disabled=false; btn.textContent='💾 حفظ اللعبة';
 });
 
