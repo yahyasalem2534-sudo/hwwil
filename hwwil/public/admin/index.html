@@ -5,25 +5,150 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>لوحة الأدمن | حوّل</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="../css/base.css"/>
-<link rel="stylesheet" href="css/dashboard-main.css"/>
 <style>
-  :root{
-    --red:#DC2626;--red-light:#FEF2F2;
-    --bg:#F0F4F2;--sand:#E8EFeb;
-    --shadow:0 2px 16px rgba(10,124,78,.08);
-    --shadow-lg:0 8px 32px rgba(10,124,78,.14);
-  }
-  .content-section{background:var(--white);border-radius:16px;box-shadow:var(--shadow);border:1.5px solid var(--sand);margin-bottom:1.5rem;overflow:hidden}
-  .content-section-hdr{padding:1rem 1.4rem;border-bottom:1.5px solid var(--sand);display:flex;align-items:center;justify-content:space-between}
-  .content-section-title{font-size:1rem;font-weight:800}
-  .cm-modal{background:var(--white);border-radius:24px;width:100%;max-width:560px;box-shadow:0 24px 64px rgba(0,0,0,.22);margin:auto;max-height:90vh;overflow-y:auto}
-  .preview-circle{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;border:2px solid var(--sand)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --green:#0A7C4E;--green-dark:#065C39;--green-light:#E8F5EE;
+  --gold:#D4A853;--red:#DC2626;--red-light:#FEF2F2;
+  --ink:#0F1F17;--mid:#4A6357;--muted:#8BA898;
+  --bg:#F0F4F2;--white:#fff;--sand:#E8EFeb;
+  --shadow:0 2px 16px rgba(10,124,78,.08);
+  --shadow-lg:0 8px 32px rgba(10,124,78,.14);
+}
+body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--ink);direction:rtl;min-height:100vh}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,var(--green-dark),var(--green))}
+.login-card{background:var(--white);border-radius:24px;padding:2.5rem;width:100%;max-width:380px;box-shadow:0 24px 64px rgba(0,0,0,.2)}
+.login-logo{text-align:center;margin-bottom:2rem}
+.login-logo-icon{width:60px;height:60px;background:var(--green);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;margin:0 auto .8rem}
+.login-logo h1{font-size:1.4rem;font-weight:900;color:var(--green)}
+.login-logo p{font-size:.85rem;color:var(--muted);margin-top:.2rem}
+.login-field{display:flex;flex-direction:column;gap:.4rem;margin-bottom:1rem}
+.login-field label{font-size:.85rem;font-weight:700}
+.login-input{padding:.75rem 1rem;border:1.5px solid #DDE8E3;border-radius:10px;font-family:inherit;font-size:.93rem;outline:none;transition:border-color .2s}
+.login-input:focus{border-color:var(--green)}
+.login-btn{width:100%;padding:.9rem;background:var(--green);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:800;cursor:pointer;transition:background .2s;margin-top:.5rem}
+.login-btn:hover{background:var(--green-dark)}
+.login-err{color:var(--red);font-size:.85rem;text-align:center;margin-top:.5rem;display:none}
+
+/* LAYOUT */
+.app{display:none;min-height:100vh;flex-direction:column}
+.app.show{display:flex}
+
+/* TOPBAR */
+.topbar{background:var(--white);border-bottom:1.5px solid var(--sand);padding:0 1.5rem;height:64px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar-logo{font-size:1.3rem;font-weight:900;color:var(--green);display:flex;align-items:center;gap:.5rem}
+.topbar-logo-icon{width:32px;height:32px;background:var(--green);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:1rem}
+.topbar-right{display:flex;align-items:center;gap:1rem}
+.live-badge{display:flex;align-items:center;gap:.4rem;background:var(--green-light);color:var(--green);border-radius:99px;padding:.3rem .8rem;font-size:.8rem;font-weight:700}
+.live-dot{width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 1.5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.logout-btn{background:var(--red-light);color:var(--red);border:none;border-radius:8px;padding:.4rem .9rem;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;transition:background .2s}
+.logout-btn:hover{background:#FCA5A5}
+
+/* MAIN */
+.main{flex:1;padding:1.5rem;max-width:1400px;width:100%;margin:0 auto}
+
+/* TABS */
+.tabs{display:flex;gap:.4rem;margin-bottom:1.5rem;background:var(--white);padding:.4rem;border-radius:12px;box-shadow:var(--shadow)}
+.tab{flex:1;padding:.6rem;border:none;border-radius:8px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer;background:transparent;color:var(--mid);transition:all .2s}
+.tab.active{background:var(--green);color:#fff}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{background:var(--white);border-radius:16px;padding:1.2rem 1.4rem;box-shadow:var(--shadow);border:1.5px solid var(--sand)}
+.stat-icon{font-size:1.6rem;margin-bottom:.6rem}
+.stat-val{font-size:1.7rem;font-weight:900;color:var(--ink);letter-spacing:-.02em}
+.stat-label{font-size:.8rem;color:var(--muted);margin-top:.2rem}
+.stat-card.green .stat-val{color:var(--green)}
+.stat-card.gold  .stat-val{color:var(--gold)}
+
+/* TABLE */
+.table-card{background:var(--white);border-radius:16px;box-shadow:var(--shadow);border:1.5px solid var(--sand);overflow:hidden;margin-bottom:1.5rem}
+.table-header{padding:1rem 1.4rem;border-bottom:1.5px solid var(--sand);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem}
+.table-title{font-size:1rem;font-weight:800}
+.search-input{padding:.5rem .9rem;border:1.5px solid var(--sand);border-radius:8px;font-family:inherit;font-size:.85rem;outline:none;width:200px;transition:border-color .2s}
+.search-input:focus{border-color:var(--green)}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:600px}
+th{background:var(--bg);padding:.8rem 1rem;text-align:right;font-size:.8rem;font-weight:800;color:var(--mid);border-bottom:1.5px solid var(--sand);white-space:nowrap}
+td{padding:.85rem 1rem;border-bottom:1px solid var(--sand);font-size:.85rem;vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+.status-select{border:1.5px solid var(--sand);border-radius:8px;padding:.3rem .6rem;font-family:inherit;font-size:.8rem;cursor:pointer;outline:none;background:var(--white);color:var(--ink);font-weight:600}
+.ref{font-family:monospace;font-size:.8rem;background:var(--bg);border-radius:6px;padding:.15rem .5rem;color:var(--green);font-weight:700}
+.empty{text-align:center;padding:3rem;color:var(--muted)}
+.empty-icon{font-size:3rem;margin-bottom:.8rem}
+.loading{text-align:center;padding:3rem;color:var(--muted)}
+
+/* STOCK BTN */
+.stock-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:.4rem .9rem;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;transition:background .2s;display:inline-flex;align-items:center;gap:.4rem}
+.stock-btn:hover{background:var(--green-dark)}
+.del-btn{background:var(--red-light);color:var(--red);border:none;border-radius:6px;padding:.25rem .6rem;font-size:.75rem;font-weight:700;cursor:pointer;transition:background .15s}
+.del-btn:hover{background:#FCA5A5}
+
+/* MODALS */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;backdrop-filter:blur(4px)}
+.modal-overlay.open{display:flex}
+.modal-box{background:var(--white);border-radius:24px;width:100%;max-width:580px;box-shadow:0 24px 64px rgba(0,0,0,.22);margin:auto}
+.cm-modal{background:var(--white);border-radius:24px;width:100%;max-width:540px;box-shadow:0 24px 64px rgba(0,0,0,.22);margin:auto;max-height:90vh;overflow-y:auto}
+.modal-hdr{padding:1.2rem 1.5rem;border-bottom:1.5px solid var(--sand);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--white);border-radius:24px 24px 0 0;z-index:1}
+.modal-x{width:34px;height:34px;border-radius:50%;background:var(--sand);border:none;cursor:pointer;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.modal-x:hover{background:var(--red-light);color:var(--red)}
+.modal-bod{padding:1.5rem}
+
+/* FORM */
+.form-row{margin-bottom:1.2rem}
+.flabel{display:block;font-size:.85rem;font-weight:800;margin-bottom:.5rem;color:var(--ink)}
+.finput{width:100%;padding:.7rem 1rem;border:1.5px solid #DDE8E3;border-radius:10px;font-family:inherit;font-size:.9rem;color:var(--ink);outline:none;transition:border-color .2s;background:var(--white)}
+.finput:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(10,124,78,.08)}
+
+/* CAT GRID */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem}
+.cat-btn{border:2px solid #DDE8E3;border-radius:10px;padding:.55rem .4rem;text-align:center;cursor:pointer;font-size:.82rem;font-weight:700;transition:all .15s;background:var(--white);color:var(--mid)}
+.cat-btn:hover{border-color:var(--green);color:var(--green)}
+.cat-btn.active{border-color:var(--green);background:var(--green-light);color:var(--green)}
+
+/* PREVIEW */
+.preview-box{background:var(--green-light);border:1.5px solid rgba(10,124,78,.2);border-radius:12px;padding:1rem 1.2rem;margin-bottom:1.2rem}
+.code-preview{font-family:monospace;font-size:.82rem;background:var(--white);border-radius:6px;padding:.3rem .6rem;margin:.2rem 0;display:inline-block;color:var(--ink);border:1px solid var(--sand)}
+.code-cell{font-family:monospace;font-size:.78rem;background:var(--bg);border-radius:6px;padding:.2rem .5rem;color:var(--ink);cursor:pointer;border:1px solid var(--sand);transition:background .15s}
+.code-cell:hover{background:var(--green-light);border-color:var(--green)}
+
+/* SAVE BTN */
+.save-btn{width:100%;padding:.9rem;background:var(--green);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:800;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(10,124,78,.25)}
+.save-btn:hover{background:var(--green-dark);transform:translateY(-1px)}
+.save-btn:disabled{background:var(--muted);cursor:not-allowed;transform:none}
+
+/* BANK PREVIEW */
+.preview-circle{width:64px;height:64px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.6rem;border:2px solid var(--sand)}
+
+/* TOAST */
+.toast{position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:#fff;border-radius:99px;padding:.7rem 1.6rem;font-size:.9rem;font-weight:700;box-shadow:0 8px 30px rgba(0,0,0,.2);z-index:999;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .3s;opacity:0;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+/* CONTENT SECTION */
+.content-section{background:var(--white);border-radius:16px;box-shadow:var(--shadow);border:1.5px solid var(--sand);margin-bottom:1.5rem;overflow:hidden}
+.content-section-hdr{padding:1rem 1.4rem;border-bottom:1.5px solid var(--sand);display:flex;align-items:center;justify-content:space-between}
+.content-section-title{font-size:1rem;font-weight:800}
+
+@media(max-width:768px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .main{padding:1rem}
+  .search-input{width:140px}
+  .cat-grid{grid-template-columns:repeat(2,1fr)}
+  .tabs{flex-wrap:wrap}
+}
+@media(max-width:480px){
+  .stats{grid-template-columns:1fr 1fr}
+  .topbar-logo span{display:none}
+}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
+<!-- ══ LOGIN ══ -->
 <div class="login-wrap" id="loginWrap">
   <div class="login-card">
     <div class="login-logo">
@@ -44,19 +169,24 @@
   </div>
 </div>
 
-<!-- APP -->
+<!-- ══ APP ══ -->
 <div class="app" id="app">
+
   <div class="topbar">
-    <div class="topbar-logo"><div class="topbar-logo-icon">💱</div><span>حوّل — لوحة الأدمن</span></div>
+    <div class="topbar-logo">
+      <div class="topbar-logo-icon">💱</div>
+      <span>حوّل — لوحة الأدمن</span>
+    </div>
     <div class="topbar-right">
       <div class="live-badge"><div class="live-dot"></div> مباشر</div>
-      <button class="dark-toggle" id="darkToggle" onclick="toggleDark()" title="الوضع الليلي">🌙</button>
       <button class="stock-btn" id="openStockBtn">📦 إضافة بطاقات</button>
       <button class="logout-btn" id="logoutBtn">خروج</button>
     </div>
   </div>
 
   <div class="main">
+
+    <!-- STATS -->
     <div class="stats">
       <div class="stat-card green"><div class="stat-icon">📋</div><div class="stat-val" id="sTotal">—</div><div class="stat-label">إجمالي الطلبات</div></div>
       <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-val" id="sPending">—</div><div class="stat-label">طلبات معلقة</div></div>
@@ -64,38 +194,43 @@
       <div class="stat-card gold"><div class="stat-icon">💰</div><div class="stat-val" id="sAmount">—</div><div class="stat-label">إجمالي المبالغ (أوقية)</div></div>
     </div>
 
+    <!-- TABS -->
     <div class="tabs">
-      <button class="tab active" id="tab-transfers">🏦 التحويلات</button>
-      <button class="tab" id="tab-cards">🎮 البطاقات</button>
-      <button class="tab" id="tab-stock">📦 المخزون</button>
-      <button class="tab" id="tab-content">⚙️ إدارة المحتوى</button>
+      <button class="tab active" data-tab="transfers">🏦 التحويلات</button>
+      <button class="tab" data-tab="cards">🎮 البطاقات</button>
+      <button class="tab" data-tab="stock">📦 المخزون</button>
+      <button class="tab" data-tab="content">⚙️ إدارة المحتوى</button>
     </div>
 
-    <!-- TRANSFERS -->
+    <!-- TAB: TRANSFERS -->
     <div id="tabTransfers" class="table-card">
       <div class="table-header">
         <div class="table-title">طلبات التحويل البنكي</div>
         <input class="search-input" id="searchTransfer" placeholder="🔍 بحث..."/>
       </div>
       <div class="table-wrap">
-        <table><thead><tr><th>رقم الطلب</th><th>الاسم</th><th>الهاتف</th><th>المبلغ</th><th>العمولة</th><th>يستلم</th><th>من بنك</th><th>إلى بنك</th><th>رقم الحساب</th><th>التاريخ</th><th>الحالة</th></tr></thead>
-        <tbody id="transfersBody"><tr><td colspan="11" class="loading">⏳ جاري التحميل...</td></tr></tbody></table>
+        <table>
+          <thead><tr><th>رقم الطلب</th><th>الاسم</th><th>الهاتف</th><th>المبلغ</th><th>العمولة</th><th>يستلم</th><th>من بنك</th><th>إلى بنك</th><th>رقم الحساب</th><th>التاريخ</th><th>الحالة</th></tr></thead>
+          <tbody id="transfersBody"><tr><td colspan="11" class="loading">⏳ جاري التحميل...</td></tr></tbody>
+        </table>
       </div>
     </div>
 
-    <!-- CARDS -->
+    <!-- TAB: CARDS -->
     <div id="tabCards" class="table-card" style="display:none">
       <div class="table-header">
         <div class="table-title">طلبات البطاقات الرقمية</div>
         <input class="search-input" id="searchCards" placeholder="🔍 بحث..."/>
       </div>
       <div class="table-wrap">
-        <table><thead><tr><th>رقم الطلب</th><th>اللعبة</th><th>الباقة</th><th>السعر</th><th>معرف اللاعب</th><th>الهاتف</th><th>التاريخ</th><th>الحالة</th></tr></thead>
-        <tbody id="cardsBody"><tr><td colspan="8" class="loading">⏳ جاري التحميل...</td></tr></tbody></table>
+        <table>
+          <thead><tr><th>رقم الطلب</th><th>اللعبة</th><th>الباقة</th><th>السعر</th><th>معرف اللاعب</th><th>الهاتف</th><th>التاريخ</th><th>الحالة</th></tr></thead>
+          <tbody id="cardsBody"><tr><td colspan="8" class="loading">⏳ جاري التحميل...</td></tr></tbody>
+        </table>
       </div>
     </div>
 
-    <!-- STOCK TAB -->
+    <!-- TAB: STOCK -->
     <div id="tabStock" style="display:none">
       <div class="stats" style="margin-bottom:1.2rem">
         <div class="stat-card green"><div class="stat-icon">🃏</div><div class="stat-val" id="stTotal">—</div><div class="stat-label">إجمالي البطاقات</div></div>
@@ -120,39 +255,56 @@
           <span id="stockCount" style="font-size:.82rem;color:var(--muted)"></span>
         </div>
         <div class="table-wrap">
-          <table><thead><tr><th>الفئة</th><th>البطاقة</th><th>الباقة</th><th>المورد</th><th>الكود</th><th>تاريخ الإضافة</th><th>الحالة</th><th>إجراء</th></tr></thead>
-          <tbody id="stockBody"><tr><td colspan="8" class="loading">⏳ جاري التحميل...</td></tr></tbody></table>
+          <table>
+            <thead><tr><th>الفئة</th><th>البطاقة</th><th>الباقة</th><th>المورد</th><th>الكود</th><th>تاريخ الإضافة</th><th>الحالة</th><th>إجراء</th></tr></thead>
+            <tbody id="stockBody"><tr><td colspan="8" class="loading">⏳ جاري التحميل...</td></tr></tbody>
+          </table>
         </div>
       </div>
     </div>
 
-    <!-- CONTENT TAB -->
+    <!-- TAB: CONTENT ← هنا داخل main بشكل صحيح -->
     <div id="tabContent" style="display:none">
+
+      <!-- BANKS -->
       <div class="content-section">
         <div class="content-section-hdr">
           <div class="content-section-title">🏦 إدارة البنوك</div>
           <button class="stock-btn" id="openAddBankBtn">➕ إضافة بنك</button>
         </div>
         <div class="table-wrap">
-          <table><thead><tr><th>البنك</th><th>رابط الشعار</th><th>اللون</th><th>الترتيب</th><th>إجراء</th></tr></thead>
-          <tbody id="banksBody"><tr><td colspan="5" class="loading">⏳ جاري التحميل...</td></tr></tbody></table>
+          <table>
+            <thead><tr><th>البنك</th><th>رابط الشعار</th><th>اللون</th><th>الترتيب</th><th>إجراء</th></tr></thead>
+            <tbody id="banksBody"><tr><td colspan="5" class="loading">⏳ جاري التحميل...</td></tr></tbody>
+          </table>
         </div>
       </div>
+
+      <!-- GAMES -->
       <div class="content-section">
         <div class="content-section-hdr">
           <div class="content-section-title">🎮 إدارة الألعاب</div>
           <button class="stock-btn" id="openAddGameBtn">➕ إضافة لعبة</button>
         </div>
         <div class="table-wrap">
-          <table><thead><tr><th>اللعبة</th><th>الشارة</th><th>الباقات</th><th>الترتيب</th><th>إجراء</th></tr></thead>
-          <tbody id="gamesBody"><tr><td colspan="5" class="loading">⏳ جاري التحميل...</td></tr></tbody></table>
+          <table>
+            <thead><tr><th>اللعبة</th><th>الشارة</th><th>الباقات</th><th>الترتيب</th><th>إجراء</th></tr></thead>
+            <tbody id="gamesBody"><tr><td colspan="5" class="loading">⏳ جاري التحميل...</td></tr></tbody>
+          </table>
         </div>
       </div>
-    </div>
-  </div>
-</div>
 
-<!-- STOCK MODAL -->
+    </div>
+    <!-- ← نهاية tabContent داخل main ✅ -->
+
+  </div>
+  <!-- ← نهاية main -->
+
+</div>
+<!-- ← نهاية app -->
+
+
+<!-- ══ MODAL: STOCK ══ -->
 <div class="modal-overlay" id="stockModal">
   <div class="modal-box">
     <div class="modal-hdr">
@@ -184,7 +336,7 @@
       </div>
       <div class="form-row">
         <label class="flabel">٤ — الكودات (كل كود في سطر)</label>
-        <textarea class="finput" id="codesArea" rows="6" style="resize:vertical;font-family:monospace;font-size:.88rem;line-height:1.8"></textarea>
+        <textarea class="finput" id="codesArea" rows="6" style="resize:vertical;font-family:monospace;font-size:.88rem;line-height:1.8" placeholder="XXXX-XXXX-XXXX&#10;YYYY-YYYY-YYYY"></textarea>
         <div style="display:flex;justify-content:space-between;margin-top:.3rem">
           <span style="font-size:.78rem;color:var(--muted)" id="codesCount">٠ كود</span>
           <button id="clearCodesBtn" style="background:none;border:none;color:var(--red);font-size:.78rem;cursor:pointer;font-family:inherit">مسح الكل</button>
@@ -199,7 +351,7 @@
   </div>
 </div>
 
-<!-- BANK MODAL -->
+<!-- ══ MODAL: BANK ══ -->
 <div class="modal-overlay" id="bankModal">
   <div class="cm-modal">
     <div class="modal-hdr">
@@ -208,25 +360,23 @@
     </div>
     <div class="modal-bod">
       <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;background:var(--bg);border-radius:14px;padding:1rem 1.2rem">
-        <div class="preview-circle" id="bankPreview"></div>
+        <div class="preview-circle" id="bankPreview" style="background:#0A7C4E"><span style="color:#fff;font-weight:900">؟</span></div>
         <div style="font-size:.85rem;color:var(--mid)">معاينة مباشرة</div>
       </div>
       <div class="form-row"><label class="flabel">اسم البنك *</label><input class="finput" id="bankName" type="text" placeholder="مثال: BCI"/></div>
       <div class="form-row"><label class="flabel">رابط الشعار (URL)</label><input class="finput" id="bankLogo" type="url" placeholder="https://..."/></div>
       <div class="form-row">
         <label class="flabel">لون الخلفية</label>
-        <div style="display:flex;align-items:center;gap:.7rem">
-          <input type="color" id="bankColor" value="#0A7C4E" style="width:50px;height:40px;border:none;border-radius:8px;cursor:pointer"/>
-        </div>
+        <input type="color" id="bankColor" value="#0A7C4E" style="width:50px;height:40px;border:none;border-radius:8px;cursor:pointer"/>
       </div>
-      <div class="form-row"><label class="flabel">معرّف البنك (ID)</label><input class="finput" id="bankId" type="text" placeholder="مثال: bci (فارغ = تلقائي)"/></div>
+      <div class="form-row"><label class="flabel">معرّف البنك (ID) — فارغ = تلقائي</label><input class="finput" id="bankId" type="text" placeholder="مثال: bci"/></div>
       <div class="form-row"><label class="flabel">الترتيب</label><input class="finput" id="bankOrder" type="number" value="0"/></div>
       <button class="save-btn" id="saveBankBtn">💾 حفظ البنك</button>
     </div>
   </div>
 </div>
 
-<!-- GAME MODAL -->
+<!-- ══ MODAL: GAME ══ -->
 <div class="modal-overlay" id="gameModal">
   <div class="cm-modal">
     <div class="modal-hdr">
@@ -235,7 +385,7 @@
     </div>
     <div class="modal-bod">
       <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1.5rem;background:var(--bg);border-radius:14px;padding:1rem 1.2rem">
-        <div class="preview-circle" id="gamePreview"></div>
+        <div class="preview-circle" id="gamePreview" style="background:#1A1A2E"><span style="font-size:2rem">🎮</span></div>
         <div style="font-size:.85rem;color:var(--mid)">معاينة مباشرة</div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
@@ -252,7 +402,7 @@
         <div class="form-row" style="margin-bottom:0"><label class="flabel">شارة</label><input class="finput" id="gameBadge" type="text" placeholder="الأكثر طلباً"/></div>
         <div class="form-row" style="margin-bottom:0"><label class="flabel">الترتيب</label><input class="finput" id="gameOrder" type="number" value="0"/></div>
       </div>
-      <div class="form-row" style="margin-top:1rem"><label class="flabel">معرّف اللعبة (ID)</label><input class="finput" id="gameId" type="text" placeholder="مثال: pubg (فارغ = تلقائي)"/></div>
+      <div class="form-row" style="margin-top:1rem"><label class="flabel">معرّف اللعبة (ID) — فارغ = تلقائي</label><input class="finput" id="gameId" type="text" placeholder="مثال: pubg"/></div>
       <div class="form-row" style="margin-top:1rem">
         <label class="flabel">الباقات والأسعار</label>
         <div id="pkgsEditor" style="margin-top:.5rem"></div>
@@ -264,13 +414,13 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- ══ SCRIPT ══ -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc,
          orderBy, query, addDoc, deleteDoc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ── Firebase ──
 const app = initializeApp({
   apiKey:"AIzaSyCov8KnTUdzywlejDGk74WODUEbZfx1nIc",
   authDomain:"hawwil.firebaseapp.com",
@@ -281,12 +431,8 @@ const app = initializeApp({
 });
 const db = getFirestore(app);
 
-
-
-
 // ── AUTH ──
-const ADMIN_USER = 'admin';
-const ADMIN_PASS = 'hawwil2026';
+const ADMIN_USER = 'admin', ADMIN_PASS = 'hawwil2026';
 
 function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
@@ -338,14 +484,15 @@ function startListeners() {
 }
 
 // ── TABS ──
-const TABS = ['transfers','cards','stock','content'];
-document.querySelectorAll('.tab').forEach((btn, i) => {
+const TAB_IDS = ['transfers','cards','stock','content'];
+document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
+    const tab = btn.dataset.tab;
     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
     btn.classList.add('active');
-    TABS.forEach((t, j) => {
+    TAB_IDS.forEach(t => {
       const el = document.getElementById('tab' + t.charAt(0).toUpperCase() + t.slice(1));
-      if (el) el.style.display = j === i ? 'block' : 'none';
+      if (el) el.style.display = t === tab ? 'block' : 'none';
     });
   });
 });
@@ -412,10 +559,10 @@ function renderStock() {
   const catF   = document.getElementById('filterCat').value;
   const statF  = document.getElementById('filterStatus').value;
   const searchF= document.getElementById('searchStock').value.toLowerCase();
-  const data   = allStock.filter(s=>{
-    if(catF  && s.category!==catF)  return false;
-    if(statF && s.status!==statF)   return false;
-    if(searchF && !(s.code||'').toLowerCase().includes(searchF)) return false;
+  const data   = allStock.filter(s => {
+    if (catF   && s.category !== catF)  return false;
+    if (statF  && s.status   !== statF) return false;
+    if (searchF && !(s.code||'').toLowerCase().includes(searchF)) return false;
     return true;
   });
   document.getElementById('stockCount').textContent = `${fmt(data.length)} بطاقة`;
@@ -434,7 +581,7 @@ function renderStock() {
 }
 
 function updateCatFilter() {
-  const sel = document.getElementById('filterCat');
+  const sel  = document.getElementById('filterCat');
   const cats = [...new Set(allStock.map(s=>s.category).filter(Boolean))];
   const cur  = sel.value;
   sel.innerHTML = '<option value="">كل الفئات</option>'+cats.map(c=>`<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('');
@@ -443,11 +590,12 @@ function updateCatFilter() {
 // ── BANKS TABLE ──
 function renderBanksTable() {
   const tbody = document.getElementById('banksBody'); if (!tbody) return;
+  if (!allBanks.length) { tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">🏦</div>لا توجد بنوك — أضف بنكاً الآن</div></td></tr>`; return; }
   tbody.innerHTML = allBanks.map(b=>`<tr>
     <td><div style="display:flex;align-items:center;gap:.7rem">
-      <div style="width:40px;height:40px;border-radius:8px;background:${b.color||'#888'};display:flex;align-items:center;justify-content:center;overflow:hidden">
+      <div style="width:40px;height:40px;border-radius:8px;background:${b.color||'#888'};display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
         ${b.logo?`<img src="${b.logo}" style="width:36px;height:36px;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:800;font-size:.75rem>${(b.name||'').substring(0,3)}</span>'">`:`<span style="color:#fff;font-weight:800;font-size:.75rem">${(b.name||'').substring(0,3)}</span>`}
-      </div><strong>${b.name}</strong></div></td>
+      </div><strong>${b.name||'—'}</strong></div></td>
     <td><span style="font-size:.75rem;color:var(--muted)">${b.logo?b.logo.substring(0,40)+'...':'لا يوجد'}</span></td>
     <td><div style="width:24px;height:24px;border-radius:50%;background:${b.color||'#888'}"></div></td>
     <td>${b.order||0}</td>
@@ -460,12 +608,13 @@ function renderBanksTable() {
 // ── GAMES TABLE ──
 function renderGamesTable() {
   const tbody = document.getElementById('gamesBody'); if (!tbody) return;
+  if (!allGames.length) { tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">🎮</div>لا توجد ألعاب — أضف لعبة الآن</div></td></tr>`; return; }
   tbody.innerHTML = allGames.map(g=>`<tr>
     <td><div style="display:flex;align-items:center;gap:.7rem">
-      <div style="width:44px;height:44px;border-radius:10px;background:${g.bg||'#1a1a2e'};display:flex;align-items:center;justify-content:center;overflow:hidden">
+      <div style="width:44px;height:44px;border-radius:10px;background:${g.bg||'#1a1a2e'};display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
         ${g.logo?`<img src="${g.logo}" style="width:38px;height:38px;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=font-size:1.4rem>${g.icon||'🎮'}</span>'">`:`<span style="font-size:1.4rem">${g.icon||'🎮'}</span>`}
       </div>
-      <div><div style="font-weight:800">${g.name}</div><div style="font-size:.75rem;color:var(--muted)">${g.desc||''}</div></div>
+      <div><div style="font-weight:800">${g.name||'—'}</div><div style="font-size:.75rem;color:var(--muted)">${g.desc||''}</div></div>
     </div></td>
     <td>${g.badge||'—'}</td>
     <td>${(g.pkgs||[]).length} باقة</td>
@@ -486,9 +635,7 @@ window.deleteStock = async (id) => {
   try { await deleteDoc(doc(db,'stock',id)); showToast('🗑️ تم الحذف'); }
   catch { showToast('❌ خطأ في الحذف'); }
 };
-window.copyCode = (code) => {
-  navigator.clipboard.writeText(code).then(()=>showToast('📋 تم نسخ: '+code));
-};
+window.copyCode = (code) => navigator.clipboard.writeText(code).then(()=>showToast('📋 تم نسخ: '+code));
 window.deleteBank = async (id) => {
   if (!confirm('حذف هذا البنك؟')) return;
   try { await deleteDoc(doc(db,'banks',id)); showToast('🗑️ تم الحذف'); }
@@ -515,9 +662,9 @@ document.getElementById('searchStock').addEventListener('input', renderStock);
 
 // ── STOCK MODAL ──
 const CARD_OPTIONS = {
-  'Apple':['iTunes 10$','iTunes 25$','iTunes 50$','iTunes 100$'],
+  'Apple':['iTunes 10$','iTunes 25$','iTunes 50$','iTunes 100$','App Store 5$','App Store 15$'],
   'Google Play':['Google Play 5$','Google Play 10$','Google Play 25$','Google Play 50$'],
-  'Netflix':['Netflix 1 شهر','Netflix 3 أشهر','Netflix 6 أشهر'],
+  'Netflix':['Netflix 1 شهر','Netflix 3 أشهر','Netflix 6 أشهر','Netflix سنة'],
   'PlayStation':['PSN 10$','PSN 20$','PSN 50$','PSN 100$','PS Plus شهر','PS Plus سنة'],
   'PUBG':['60 UC','325 UC','660 UC','1800 UC','3850 UC','8100 UC'],
   'Free Fire':['100 جوهرة','310 جوهرة','520 جوهرة','1060 جوهرة','2180 جوهرة'],
@@ -529,8 +676,47 @@ let selectedCat = 'Apple';
 function updateCardOptions() {
   const opts = CARD_OPTIONS[selectedCat]||['مخصص'];
   document.getElementById('cardType').innerHTML = '<option value="">— اختر —</option>'+opts.map(o=>`<option value="${o}">${o}</option>`).join('');
+  updatePreview();
 }
 
+function getCodes() {
+  return document.getElementById('codesArea').value.split('\n').map(c=>c.trim()).filter(c=>c);
+}
+
+function updatePreview() {
+  const codes    = getCodes();
+  const cardType = document.getElementById('cardType').value;
+  const supplier = document.getElementById('supplier').value.trim();
+  const box      = document.getElementById('previewBox');
+  if (!codes.length||!cardType) { box.style.display='none'; return; }
+  box.style.display='block';
+  const preview  = codes.slice(0,3).map(c=>`<div class="code-preview">${c}</div>`).join('');
+  const more     = codes.length>3?`<div style="font-size:.78rem;color:var(--muted);margin-top:.3rem">+${codes.length-3} كود...</div>`:'';
+  document.getElementById('previewContent').innerHTML=`
+    <div style="font-size:.82rem;color:var(--mid);margin-bottom:.5rem"><strong>${selectedCat}</strong> — ${cardType} ${supplier?'| '+supplier:''}</div>
+    ${preview}${more}
+    <div style="margin-top:.6rem;font-size:.82rem;font-weight:800;color:var(--green)">إجمالي: ${codes.length} بطاقة</div>`;
+}
+
+document.getElementById('openStockBtn').addEventListener('click', () => {
+  document.getElementById('codesArea').value = '';
+  document.getElementById('supplier').value  = '';
+  document.getElementById('codesCount').textContent = '٠ كود';
+  document.getElementById('previewBox').style.display = 'none';
+  updateCardOptions();
+  document.getElementById('stockModal').classList.add('open');
+});
+document.getElementById('closeStockBtn').addEventListener('click', () => document.getElementById('stockModal').classList.remove('open'));
+document.getElementById('stockModal').addEventListener('click', e => { if(e.target===document.getElementById('stockModal')) document.getElementById('stockModal').classList.remove('open'); });
+document.getElementById('clearCodesBtn').addEventListener('click', () => {
+  document.getElementById('codesArea').value='';
+  document.getElementById('codesCount').textContent='٠ كود';
+  document.getElementById('previewBox').style.display='none';
+});
+document.getElementById('codesArea').addEventListener('input', () => {
+  document.getElementById('codesCount').textContent = getCodes().length+' كود';
+  updatePreview();
+});
 document.getElementById('catGrid').addEventListener('click', e => {
   const btn = e.target.closest('.cat-btn'); if (!btn) return;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
@@ -539,46 +725,27 @@ document.getElementById('catGrid').addEventListener('click', e => {
   document.getElementById('customCat').style.display = selectedCat==='أخرى'?'block':'none';
   updateCardOptions();
 });
-
-document.getElementById('codesArea').addEventListener('input', function() {
-  const codes = this.value.split('\n').map(c=>c.trim()).filter(c=>c);
-  document.getElementById('codesCount').textContent = codes.length+' كود';
-});
-
-document.getElementById('openStockBtn').addEventListener('click', () => {
-  document.getElementById('stockModal').classList.add('open');
-  updateCardOptions();
-});
-document.getElementById('closeStockBtn').addEventListener('click', () => {
-  document.getElementById('stockModal').classList.remove('open');
-});
-document.getElementById('stockModal').addEventListener('click', e => {
-  if (e.target === document.getElementById('stockModal')) document.getElementById('stockModal').classList.remove('open');
-});
-document.getElementById('clearCodesBtn').addEventListener('click', () => {
-  document.getElementById('codesArea').value = '';
-  document.getElementById('codesCount').textContent = '٠ كود';
-});
+document.getElementById('customCat').addEventListener('input', updateCardOptions);
+document.getElementById('cardType').addEventListener('change', updatePreview);
 
 document.getElementById('saveStockBtn').addEventListener('click', async () => {
   const cardType = document.getElementById('cardType').value;
   const supplier = document.getElementById('supplier').value.trim();
-  const codes    = document.getElementById('codesArea').value.split('\n').map(c=>c.trim()).filter(c=>c);
+  const codes    = getCodes();
   const cat      = selectedCat==='أخرى'?(document.getElementById('customCat').value.trim()||'أخرى'):selectedCat;
   if (!cardType) { showToast('⚠️ اختر نوع البطاقة أولاً'); return; }
   if (!codes.length) { showToast('⚠️ أدخل كود واحد على الأقل'); return; }
   const btn = document.getElementById('saveStockBtn');
-  btn.disabled = true; btn.textContent = '⏳ جاري الحفظ...';
+  btn.disabled=true; btn.textContent='⏳ جاري الحفظ...';
   try {
     await Promise.all(codes.map(code=>addDoc(collection(db,'stock'),{
-      category:cat, cardType, value:cardType, supplier:supplier||'غير محدد',
-      code, status:'available', createdAt:serverTimestamp()
+      category:cat, cardType, value:cardType,
+      supplier:supplier||'غير محدد', code, status:'available', createdAt:serverTimestamp()
     })));
     showToast(`✅ تم حفظ ${codes.length} بطاقة!`);
     document.getElementById('stockModal').classList.remove('open');
-    document.getElementById('codesArea').value = '';
-  } catch { showToast('❌ خطأ في الحفظ'); }
-  btn.disabled = false; btn.textContent = '💾 حفظ البطاقات في المخزون';
+  } catch(e) { showToast('❌ خطأ في الحفظ: '+e.message); }
+  btn.disabled=false; btn.textContent='💾 حفظ البطاقات في المخزون';
 });
 
 // ── BANK MODAL ──
@@ -591,12 +758,12 @@ function updateBankPreview() {
   const prev  = document.getElementById('bankPreview');
   prev.style.background = color;
   prev.innerHTML = logo
-    ? `<img src="${logo}" style="width:40px;height:40px;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:900>${name.substring(0,3)}</span>'">`
-    : `<span style="color:#fff;font-weight:900;font-size:.9rem">${name.substring(0,3)||'؟'}</span>`;
+    ? `<img src="${logo}" style="width:40px;height:40px;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:900;font-size:.85rem>${name.substring(0,3)||'؟'}</span>'">`
+    : `<span style="color:#fff;font-weight:900;font-size:.85rem">${name.substring(0,3)||'؟'}</span>`;
 }
 
-document.getElementById('bankName').addEventListener('input', updateBankPreview);
-document.getElementById('bankLogo').addEventListener('input', updateBankPreview);
+document.getElementById('bankName').addEventListener('input',  updateBankPreview);
+document.getElementById('bankLogo').addEventListener('input',  updateBankPreview);
 document.getElementById('bankColor').addEventListener('input', updateBankPreview);
 
 document.getElementById('openAddBankBtn').addEventListener('click', () => {
@@ -629,35 +796,36 @@ document.getElementById('saveBankBtn').addEventListener('click', async () => {
   const logo  = document.getElementById('bankLogo').value.trim();
   const color = document.getElementById('bankColor').value;
   const order = parseInt(document.getElementById('bankOrder').value)||0;
-  const rawId = document.getElementById('bankId').value.trim()
-    || name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  const finalId = rawId || 'bank-' + Date.now();
+  const rawId = document.getElementById('bankId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
+  const finalId = rawId||'bank-'+Date.now();
   if (!name) { showToast('⚠️ أدخل اسم البنك'); return; }
   const btn = document.getElementById('saveBankBtn');
   btn.disabled=true; btn.textContent='⏳...';
   try {
-    if (editingBankId) await updateDoc(doc(db,'banks',editingBankId),{name,logo,color,order});
-    else await addDoc(collection(db,'banks'),{name,logo,color,order});
+    if (editingBankId) {
+      await updateDoc(doc(db,'banks',editingBankId),{name,logo,color,order});
+    } else {
+      // استخدام setDoc مع ID محدد لتجنب مشاكل الـ query
+      await setDoc(doc(db,'banks',finalId),{name,logo,color,order,createdAt:serverTimestamp()});
+    }
     showToast('✅ تم حفظ البنك');
     document.getElementById('bankModal').classList.remove('open');
   } catch(e) { showToast('❌ '+e.message); }
   btn.disabled=false; btn.textContent='💾 حفظ البنك';
 });
 
-
 // ── GAME MODAL ──
-let editingGameId = null;
-let gamePkgs = [];
+let editingGameId = null, gamePkgs = [];
 
 function updateGamePreview() {
   const logo = document.getElementById('gameLogo').value.trim();
   const bg   = document.getElementById('gameBg').value;
-  const icon = document.getElementById('gameIcon').value;
+  const icon = document.getElementById('gameIcon').value||'🎮';
   const prev = document.getElementById('gamePreview');
   prev.style.background = bg;
   prev.innerHTML = logo
     ? `<img src="${logo}" style="width:48px;height:48px;object-fit:contain;border-radius:8px" onerror="this.outerHTML='<span style=font-size:2rem>${icon}</span>'">`
-    : `<span style="font-size:2rem">${icon||'🎮'}</span>`;
+    : `<span style="font-size:2rem">${icon}</span>`;
 }
 
 function renderPkgsEditor() {
@@ -666,7 +834,7 @@ function renderPkgsEditor() {
     <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
       <input class="finput" style="flex:1" value="${p.amount||''}" oninput="gamePkgUpdate(${i},'amount',this.value)" placeholder="مثال: 60 UC"/>
       <input class="finput" style="width:110px" type="number" value="${p.price||''}" oninput="gamePkgUpdate(${i},'price',this.value)" placeholder="السعر"/>
-      <button onclick="gamePkgRemove(${i})" style="background:var(--red-light);color:var(--red);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer">✕</button>
+      <button onclick="gamePkgRemove(${i})" style="background:var(--red-light);color:var(--red);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:1rem">✕</button>
     </div>`).join('')
     +`<button onclick="gamePkgAdd()" class="stock-btn" style="font-size:.82rem;padding:.4rem .9rem;margin-top:.3rem">➕ إضافة باقة</button>`;
 }
@@ -678,7 +846,7 @@ window.gamePkgUpdate = (i,f,v) => { gamePkgs[i][f]=f==='price'?parseFloat(v)||0:
 document.getElementById('gameName').addEventListener('input', updateGamePreview);
 document.getElementById('gameLogo').addEventListener('input', updateGamePreview);
 document.getElementById('gameIcon').addEventListener('input', updateGamePreview);
-document.getElementById('gameBg').addEventListener('input', updateGamePreview);
+document.getElementById('gameBg').addEventListener('input',   updateGamePreview);
 
 document.getElementById('openAddGameBtn').addEventListener('click', () => {
   editingGameId=null; gamePkgs=[];
@@ -711,21 +879,25 @@ window.openEditGame = (id) => {
 
 document.getElementById('saveGameBtn').addEventListener('click', async () => {
   const name  = document.getElementById('gameName').value.trim();
-  const icon  = document.getElementById('gameIcon').value.trim();
+  const icon  = document.getElementById('gameIcon').value.trim()||'🎮';
   const logo  = document.getElementById('gameLogo').value.trim();
   const bg    = document.getElementById('gameBg').value;
   const desc  = document.getElementById('gameDesc').value.trim();
   const badge = document.getElementById('gameBadge').value.trim();
   const order = parseInt(document.getElementById('gameOrder').value)||0;
-  const gid   = document.getElementById('gameId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'').substring(0,20);
+  const rawId = document.getElementById('gameId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'').substring(0,20);
+  const finalId = rawId||'game-'+Date.now();
   if (!name) { showToast('⚠️ أدخل اسم اللعبة'); return; }
   const pkgs = gamePkgs.filter(p=>p.amount&&p.price>0);
   const btn  = document.getElementById('saveGameBtn');
   btn.disabled=true; btn.textContent='⏳...';
   try {
     const data={name,icon,logo,bg,desc,badge,order,pkgs};
-    if(editingGameId) await updateDoc(doc(db,'games',editingGameId),data);
-    else await setDoc(doc(db,'games',gid),{...data,createdAt:serverTimestamp()});
+    if (editingGameId) {
+      await updateDoc(doc(db,'games',editingGameId),data);
+    } else {
+      await setDoc(doc(db,'games',finalId),{...data,createdAt:serverTimestamp()});
+    }
     showToast('✅ تم حفظ اللعبة');
     document.getElementById('gameModal').classList.remove('open');
   } catch(e) { showToast('❌ '+e.message); }
@@ -735,7 +907,7 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
 // ── HELPERS ──
 function fmt(n) { return Number(n).toLocaleString('ar-MA'); }
 function fmtDate(ts) {
-  if(!ts) return '—';
+  if (!ts) return '—';
   try {
     const d=ts.toDate?ts.toDate():new Date(ts);
     return d.toLocaleDateString('ar-MA',{day:'2-digit',month:'2-digit',year:'numeric'})
