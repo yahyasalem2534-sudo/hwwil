@@ -7,10 +7,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="css/index.css"/>
 <link rel="stylesheet" href="css/main.css"/>
+<style>
+  .section-title-sm { font-size: 1.4rem; font-weight: 800; color: var(--ink); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem; }
+  .section-title-sm span { font-size: 1.8rem; }
+</style>
 </head>
 <body>
 
-<!-- ══ NAV ══ -->
 <nav>
   <a href="#" class="logo">
     <div class="logo-icon">💱</div>حوّل
@@ -18,7 +21,7 @@
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('home')">الرئيسية</button>
     <button class="nav-tab" onclick="showPage('transfer')">التحويل البنكي</button>
-    <button class="nav-tab" onclick="showPage('cards')">البطاقات الرقمية</button>
+    <button class="nav-tab" onclick="showPage('cards')">البطاقات والألعاب</button>
   </div>
   <div class="nav-right">
     <button class="whatsapp-btn" onclick="window.open('https://wa.me/22234362534','_blank')">
@@ -27,18 +30,17 @@
   </div>
 </nav>
 
-<!-- ══ HOME PAGE ══ -->
 <div class="page active" id="page-home">
   <div style="max-width:1300px;margin:0 auto">
     <div class="hero">
       <div>
         <div class="hero-badge">🇲🇷 خدمات مالية موريتانية موثوقة</div>
         <h1>حوّل أموالك بين<br/><em>البنوك الموريتانية</em><br/>بكل سهولة</h1>
-        <p class="hero-sub">منصة آمنة وسريعة لتحويل الأموال بين البنوك مع خصم عمولة شفافة، وكذلك شراء بطاقات الألعاب والشحن الرقمي.</p>
+        <p class="hero-sub">منصة آمنة وسريعة لتحويل الأموال بين البنوك مع خصم عمولة شفافة، وكذلك شراء بطاقات الألعاب والاشتراكات الرقمية.</p>
         <div class="hero-features">
           <div class="hero-feat"><div class="feat-check">✓</div>تحويل بين جميع البنوك الموريتانية</div>
           <div class="hero-feat"><div class="feat-check">✓</div>عمولة واضحة وشفافة بدون رسوم مخفية</div>
-          <div class="hero-feat"><div class="feat-check">✓</div>بطاقات رقمية فورية لجميع الألعاب</div>
+          <div class="hero-feat"><div class="feat-check">✓</div>بطاقات رقمية فورية لجميع الألعاب والمواقع</div>
           <div class="hero-feat"><div class="feat-check">✓</div>خدمة عملاء على مدار الساعة</div>
         </div>
         <div class="hero-cta">
@@ -67,6 +69,16 @@
         </div>
       </div>
     </div>
+
+    <div class="search-order-container" style="max-width:800px; margin: 2rem auto; padding: 1.5rem; background: var(--white); border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
+      <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; font-size: 1.1rem; color: var(--ink);">🔍 تتبع حالة طلبك</h3>
+      <div style="display: flex; gap: .5rem;">
+        <input type="text" id="orderIdInput" class="form-input" placeholder="أدخل رقم الطلب (مثلاً: HW-12345)" style="flex: 1; border: 1.5px solid #DDE8E3;">
+        <button onclick="checkOrderStatus()" style="background: var(--green); color: white; border: none; padding: .8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit;">بحث</button>
+      </div>
+      <div id="orderStatusResult" style="margin-top: 1rem; text-align: center; font-weight: 800; font-size: 1.1rem;"></div>
+    </div>
+
   </div>
 
   <div class="stats-bar">
@@ -84,7 +96,7 @@
     </div>
     <div class="steps">
       <div class="step"><div class="step-num">١</div><div class="step-title">أرسل المبلغ</div><div class="step-desc">أرسل المبلغ إلى رقم حسابنا في أي بنك موريتاني</div></div>
-      <div class="step"><div class="step-num">٢</div><div class="step-title">أرسل الطلب</div><div class="step-desc">أرسل لنا معلومات التحويل عبر الموقع أو واتساب</div></div>
+      <div class="step"><div class="step-num">٢</div><div class="step-title">أرسل الطلب</div><div class="step-desc">أرسل لنا معلومات التحويل وإثبات الدفع عبر الموقع</div></div>
       <div class="step"><div class="step-num">٣</div><div class="step-title">نُراجع الطلب</div><div class="step-desc">نتحقق من الإيداع ونحسب المبلغ بعد خصم العمولة</div></div>
       <div class="step"><div class="step-num">٤</div><div class="step-title">تستلم المبلغ</div><div class="step-desc">نحوّل المبلغ فوراً للبنك الذي تختاره مع إشعار تأكيد</div></div>
     </div>
@@ -92,7 +104,7 @@
 
   <div class="section">
     <div class="section-head">
-      <h2 class="section-title">البطاقات <span>الرقمية</span></h2>
+      <h2 class="section-title">البطاقات <span>والألعاب</span></h2>
       <a href="#" class="see-all" onclick="showPage('cards');return false">عرض الكل ←</a>
     </div>
     <div class="games-grid" id="homeGamesGrid"></div>
@@ -109,7 +121,6 @@
   </div>
 </div>
 
-<!-- ══ TRANSFER PAGE ══ -->
 <div class="page" id="page-transfer">
   <div class="transfer-page">
     <div class="transfer-header">
@@ -140,22 +151,46 @@
       </div>
       <div class="form-section-title" style="margin-top:1.5rem"><div class="form-section-icon">📤</div>بنك الإرسال</div>
       <div class="banks-grid" id="fromBanks"></div>
+      
       <div class="divider">⬇ سيتم التحويل إلى</div>
       <div class="form-section-title"><div class="form-section-icon">📥</div>بنك الاستلام</div>
       <div class="banks-grid" id="toBanks"></div>
+      
       <div class="form-group full" style="margin-top:1.2rem">
-        <label>رقم الحساب / IBAN في بنك الاستلام</label>
-        <input class="form-input" id="toAccount" type="text" placeholder="MR12 0000 0000 0000 0000 0000 00"/>
+        <label>رقم حساب المستلم (أو رقم الهاتف المربوط بالبنك) *</label>
+        <input class="form-input" id="toAccount" type="text" placeholder="مثال: 0000123456 أو 33334444"/>
       </div>
+      
       <div class="form-group" style="margin-top:.8rem">
         <label>ملاحظات إضافية (اختياري)</label>
         <input class="form-input" id="notes" type="text" placeholder="أي معلومات إضافية..."/>
       </div>
-      <div class="info-note" style="margin-top:1.2rem">
-        ⚠️ <div>يُرجى إرسال الحوالة أولاً إلى رقم حسابنا، ثم إرسال صورة الإيصال مع هذا الطلب عبر واتساب.</div>
+
+      <div style="background: var(--green-light); border: 2px dashed var(--green); border-radius: 12px; padding: 1.5rem; text-align: center; margin-top: 1.5rem;">
+        <div style="font-weight: 800; color: var(--green); font-size: 1.1rem; margin-bottom: 0.5rem;">📱 رقمنا لاستلام الحوالات</div>
+        <div style="font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; color: var(--ink);">34362534</div>
+        <div style="font-size: 0.9rem; color: var(--mid); margin-top: 0.5rem;">يرجى تحويل المبلغ الإجمالي إلى هذا الرقم أولاً، ثم إرفاق صورة الوصل أدناه لتأكيد الطلب.</div>
       </div>
+      
+      <div class="form-section-title" style="margin-top:1.5rem"><div class="form-section-icon">📸</div>إرفاق صورة الوصل (الدليل) *</div>
+      <div class="form-group full" style="margin-top:1rem">
+        <input type="file" id="receiptImage" accept="image/*" style="display: none;" onchange="handleImagePreview(event, 'transfer')">
+        
+        <div id="uploadPlaceholder" onclick="document.getElementById('receiptImage').click()" style="border: 2px dashed var(--green); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; background: var(--white); transition: all 0.2s;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">📥</div>
+          <div style="font-weight: 700; color: var(--green);">اضغط هنا لاختيار صورة الوصل</div>
+          <div style="font-size: 0.8rem; color: var(--mid); margin-top: 0.3rem;">يدعم JPG, PNG</div>
+        </div>
+
+        <div id="imagePreviewContainer" style="display: none; margin-top: 1rem; position: relative; width: fit-content;">
+          <img id="imgPreview" src="#" alt="معاينة الوصل" style="max-width: 100%; height: auto; max-height: 250px; border-radius: 12px; border: 2px solid var(--green); box-shadow: var(--shadow);">
+          <button type="button" onclick="document.getElementById('receiptImage').click()" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem;">🔄 تغيير الصورة</button>
+        </div>
+      </div>
+
       <button class="submit-btn" style="margin-top:1.5rem" onclick="submitTransfer()">✅ إرسال طلب التحويل</button>
     </div>
+    
     <div class="success-card" id="successCard">
       <div class="success-icon">✅</div>
       <div class="success-title">تم استلام طلبك بنجاح!</div>
@@ -166,19 +201,29 @@
   </div>
 </div>
 
-<!-- ══ CARDS PAGE ══ -->
 <div class="page" id="page-cards">
   <div class="section" style="padding-top:3rem">
     <div class="transfer-header" style="margin-bottom:2.5rem">
-      <div style="display:inline-flex;align-items:center;gap:.5rem;background:var(--green-light);color:var(--green);border-radius:99px;padding:.35rem 1rem;font-size:.82rem;font-weight:700;margin-bottom:1rem">🎮 بطاقات رقمية فورية</div>
-      <h2>اشترِ بطاقاتك الآن</h2>
-      <p style="color:var(--mid);font-size:1rem">اختر اللعبة وحدة الشحن وسنرسل لك الكود فوراً</p>
+      <div style="display:inline-flex;align-items:center;gap:.5rem;background:var(--green-light);color:var(--green);border-radius:99px;padding:.35rem 1rem;font-size:.82rem;font-weight:700;margin-bottom:1rem">🎮💳 البطاقات والخدمات</div>
+      <h2>تسوق البطاقات الرقمية</h2>
+      <p style="color:var(--mid);font-size:1rem">اختر القسم المناسب، حدد الباقة، وسنرسل لك الكود فوراً</p>
     </div>
-    <div class="games-grid" id="fullGamesGrid"></div>
+
+    <div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
+      <h3 class="section-title-sm"><span>🎮</span> شحن الألعاب</h3>
+      <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">شحن فوري لأشهر الألعاب (ببجي، فري فاير، والمزيد)</p>
+      <div class="games-grid" id="gamesOnlyGrid"></div>
+    </div>
+
+    <div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
+      <h3 class="section-title-sm"><span>💳</span> بطاقات واشتراكات</h3>
+      <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">اشتراكات وبطاقات هدايا (نتفلكس، آبل، بلايستيشن، والمزيد)</p>
+      <div class="games-grid" id="servicesOnlyGrid"></div>
+    </div>
+
   </div>
 </div>
 
-<!-- ══ MODAL ══ -->
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-header">
@@ -190,18 +235,41 @@
         <div class="modal-icon" id="modalIcon" style="background:var(--green-light)"></div>
         <div><div class="modal-game-name" id="modalGameName"></div><div class="modal-game-sub">اختر الكمية المناسبة</div></div>
       </div>
+      
       <div class="modal-pkgs" id="modalPkgs"></div>
-      <div class="form-group" style="margin-bottom:1rem"><label>معرّف اللاعب / ID</label><input class="form-input" id="modalPlayerId" type="text" placeholder="أدخل معرفك في اللعبة"/></div>
+      
+      <div class="form-group" style="margin-bottom:1rem"><label>معرّف اللاعب / الحساب (اختياري للبطاقات)</label><input class="form-input" id="modalPlayerId" type="text" placeholder="أدخل معرفك أو حسابك"/></div>
       <div class="form-group" style="margin-bottom:1.2rem"><label>رقم هاتفك للتأكيد</label><input class="form-input" id="modalPhone" type="tel" placeholder="2222 00 222"/></div>
+      
       <div class="calc-box" style="margin-bottom:1.2rem">
         <div class="calc-row calc-total"><span class="calc-label">💰 إجمالي المبلغ</span><span class="calc-val" id="modalTotal">اختر باقة أولاً</span></div>
       </div>
-      <button class="submit-btn" onclick="submitCard()">🛒 اطلب الآن عبر واتساب</button>
+
+      <div style="background: var(--green-light); border: 2px dashed var(--green); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 1.5rem;">
+        <div style="font-weight: 800; color: var(--green); font-size: 1rem; margin-bottom: 0.3rem;">📱 للطلب يرجى الدفع للرقم:</div>
+        <div style="font-size: 1.5rem; font-weight: 900; letter-spacing: 2px; color: var(--ink);">34362534</div>
+      </div>
+
+      <div class="form-group full" style="margin-bottom:1.5rem">
+        <label style="font-weight: 800; display: block; margin-bottom: 0.5rem;">صورة الوصل (إلزامي) *</label>
+        <input type="file" id="modalReceiptImage" accept="image/*" style="display: none;" onchange="handleImagePreview(event, 'card')">
+        
+        <div id="modalUploadPlaceholder" onclick="document.getElementById('modalReceiptImage').click()" style="border: 2px dashed var(--green); border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; background: var(--white); transition: all 0.2s;">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📥</div>
+          <div style="font-weight: 700; color: var(--green); font-size: 0.9rem;">اضغط لإرفاق وصل الدفع</div>
+        </div>
+
+        <div id="modalImagePreviewContainer" style="display: none; margin-top: 0.5rem; position: relative; width: 100%; text-align: center;">
+          <img id="modalImgPreview" src="#" alt="معاينة الوصل" style="max-width: 100%; height: auto; max-height: 150px; border-radius: 10px; border: 2px solid var(--green);">
+          <button type="button" onclick="document.getElementById('modalReceiptImage').click()" style="position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">🔄 تغيير</button>
+        </div>
+      </div>
+      
+      <button class="submit-btn" onclick="submitCard()">✅ إرسال الطلب الآن</button>
     </div>
   </div>
 </div>
 
-<!-- ══ FOOTER ══ -->
 <footer>
   <div class="footer-grid">
     <div>
