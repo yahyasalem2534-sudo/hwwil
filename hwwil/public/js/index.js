@@ -20,13 +20,12 @@ const db  = getFirestore(app);
 
 let BANKS = [];
 let GAMES = [];
-let STOCK = []; // مصفوفة لتخزين المخزون المتاح
+let STOCK = []; 
 let selectedFrom = null;
 let selectedTo   = null;
 let selectedGame = null;
 let selectedPkg  = null;
 
-// المتغير المسؤول عن حفظ كود الصورة (الوصل)
 window.currentImageBase64 = "";
 
 async function loadContent() {
@@ -37,45 +36,63 @@ async function loadContent() {
     const gamesSnap = await getDocs(query(collection(db,'games'), orderBy('order','asc')));
     GAMES = gamesSnap.docs.map(d => ({id:d.id, ...d.data()}));
 
-    // جلب المخزون "المتاح" فقط لمعرفة الكميات للعميل
     const stockSnap = await getDocs(query(collection(db,'stock'), where('status','==','available')));
     STOCK = stockSnap.docs.map(d => d.data());
 
   } catch(e) {
     console.error('خطأ في جلب البيانات:', e);
-    BANKS = [];
-    GAMES = [];
-    STOCK = [];
   }
   
   renderBanks('fromBanks','from');
   renderBanks('toBanks','to');
-  
-  // عرض عينة مختلطة في الصفحة الرئيسية
   renderGamesList(GAMES.slice(0, 8), 'homeGamesGrid', 'لا توجد منتجات حالياً');
   
-  // تقسيم وعرض المنتجات في صفحة البطاقات
   if(document.getElementById('gamesOnlyGrid') || document.getElementById('servicesOnlyGrid')) {
     window.filterGames('all');
   }
 }
 
-// ── 1. دالة معالجة الصور (التحويل البنكي والبطاقات) ──
+// ── 1. دالة معالجة الصور (بتقنية الضغط لتقليل الحجم وتجنب خطأ Firebase) ──
 window.handleImagePreview = function(event, type = 'transfer') {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      window.currentImageBase64 = e.target.result;
-      
-      const prefix = type === 'card' ? 'modal' : '';
-      const previewImg = document.getElementById(prefix + 'ImgPreview');
-      const previewCont = document.getElementById(prefix + 'ImagePreviewContainer');
-      const placeholder = document.getElementById(prefix + 'UploadPlaceholder');
-      
-      if(previewImg) previewImg.src = e.target.result;
-      if(previewCont) previewCont.style.display = 'block';
-      if(placeholder) placeholder.style.display = 'none';
+      // استخدام Canvas لضغط الصورة
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let width = img.width;
+        let height = img.height;
+        const MAX_SIZE = 800; // أقصى عرض أو طول 800 بيكسل
+        
+        if (width > height && width > MAX_SIZE) {
+          height *= MAX_SIZE / width;
+          width = MAX_SIZE;
+        } else if (height > MAX_SIZE) {
+          width *= MAX_SIZE / height;
+          height = MAX_SIZE;
+        }
+        
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, width, height);
+        
+        // ضغط الصورة بصيغة JPEG بجودة 60%
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+        window.currentImageBase64 = compressedBase64;
+        
+        const prefix = type === 'card' ? 'modal' : '';
+        const previewImg = document.getElementById(prefix + 'ImgPreview');
+        const previewCont = document.getElementById(prefix + 'ImagePreviewContainer');
+        const placeholder = document.getElementById(prefix + 'UploadPlaceholder');
+        
+        if(previewImg) previewImg.src = compressedBase64;
+        if(previewCont) previewCont.style.display = 'block';
+        if(placeholder) placeholder.style.display = 'none';
+      };
+      img.src = e.target.result;
     };
     reader.readAsDataURL(file);
   }
@@ -131,7 +148,7 @@ window.calcAmount = function(){
   document.getElementById('calcReceive').textContent = amt ? fmt(recv)+' أوقية':'—';
 };
 
-// ── 2. إرسال التحويل البنكي (تم إصلاح خطأ الإرسال) ──
+// ── 2. إرسال التحويل البنكي ──
 window.submitTransfer = async function(){
   const name    = document.getElementById('clientName').value.trim();
   const phone   = document.getElementById('clientPhone').value.trim();
@@ -155,7 +172,7 @@ window.submitTransfer = async function(){
   const comm = amount*rate/100;
   const recv = amount-comm;
   const ref  = 'HW-'+Math.floor(Math.random()*90000+10000);
-  const btn  = document.querySelector('.submit-btn');
+  const btn  = document.querySelector('#page-transfer .submit-btn');
   
   btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...';
   
@@ -215,7 +232,7 @@ window.resetTransfer = function(){
   if(document.getElementById('receiptImage')) document.getElementById('receiptImage').value = '';
 };
 
-// ── 3. تصفية الألعاب والبطاقات (التقسيم الجديد) ──
+// ── 3. تصفية الألعاب والبطاقات ──
 window.filterGames = function(provider, btnEl) {
   if(btnEl) {
     document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
@@ -227,15 +244,13 @@ window.filterGames = function(provider, btnEl) {
     filtered = GAMES.filter(g => g.provider === provider);
   }
   
-  // تقسيم المنتجات حسب النوع الذي اخترناه في لوحة الأدمن
-  const gamesOnly = filtered.filter(g => g.productType === 'game' || !g.productType); // نعتبر القديم ألعاب
+  const gamesOnly = filtered.filter(g => g.productType === 'game' || !g.productType); 
   const servicesOnly = filtered.filter(g => g.productType === 'service');
   
   renderGamesList(gamesOnly, 'gamesOnlyGrid', '🎮 لا توجد ألعاب في هذا القسم حالياً');
   renderGamesList(servicesOnly, 'servicesOnlyGrid', '💳 لا توجد بطاقات/خدمات في هذا القسم حالياً');
 };
 
-// دالة مساعدة لطباعة المنتجات في الحاويات المختلفة
 function renderGamesList(list, containerId, emptyMsg) {
   const container = document.getElementById(containerId);
   if(!container) return;
@@ -268,7 +283,7 @@ function renderGamesList(list, containerId, emptyMsg) {
     </div>`).join('');
 }
 
-// ── 4. ربط المخزون (تم إصلاح مطابقة الفئات للبطاقات والنتفلكس) ──
+// ── 4. ربط المخزون ──
 window.openModal = function(gameId){
   selectedGame = GAMES.find(g=>g.id===gameId);
   selectedPkg  = null;
@@ -292,18 +307,13 @@ window.openModal = function(gameId){
   if(document.getElementById('modalUploadPlaceholder')) document.getElementById('modalUploadPlaceholder').style.display = 'block';
   if(document.getElementById('modalReceiptImage')) document.getElementById('modalReceiptImage').value = '';
 
-  // حساب المخزون المتوفر لكل باقة (مع تجاهل حالة الأحرف والمسافات ومطابقة المورد)
   document.getElementById('modalPkgs').innerHTML=(selectedGame.pkgs||[]).map((p,i)=>{
-    
     const available = STOCK.filter(s => {
-      // نتأكد من تطابق الفئة (سواء باسم اللعبة أو بالمورد)
       const matchCategory = s.category && (
         s.category.trim().toLowerCase() === (selectedGame.provider || '').trim().toLowerCase() ||
         s.category.trim().toLowerCase() === selectedGame.name.trim().toLowerCase()
       );
-      // نتأكد من تطابق قيمة الباقة
       const matchValue = s.value && s.value.trim().toLowerCase() === p.amount.trim().toLowerCase();
-      
       return matchCategory && matchValue;
     }).length;
 
@@ -345,7 +355,6 @@ window.submitCard = async function(){
   
   if(!selectedPkg) { showToast('⚠️ اختر باقة أولاً'); return; }
   
-  // إذا كانت اللعبة من نوع 'لعبة' نطلب معرف اللاعب، أما للبطاقات فهو اختياري
   if(selectedGame.productType !== 'service' && !pid) { 
     showToast('⚠️ أدخل الحساب / معرف اللاعب'); return; 
   }
@@ -365,7 +374,7 @@ window.submitCard = async function(){
       gameId:selectedGame.id,
       package:selectedPkg.amount,
       price:selectedPkg.price,
-      playerId:pid || 'غير مطلوب', // إذا لم يُدخل معرّف يكتب "غير مطلوب"
+      playerId:pid || 'غير مطلوب',
       phone,
       image: window.currentImageBase64,
       status:'pending',
