@@ -1,11 +1,10 @@
 // ══════════════════════════════════════
-// js/index.js — منطق الواجهة الرئيسية للعميل (النسخة المتكاملة مع الحسابات)
+// js/index.js — منطق الواجهة الرئيسية للعميل (بدون ربط بالمخزون)
 // ══════════════════════════════════════
 
 import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, getDocs, where, onSnapshot }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-// ➕ إضافة مكتبات المصادقة (Auth)
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } 
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
@@ -20,48 +19,42 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
-const auth = getAuth(app); // تهيئة نظام المصادقة
+const auth = getAuth(app);
 
 let BANKS = [];
 let GAMES = [];
-let STOCK = []; 
 let selectedFrom = null;
 let selectedTo   = null;
 let selectedGame = null;
 let selectedPkg  = null;
 let activeOrderListener = null;
-let currentUser = null; // متغير لحفظ بيانات العميل المسجل
+let currentUser = null;
 
 window.currentImageBase64 = "";
 
-// ── مراقب حالة تسجيل الدخول (Auth State Observer) ──
+// ── مراقب حالة تسجيل الدخول ──
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
   const loginBtn = document.getElementById('navLoginBtn');
   const profileBtn = document.getElementById('navProfileBtn');
   
   if (user) {
-    // إذا كان مسجلاً، نخفي زر الدخول ونظهر زر "حسابي"
     if(loginBtn) loginBtn.style.display = 'none';
     if(profileBtn) profileBtn.style.display = 'inline-block';
     
     const emailLabel = document.getElementById('profileUserEmail');
     if(emailLabel) emailLabel.textContent = user.email;
 
-    // إغلاق نافذة التسجيل إذا كانت مفتوحة
     const authModal = document.getElementById('authModal');
     if(authModal) authModal.classList.remove('open');
 
-    // إذا كان في صفحة حسابه، نحدث البيانات
     if(document.getElementById('page-profile') && document.getElementById('page-profile').classList.contains('active')) {
       window.loadUserOrders();
     }
   } else {
-    // إذا لم يكن مسجلاً
     if(loginBtn) loginBtn.style.display = 'inline-block';
     if(profileBtn) profileBtn.style.display = 'none';
 
-    // إذا كان يتصفح صفحة حسابه وسجل خروج، نطرده للرئيسية
     if(document.getElementById('page-profile') && document.getElementById('page-profile').classList.contains('active')) {
       window.showPage('home');
     }
@@ -128,8 +121,7 @@ window.logoutUser = async () => {
   }
 };
 
-
-// ── تحميل البيانات لحظياً (Real-time Auto Update) ──
+// ── تحميل البيانات لحظياً ──
 function loadContent() {
   onSnapshot(query(collection(db,'banks'), orderBy('order','asc')), snap => {
     BANKS = snap.docs.map(d => ({id:d.id, ...d.data()}));
@@ -143,13 +135,7 @@ function loadContent() {
     if(document.getElementById('gamesOnlyGrid') || document.getElementById('servicesOnlyGrid')) {
       window.filterGames('all');
     }
-    if(selectedGame && document.getElementById('modal') && document.getElementById('modal').classList.contains('open')) {
-      window.openModal(selectedGame.id);
-    }
-  });
-
-  onSnapshot(query(collection(db,'stock'), where('status','==','available')), snap => {
-    STOCK = snap.docs.map(d => d.data());
+    // تحديث النافذة إذا كانت مفتوحة
     if(selectedGame && document.getElementById('modal') && document.getElementById('modal').classList.contains('open')) {
       window.openModal(selectedGame.id);
     }
@@ -162,7 +148,7 @@ function loadContent() {
   }
 }
 
-// ── 1. دالة معالجة وضغط الصور ──
+// ── معالجة وضغط الصور ──
 window.handleImagePreview = function(event, type = 'transfer') {
   const file = event.target.files[0];
   if (file) {
@@ -208,7 +194,7 @@ window.showPage = function(name){
   if(name === 'cards') document.querySelectorAll('.nav-tab')[2]?.classList.add('active');
   if(name === 'profile') {
     document.getElementById('navProfileBtn')?.classList.add('active');
-    window.loadUserOrders(); // تحميل الطلبات عند فتح صفحة الحساب
+    window.loadUserOrders(); 
   }
   
   window.scrollTo({top:0,behavior:'smooth'});
@@ -251,9 +237,8 @@ window.calcAmount = function(){
   if(cRecv) cRecv.textContent = amt ? fmt(recv)+' أوقية':'—';
 };
 
-// ── 2. إرسال التحويل البنكي (مع بوابة الحماية) ──
+// ── إرسال التحويل البنكي ──
 window.submitTransfer = async function(){
-  // 🛑 حارس البوابة: يجب أن يكون مسجلاً!
   if(!currentUser) {
     window.showToast('⚠️ يرجى تسجيل الدخول أولاً لإتمام التحويل');
     window.openAuthModal();
@@ -280,7 +265,7 @@ window.submitTransfer = async function(){
   try {
     const fb = BANKS.find(b=>b.id===selectedFrom); const tb = BANKS.find(b=>b.id===selectedTo);
     await addDoc(collection(db,'transfers'),{
-      uid: currentUser.uid, // 🔑 ربط الطلب بصاحبه!
+      uid: currentUser.uid, 
       ref: ref, name: name, phone: phone, amount: amount, commRate: rate, commission: comm, receive: recv,
       fromBank: fb?.name||selectedFrom, toBank: tb?.name||selectedTo, account: account, notes: notes,
       image: window.currentImageBase64, status: 'pending', createdAt: serverTimestamp()
@@ -319,7 +304,7 @@ window.resetTransfer = function(){
   if(document.getElementById('receiptImage')) document.getElementById('receiptImage').value = '';
 };
 
-// ── 3. الألعاب ──
+// ── الألعاب ──
 window.filterGames = function(provider, btnEl) {
   if(btnEl) { document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); btnEl.classList.add('active'); }
   let filtered = GAMES;
@@ -369,17 +354,11 @@ window.openModal = function(gameId){
 
   const pkgsCont = document.getElementById('modalPkgs');
   if(pkgsCont) {
+      // إزالة التحقق من المخزون، جعل الباقة متاحة دائماً
       pkgsCont.innerHTML=(selectedGame.pkgs||[]).map((p,i)=>{
-        const available = STOCK.filter(s => {
-          const matchCategory = s.category && (s.category.trim().toLowerCase() === (selectedGame.provider || '').trim().toLowerCase() || s.category.trim().toLowerCase() === selectedGame.name.trim().toLowerCase());
-          const matchValue = s.value && s.value.trim().toLowerCase() === p.amount.trim().toLowerCase();
-          return matchCategory && matchValue;
-        }).length;
-        const isOut = available === 0;
         return `
-        <div class="modal-pkg ${isOut ? 'out-of-stock' : ''}" ${!isOut ? `onclick="selectPkg(${i})"` : ''} style="${isOut ? 'opacity:0.5; cursor:not-allowed; border-color:var(--red);' : ''}">
+        <div class="modal-pkg" onclick="selectPkg(${i})">
           <div class="modal-pkg-amount">${p.amount}</div><div class="modal-pkg-price">${fmt(p.price)} أوقية</div>
-          ${isOut ? '<div style="font-size:.7rem; color:var(--red); font-weight:bold; margin-top:5px;">❌ نفدت الكمية</div>' : `<div style="font-size:.7rem; color:var(--green); font-weight:bold; margin-top:5px;">✅ متوفر: ${available}</div>`}
         </div>`;
       }).join('');
   }
@@ -389,7 +368,7 @@ window.openModal = function(gameId){
 
 window.selectPkg = function(i){
   selectedPkg = selectedGame.pkgs[i];
-  document.querySelectorAll('.modal-pkg').forEach((el,idx)=>{ if(!el.classList.contains('out-of-stock')) el.classList.toggle('active',idx===i); });
+  document.querySelectorAll('.modal-pkg').forEach((el,idx)=>{ el.classList.toggle('active',idx===i); });
   if(document.getElementById('modalTotal')) document.getElementById('modalTotal').textContent=fmt(selectedPkg.price)+' أوقية';
 };
 
@@ -400,9 +379,8 @@ window.closeModal = function(e){
     }
 };
 
-// ── 5. إرسال البطاقة (مع بوابة الحماية) ──
+// ── إرسال طلب البطاقة ──
 window.submitCard = async function(){
-  // 🛑 حارس البوابة: يجب أن يكون مسجلاً!
   if(!currentUser) {
     window.showToast('⚠️ يرجى تسجيل الدخول أولاً لإتمام الشراء');
     window.openAuthModal();
@@ -422,7 +400,7 @@ window.submitCard = async function(){
 
   try {
     await addDoc(collection(db,'cards'),{
-      uid: currentUser.uid, // 🔑 ربط الطلب بصاحبه!
+      uid: currentUser.uid, 
       ref, game:selectedGame.name, gameId:selectedGame.id, package:selectedPkg.amount, price:selectedPkg.price,
       playerId:pid || 'غير مطلوب', phone, image: window.currentImageBase64, status:'pending', createdAt:serverTimestamp()
     });
@@ -443,7 +421,7 @@ window.submitCard = async function(){
   if(btn) { btn.disabled = false; btn.textContent = '✅ إرسال الطلب الآن'; }
 };
 
-// ── 6. لوحة تحكم العميل وجلب الطلبات ──
+// ── لوحة تحكم العميل ──
 window.switchProfileTab = function(tab) {
   const tabTrans = document.getElementById('tabMyTransfers');
   const tabCards = document.getElementById('tabMyCards');
@@ -471,11 +449,10 @@ window.loadUserOrders = async function() {
   if(cardsList) cardsList.innerHTML = '<p style="text-align:center; padding:2rem;">⏳ جاري جلب البطاقات...</p>';
 
   try {
-    // جلب التحويلات المرتبطة بهذا الـ uid
     const tQ = query(collection(db, 'transfers'), where('uid', '==', currentUser.uid));
     const tSnap = await getDocs(tQ);
     let transfers = tSnap.docs.map(d => d.data());
-    transfers.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0)); // ترتيب تنازلي
+    transfers.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0)); 
 
     if(transList) {
         if(transfers.length === 0) {
@@ -495,7 +472,6 @@ window.loadUserOrders = async function() {
         }
     }
 
-    // جلب البطاقات المرتبطة بهذا الـ uid
     const cQ = query(collection(db, 'cards'), where('uid', '==', currentUser.uid));
     const cSnap = await getDocs(cQ);
     let cards = cSnap.docs.map(d => d.data());
@@ -538,7 +514,7 @@ window.loadUserOrders = async function() {
   }
 };
 
-// ── 7. التتبع اللحظي السريع ──
+// ── التتبع اللحظي ──
 window.trackLiveOrder = function(ref) {
   if(activeOrderListener) activeOrderListener();
   const col = ref.startsWith('HW') ? 'transfers' : 'cards';
