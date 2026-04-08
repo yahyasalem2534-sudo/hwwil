@@ -10,6 +10,13 @@
 <style>
   .section-title-sm { font-size: 1.4rem; font-weight: 800; color: var(--ink); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem; }
   .section-title-sm span { font-size: 1.8rem; }
+  .order-card { background: var(--white); border: 1.5px solid var(--sand); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
+  .order-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px dashed var(--sand); padding-bottom: .8rem; }
+  .order-ref { font-family: monospace; font-size: .9rem; font-weight: 800; color: var(--green); background: var(--green-light); padding: .2rem .6rem; border-radius: 6px; }
+  .order-status { font-size: .8rem; font-weight: 700; padding: .3rem .8rem; border-radius: 99px; }
+  .status-pending { background: #FEF3C7; color: #D97706; }
+  .status-done { background: var(--green-light); color: var(--green); }
+  .status-rejected { background: var(--red-light); color: var(--red); }
 </style>
 </head>
 <body>
@@ -22,11 +29,11 @@
     <button class="nav-tab active" onclick="showPage('home')">الرئيسية</button>
     <button class="nav-tab" onclick="showPage('transfer')">التحويل البنكي</button>
     <button class="nav-tab" onclick="showPage('cards')">البطاقات والألعاب</button>
+    <button class="nav-tab" id="navProfileBtn" onclick="showPage('profile')" style="display:none;">👤 حسابي</button>
   </div>
   <div class="nav-right">
-    <button class="whatsapp-btn" onclick="window.open('https://wa.me/22234362534','_blank')">
-      📞 تواصل معنا
-    </button>
+    <button class="btn-outline" id="navLoginBtn" onclick="openAuthModal()" style="padding: 0.4rem 1rem; font-size: 0.85rem; margin-left: 0.5rem;">دخول / تسجيل</button>
+    <button class="whatsapp-btn" onclick="window.open('https://wa.me/22234362534','_blank')">📞 تواصل معنا</button>
   </div>
 </nav>
 
@@ -224,6 +231,33 @@
   </div>
 </div>
 
+<div class="page" id="page-profile">
+  <div class="section" style="padding-top:3rem; max-width:900px; margin:0 auto;">
+    <div class="transfer-header" style="margin-bottom:2rem; text-align:right;">
+      <h2>👤 حسابي وطلباتي</h2>
+      <p id="profileUserEmail" style="color:var(--mid);font-size:1rem;margin-top:.5rem; font-weight:bold;">جاري التحميل...</p>
+      <button onclick="logoutUser()" class="btn-outline" style="margin-top:1rem; border-color:var(--red); color:var(--red); padding: .4rem 1rem;">تسجيل الخروج</button>
+    </div>
+    
+    <div style="display:flex; gap:1rem; margin-bottom:1.5rem; border-bottom:1.5px solid var(--sand); padding-bottom:1rem;">
+      <button class="nav-tab active" id="tabMyTransfers" onclick="switchProfileTab('transfers')">🏦 تحويلاتي</button>
+      <button class="nav-tab" id="tabMyCards" onclick="switchProfileTab('cards')">🎮 بطاقاتي</button>
+    </div>
+
+    <div id="myTransfersContainer">
+      <div id="myTransfersList">
+        <p style="text-align:center; padding:2rem; color:var(--muted);">⏳ جاري جلب التحويلات...</p>
+      </div>
+    </div>
+
+    <div id="myCardsContainer" style="display:none;">
+      <div id="myCardsList">
+        <p style="text-align:center; padding:2rem; color:var(--muted);">⏳ جاري جلب البطاقات...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal">
     <div class="modal-header">
@@ -266,6 +300,37 @@
       </div>
       
       <button class="submit-btn" onclick="submitCard()">✅ إرسال الطلب الآن</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="authModal" onclick="closeAuthModal(event)">
+  <div class="modal" style="max-width: 400px; margin: auto;">
+    <div class="modal-header">
+      <div class="modal-title" id="authModalTitle">تسجيل الدخول</div>
+      <button class="modal-close" onclick="document.getElementById('authModal').classList.remove('open')">✕</button>
+    </div>
+    <div class="modal-body">
+      <div style="display:flex; gap:1rem; margin-bottom:1.5rem;">
+        <button class="nav-tab active" id="authLoginTab" style="flex:1; text-align:center;" onclick="switchAuthMode('login')">دخول</button>
+        <button class="nav-tab" id="authRegisterTab" style="flex:1; text-align:center;" onclick="switchAuthMode('register')">حساب جديد</button>
+      </div>
+      
+      <div class="form-group"><label>البريد الإلكتروني</label><input class="form-input" id="authEmail" type="email" placeholder="example@gmail.com"/></div>
+      <div class="form-group" style="margin-bottom:1.5rem"><label>كلمة المرور</label><input class="form-input" id="authPass" type="password" placeholder="••••••••"/></div>
+      <div id="authErrorMsg" style="color:var(--red); font-size:.85rem; margin-bottom:1rem; text-align:center; display:none;"></div>
+      
+      <button class="submit-btn" id="authSubmitBtn" onclick="handleAuthEmail()">تسجيل الدخول</button>
+
+      <div style="text-align:center; margin:1.5rem 0; color:var(--muted); font-size:.85rem; position:relative;">
+        <hr style="border:none; border-top:1px solid var(--sand); position:absolute; top:50%; width:100%; z-index:1;">
+        <span style="background:var(--white); padding:0 10px; position:relative; z-index:2;">أو</span>
+      </div>
+
+      <button class="submit-btn" style="background:#fff; color:var(--ink); border:1.5px solid var(--sand); display:flex; align-items:center; justify-content:center; gap:.8rem;" onclick="handleAuthGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;">
+        المتابعة باستخدام Google
+      </button>
     </div>
   </div>
 </div>
