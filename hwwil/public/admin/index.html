@@ -436,6 +436,18 @@ tr:hover td{background:var(--bg)}
       </div>
       <div class="form-row" style="margin-top:1rem"><label class="flabel">معرّف المنتج (ID) — فارغ = تلقائي</label><input class="finput" id="gameId" type="text" placeholder="مثال: netflix"/></div>
       
+      <div class="form-row" style="margin-top:1rem; padding:1rem; background:var(--sand); border-radius:10px;">
+        <label style="display:block; font-weight:800; font-size:.9rem; color:var(--ink); margin-bottom:.8rem;">🔗 بيانات المورد (اختياري)</label>
+        <div style="margin-bottom:.8rem;">
+          <label class="flabel">اسم المورد</label>
+          <input class="finput" id="gameSupName" type="text" placeholder="مثال: متجر سعودي..."/>
+        </div>
+        <div>
+          <label class="flabel">رابط المورد الخاص بهذه اللعبة</label>
+          <input class="finput" id="gameSupLink" type="url" dir="ltr" placeholder="https://..."/>
+        </div>
+      </div>
+
       <div class="form-row" style="margin-top:1rem">
         <label class="flabel">تصنيف العرض (الستيكر في واجهة العميل)</label>
         <div style="display: flex; gap: 10px; align-items: center;">
@@ -549,6 +561,7 @@ function startListeners() {
   onSnapshot(collection(db,'games'), snap => {
     allGames = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderGamesTable();
+    if(allCards.length > 0) renderCards(allCards);
   });
 
   loadSuppliers();
@@ -634,7 +647,7 @@ function renderTransfers(data) {
   }).join('');
 }
 
-// ── RENDER CARDS (التصميم الأنظف على الإطلاق) ──
+// ── RENDER CARDS (التصميم الأفضل لدمج اللعبة مع الموردين العامين) ──
 function renderCards(data) {
   const tbody = document.getElementById('cardsBody');
   if (!data.length) { tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="empty-icon">🎮</div>لا توجد طلبات</div></td></tr>`; return; }
@@ -642,12 +655,20 @@ function renderCards(data) {
   tbody.innerHTML = data.map(r=>{
     const imgUrl = r.image || r.receipt || r.img || ""; 
     
-    // 💡 قائمة منسدلة نظيفة جداً + زر شراء أنيق وصغير
+    // 🎯 1. البحث عن المورد الخاص باللعبة
+    const specificGame = allGames.find(g => g.name === r.game || g.id === r.gameId);
+    let specificSupHtml = '';
+    if (specificGame && specificGame.supName && specificGame.supLink) {
+       specificSupHtml = `<option value="${specificGame.supLink}" selected>🎯 الافتراضي: ${specificGame.supName}</option><option disabled>──────────</option>`;
+    }
+
+    // 🌐 2. دمج مورد اللعبة كأول خيار، ثم الموردين العامين
     let manualSupHtml = window.manualSuppliers.map(s => `<option value="${s.link}">${s.name}</option>`).join('');
     let dropdownHtml = `
     <div style="display:flex; gap:4px; align-items:center; min-width:130px;">
        <select id="sup_${r.id}" class="status-select" style="flex:1; font-size:0.75rem; padding:4px;">
-          <option value="">— اختر المورد —</option>
+          ${specificSupHtml ? '' : '<option value="">— اختر المورد —</option>'}
+          ${specificSupHtml}
           ${manualSupHtml}
        </select>
        <button onclick="const l=document.getElementById('sup_${r.id}').value; if(l){ window.open(l, '_blank'); } else { showToast('⚠️ اختر مورداً أولاً'); }" style="background:var(--gold); color:white; border:none; border-radius:6px; padding:4px 8px; cursor:pointer; font-weight:bold; font-size:0.75rem;">شراء</button>
@@ -1018,7 +1039,10 @@ document.getElementById('gameBg').addEventListener('input',   updateGamePreview)
 document.getElementById('openAddGameBtn').addEventListener('click', () => {
   editingGameId=null; gamePkgs=[];
   document.getElementById('gameModalTitle').textContent='➕ إضافة منتج / لعبة';
-  ['gameName','gameLogo','gameDesc','gameBadge','gameId','gameProvider'].forEach(id=>document.getElementById(id).value='');
+  
+  // 💡 تم إرجاع حقول المورد هنا للتفريغ
+  ['gameName','gameLogo','gameDesc','gameBadge','gameId','gameProvider','gameSupName','gameSupLink'].forEach(id=>document.getElementById(id).value='');
+  
   document.getElementById('gameIcon').value='🎮';
   document.getElementById('gameBg').value='#1A1A2E';
   document.getElementById('productType').value='game';
@@ -1046,6 +1070,10 @@ window.openEditGame = (id) => {
   document.getElementById('gameProvider').value = g.provider||'';
   document.getElementById('productType').value  = g.productType||'game';
   
+  // 💡 تم إرجاع حقول المورد هنا للملء
+  document.getElementById('gameSupName').value  = g.supName||'';
+  document.getElementById('gameSupLink').value  = g.supLink||'';
+
   renderPkgsEditor(); updateGamePreview();
   document.getElementById('gameModal').classList.add('open');
 };
@@ -1061,6 +1089,10 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   const provider = document.getElementById('gameProvider').value; 
   const productType = document.getElementById('productType').value;
   
+  // 💡 تم إرجاع قراءة حقول المورد
+  const supName  = document.getElementById('gameSupName').value.trim();
+  const supLink  = document.getElementById('gameSupLink').value.trim();
+
   const rawId    = document.getElementById('gameId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'').substring(0,20);
   const finalId  = rawId||'game-'+Date.now();
   
@@ -1070,7 +1102,8 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   btn.disabled=true; btn.textContent='⏳...';
   
   try {
-    const data={name,icon,logo,bg,desc,badge,order,pkgs,provider,productType};
+    // 💡 تم إضافة بيانات الموردين في الحفظ
+    const data={name,icon,logo,bg,desc,badge,order,pkgs,provider,productType,supName,supLink};
     if (editingGameId) {
       await updateDoc(doc(db,'games',editingGameId),data);
     } else {
