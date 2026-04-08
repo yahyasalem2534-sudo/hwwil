@@ -133,6 +133,22 @@ tr:hover td{background:var(--bg)}
 .content-section-hdr{padding:1rem 1.4rem;border-bottom:1.5px solid var(--sand);display:flex;align-items:center;justify-content:space-between}
 .content-section-title{font-size:1rem;font-weight:800}
 
+/* CODE INPUT NEW */
+.code-input-field {
+    width: 140px;
+    padding: 0.4rem 0.6rem;
+    border: 1.5px dashed var(--green);
+    border-radius: 8px;
+    font-family: monospace;
+    font-size: 0.8rem;
+    outline: none;
+    background: var(--green-light);
+    color: var(--ink);
+    font-weight: bold;
+    transition: all 0.2s;
+}
+.code-input-field:focus { border-style: solid; box-shadow: 0 0 0 3px rgba(10,124,78,.1); }
+
 @media(max-width:768px){
   .stats{grid-template-columns:repeat(2,1fr)}
   .main{padding:1rem}
@@ -218,7 +234,7 @@ tr:hover td{background:var(--bg)}
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>رقم الطلب</th><th>المنتج</th><th>الباقة</th><th>السعر</th><th>بيانات الحساب</th><th>الهاتف</th><th>التاريخ</th><th>الوصل</th><th>الحالة</th></tr></thead>
+          <thead><tr><th>رقم الطلب</th><th>المنتج</th><th>الباقة</th><th>تسليم الكود</th><th>بيانات الحساب</th><th>الهاتف</th><th>التاريخ</th><th>الوصل</th><th>الحالة</th></tr></thead>
           <tbody id="cardsBody"><tr><td colspan="9" class="loading">⏳ جاري التحميل...</td></tr></tbody>
         </table>
       </div>
@@ -257,7 +273,6 @@ tr:hover td{background:var(--bg)}
     </div>
 
     <div id="tabContent" style="display:none">
-
       <div class="content-section">
         <div class="content-section-hdr">
           <div class="content-section-title">🏦 إدارة البنوك</div>
@@ -283,7 +298,6 @@ tr:hover td{background:var(--bg)}
           </table>
         </div>
       </div>
-
     </div>
 
   </div>
@@ -328,9 +342,7 @@ tr:hover td{background:var(--bg)}
             <select class="finput" id="supplier" style="flex: 1; cursor: pointer;">
                 <option value="">— اختر المورد المحفوظ —</option>
             </select>
-            <button type="button" id="openAddSupplierBtn" style="background: var(--green); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold; white-space: nowrap;">
-                ➕ جديد
-            </button>
+            <button type="button" id="openAddSupplierBtn" style="background: var(--green); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;">➕ جديد</button>
         </div>
       </div>
       
@@ -416,7 +428,7 @@ tr:hover td{background:var(--bg)}
       </div>
 
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
-        <div class="form-row" style="margin-bottom:0"><label class="flabel">اسم المنتج *</label><input class="finput" id="gameName" type="text" placeholder="مثال: نتفلكس، شدات ببجي"/></div>
+        <div class="form-row" style="margin-bottom:0"><label class="flabel">اسم المنتج *</label><input class="finput" id="gameName" type="text" placeholder="مثال: نتفلكس"/></div>
         <div class="form-row" style="margin-bottom:0"><label class="flabel">الأيقونة</label><input class="finput" id="gameIcon" type="text" placeholder="🎬"/></div>
       </div>
       <div class="form-row" style="margin-top:1rem"><label class="flabel">رابط الشعار (URL)</label><input class="finput" id="gameLogo" type="url" placeholder="https://..."/></div>
@@ -424,7 +436,7 @@ tr:hover td{background:var(--bg)}
         <label class="flabel">لون الخلفية</label>
         <input type="color" id="gameBg" value="#1A1A2E" style="width:50px;height:40px;border:none;border-radius:8px;cursor:pointer"/>
       </div>
-      <div class="form-row"><label class="flabel">وصف قصير</label><input class="finput" id="gameDesc" type="text" placeholder="مثال: اشتراك رسمي لشهر كامل"/></div>
+      <div class="form-row"><label class="flabel">وصف قصير</label><input class="finput" id="gameDesc" type="text" placeholder="مثال: اشتراك رسمي"/></div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
         <div class="form-row" style="margin-bottom:0"><label class="flabel">شارة</label><input class="finput" id="gameBadge" type="text" placeholder="الأكثر مبيعاً"/></div>
         <div class="form-row" style="margin-bottom:0"><label class="flabel">الترتيب</label><input class="finput" id="gameOrder" type="number" value="0"/></div>
@@ -485,6 +497,19 @@ const app = initializeApp({
 
 const db = getFirestore(app);
 
+// ── إعدادات الصوت للتنبيه اللحظي ──
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playAlertSound() {
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
+  osc.stop(audioCtx.currentTime + 0.5);
+}
+
 // ── AUTH ──
 const ADMIN_USER = 'admin', ADMIN_PASS = 'hawwil2026';
 
@@ -494,6 +519,7 @@ function doLogin() {
   if (u === ADMIN_USER && p === ADMIN_PASS) {
     document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('app').classList.add('show');
+    if(audioCtx.state === 'suspended') audioCtx.resume(); // تفعيل الصوت عند الضغط
     startListeners();
   } else {
     document.getElementById('loginErr').style.display = 'block';
@@ -513,16 +539,25 @@ document.addEventListener('keydown', e => {
 
 // ── DATA ──
 let allTransfers = [], allCards = [], allStock = [], allBanks = [], allGames = [];
+let isFirstLoadT = true, isFirstLoadC = true;
 
 function startListeners() {
+  // التحديث اللحظي للتحويلات
   onSnapshot(query(collection(db,'transfers'), orderBy('createdAt','desc')), snap => {
+    snap.docChanges().forEach(change => { if (change.type === 'added' && !isFirstLoadT) playAlertSound(); });
+    isFirstLoadT = false;
     allTransfers = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderTransfers(allTransfers); updateStats();
   });
+  
+  // التحديث اللحظي للبطاقات والألعاب
   onSnapshot(query(collection(db,'cards'), orderBy('createdAt','desc')), snap => {
+    snap.docChanges().forEach(change => { if (change.type === 'added' && !isFirstLoadC) playAlertSound(); });
+    isFirstLoadC = false;
     allCards = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderCards(allCards); updateStats();
   });
+  
   onSnapshot(query(collection(db,'stock'), orderBy('createdAt','desc')), snap => {
     allStock = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderStock(); updateStockStats(); updateCatFilter();
@@ -620,7 +655,7 @@ function renderTransfers(data) {
   }).join('');
 }
 
-// ── RENDER CARDS ──
+// ── RENDER CARDS (تحديث: إضافة خانة الكود) ──
 function renderCards(data) {
   const tbody = document.getElementById('cardsBody');
   if (!data.length) { tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="empty-icon">🎮</div>لا توجد طلبات</div></td></tr>`; return; }
@@ -630,7 +665,11 @@ function renderCards(data) {
     <td><span class="ref">${r.ref||'—'}</span></td>
     <td><strong>${r.game||'—'}</strong></td>
     <td>${r.package||'—'}</td>
-    <td style="color:var(--green);font-weight:800">${fmt(r.price||0)} أوقية</td>
+    <td>
+      <input type="text" class="code-input-field" placeholder="الصق الكود هنا..." 
+             value="${r.deliveredCode || ''}" 
+             onchange="updateDeliveredCode('${r.id}', this.value)">
+    </td>
     <td dir="ltr">${r.playerId||'—'}</td>
     <td dir="ltr">${r.phone||'—'}</td>
     <td style="font-size:.78rem">${fmtDate(r.createdAt)}</td>
@@ -642,6 +681,16 @@ function renderCards(data) {
     </select></td></tr>`;
   }).join('');
 }
+
+// ── حفظ الكود المدخل ──
+window.updateDeliveredCode = async (id, code) => {
+  try {
+    await updateDoc(doc(db, 'cards', id), { deliveredCode: code });
+    showToast('✅ تم حفظ الكود بالطلب!');
+  } catch (e) {
+    showToast('❌ حدث خطأ أثناء حفظ الكود');
+  }
+};
 
 // ── RENDER STOCK ──
 function renderStock() {
@@ -695,7 +744,7 @@ function renderBanksTable() {
     </div></td></tr>`).join('');
 }
 
-// ── GAMES TABLE (تحديث لعرض نوع المنتج) ──
+// ── GAMES TABLE ──
 function renderGamesTable() {
   const tbody = document.getElementById('gamesBody'); if (!tbody) return;
   if (!allGames.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">🎮</div>لا توجد منتجات — أضف منتجاً الآن</div></td></tr>`; return; }
@@ -985,13 +1034,10 @@ document.getElementById('gameBg').addEventListener('input',   updateGamePreview)
 document.getElementById('openAddGameBtn').addEventListener('click', () => {
   editingGameId=null; gamePkgs=[];
   document.getElementById('gameModalTitle').textContent='➕ إضافة منتج / لعبة';
-  
-  // تصفير حقول اللعبة وإضافة المورد
   ['gameName','gameLogo','gameDesc','gameBadge','gameId','gameProvider','gameSupName','gameSupLink'].forEach(id=>document.getElementById(id).value='');
-  
   document.getElementById('gameIcon').value='🎮';
   document.getElementById('gameBg').value='#1A1A2E';
-  document.getElementById('productType').value='game'; // الافتراضي لعبة
+  document.getElementById('productType').value='game';
   document.getElementById('gameOrder').value=allGames.length;
   renderPkgsEditor(); updateGamePreview();
   document.getElementById('gameModal').classList.add('open');
@@ -1014,7 +1060,7 @@ window.openEditGame = (id) => {
   document.getElementById('gameOrder').value    = g.order||0;
   document.getElementById('gameId').value       = g.id||'';
   document.getElementById('gameProvider').value = g.provider||'';
-  document.getElementById('productType').value  = g.productType||'game'; // قراءة النوع المحفوظ
+  document.getElementById('productType').value  = g.productType||'game';
   
   document.getElementById('gameSupName').value  = g.supName||'';
   document.getElementById('gameSupLink').value  = g.supLink||'';
@@ -1032,7 +1078,7 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   const badge    = document.getElementById('gameBadge').value.trim();
   const order    = parseInt(document.getElementById('gameOrder').value)||0;
   const provider = document.getElementById('gameProvider').value; 
-  const productType = document.getElementById('productType').value; // التقاط نوع المنتج
+  const productType = document.getElementById('productType').value;
   
   const supName  = document.getElementById('gameSupName').value.trim();
   const supLink  = document.getElementById('gameSupLink').value.trim();
@@ -1046,7 +1092,6 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   btn.disabled=true; btn.textContent='⏳...';
   
   try {
-    // إضافة productType إلى البيانات المحفوظة
     const data={name,icon,logo,bg,desc,badge,order,pkgs,provider,supName,supLink,productType};
     if (editingGameId) {
       await updateDoc(doc(db,'games',editingGameId),data);

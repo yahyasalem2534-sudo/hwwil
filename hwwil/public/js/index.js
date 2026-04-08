@@ -3,7 +3,7 @@
 // ══════════════════════════════════════
 
 import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, getDocs, where }
+import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, getDocs, where, onSnapshot }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -25,46 +25,67 @@ let selectedFrom = null;
 let selectedTo   = null;
 let selectedGame = null;
 let selectedPkg  = null;
+let activeOrderListener = null;
 
+// المتغير المسؤول عن حفظ كود الصورة (الوصل)
 window.currentImageBase64 = "";
 
-async function loadContent() {
-  try {
-    const banksSnap = await getDocs(query(collection(db,'banks'), orderBy('order','asc')));
-    BANKS = banksSnap.docs.map(d => ({id:d.id, ...d.data()}));
+// ── تحميل البيانات لحظياً (Real-time Auto Update) ──
+function loadContent() {
+  // التحديث اللحظي للبنوك
+  onSnapshot(query(collection(db,'banks'), orderBy('order','asc')), snap => {
+    BANKS = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderBanks('fromBanks','from');
+    renderBanks('toBanks','to');
+  });
 
-    const gamesSnap = await getDocs(query(collection(db,'games'), orderBy('order','asc')));
-    GAMES = gamesSnap.docs.map(d => ({id:d.id, ...d.data()}));
+  // التحديث اللحظي للألعاب
+  onSnapshot(query(collection(db,'games'), orderBy('order','asc')), snap => {
+    GAMES = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    renderGamesList(GAMES.slice(0, 8), 'homeGamesGrid', 'لا توجد منتجات حالياً');
+    
+    if(document.getElementById('gamesOnlyGrid') || document.getElementById('servicesOnlyGrid')) {
+      window.filterGames('all');
+    }
+    
+    // تحديث النافذة المفتوحة إذا طرأ تغيير على اللعبة
+    if(selectedGame && document.getElementById('modal').classList.contains('open')) {
+      window.openModal(selectedGame.id);
+    }
+  });
 
-    const stockSnap = await getDocs(query(collection(db,'stock'), where('status','==','available')));
-    STOCK = stockSnap.docs.map(d => d.data());
+  // التحديث اللحظي للمخزون
+  onSnapshot(query(collection(db,'stock'), where('status','==','available')), snap => {
+    STOCK = snap.docs.map(d => d.data());
+    
+    // تحديث النافذة المفتوحة ليعرف العميل أن الكمية توفرت
+    if(selectedGame && document.getElementById('modal').classList.contains('open')) {
+      window.openModal(selectedGame.id);
+    }
+  });
 
-  } catch(e) {
-    console.error('خطأ في جلب البيانات:', e);
-  }
-  
-  renderBanks('fromBanks','from');
-  renderBanks('toBanks','to');
-  renderGamesList(GAMES.slice(0, 8), 'homeGamesGrid', 'لا توجد منتجات حالياً');
-  
-  if(document.getElementById('gamesOnlyGrid') || document.getElementById('servicesOnlyGrid')) {
-    window.filterGames('all');
+  // تفعيل التتبع التلقائي إذا كان العميل يملك طلباً محفوظاً
+  const savedOrder = localStorage.getItem('activeOrderId');
+  if(savedOrder) {
+    if(document.getElementById('orderIdInput')) {
+      document.getElementById('orderIdInput').value = savedOrder;
+    }
+    window.trackLiveOrder(savedOrder);
   }
 }
 
-// ── 1. دالة معالجة الصور (بتقنية الضغط لتقليل الحجم وتجنب خطأ Firebase) ──
+// ── 1. دالة معالجة وضغط الصور ──
 window.handleImagePreview = function(event, type = 'transfer') {
   const file = event.target.files[0];
   if (file) {
     const reader = new FileReader();
     reader.onload = (e) => {
-      // استخدام Canvas لضغط الصورة
       const img = new Image();
       img.onload = () => {
         const canvas = document.createElement('canvas');
         let width = img.width;
         let height = img.height;
-        const MAX_SIZE = 800; // أقصى عرض أو طول 800 بيكسل
+        const MAX_SIZE = 800; // تصغير الأبعاد لتقليل الحجم
         
         if (width > height && width > MAX_SIZE) {
           height *= MAX_SIZE / width;
@@ -79,8 +100,7 @@ window.handleImagePreview = function(event, type = 'transfer') {
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, width, height);
         
-        // ضغط الصورة بصيغة JPEG بجودة 60%
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6); // ضغط الجودة
         window.currentImageBase64 = compressedBase64;
         
         const prefix = type === 'card' ? 'modal' : '';
@@ -174,7 +194,7 @@ window.submitTransfer = async function(){
   const ref  = 'HW-'+Math.floor(Math.random()*90000+10000);
   const btn  = document.querySelector('#page-transfer .submit-btn');
   
-  btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...';
+  if(btn) { btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...'; }
   
   try {
     const fb = BANKS.find(b=>b.id===selectedFrom);
@@ -202,12 +222,16 @@ window.submitTransfer = async function(){
     document.getElementById('successCard').style.display='block';
     showToast('✅ تم إرسال طلبك بنجاح!');
     
+    localStorage.setItem('activeOrderId', ref);
+    if(document.getElementById('orderIdInput')) document.getElementById('orderIdInput').value = ref;
+    window.trackLiveOrder(ref);
+    
   } catch(e){ 
     console.error("خطأ في الإرسال:", e);
     showToast('❌ خطأ في الإرسال، حاول مجدداً'); 
   }
   
-  btn.disabled = false; btn.textContent = '✅ إرسال طلب التحويل';
+  if(btn) { btn.disabled = false; btn.textContent = '✅ إرسال طلب التحويل'; }
 };
 
 window.resetTransfer = function(){
@@ -348,7 +372,7 @@ window.closeModal = function(e){
     document.getElementById('modal').classList.remove('open');
 };
 
-// ── 5. إرسال البطاقة ──
+// ── 5. إرسال البطاقة وتفعيل التتبع ──
 window.submitCard = async function(){
   const pid   = document.getElementById('modalPlayerId').value.trim();
   const phone = document.getElementById('modalPhone').value.trim();
@@ -384,6 +408,11 @@ window.submitCard = async function(){
     document.getElementById('modal').classList.remove('open');
     showToast('✅ تم إرسال طلبك بنجاح!');
     alert('✅ تم استلام طلبك بنجاح!\n\nرقم طلبك للتتبع هو: ' + ref);
+    
+    // تفعيل التتبع الآلي
+    localStorage.setItem('activeOrderId', ref);
+    if(document.getElementById('orderIdInput')) document.getElementById('orderIdInput').value = ref;
+    window.trackLiveOrder(ref);
 
   } catch(e){ 
     console.error(e); 
@@ -393,42 +422,58 @@ window.submitCard = async function(){
   if(btn) { btn.disabled = false; btn.textContent = '✅ إرسال الطلب الآن'; }
 };
 
-// ── 6. تتبع حالة الطلب ──
-window.checkOrderStatus = async function() {
-    const input = document.getElementById('orderIdInput').value.trim().replace('#', '').toUpperCase();
-    const res = document.getElementById('orderStatusResult');
-    if(!input) { showToast('⚠️ يرجى إدخال رقم الطلب'); return; }
-
-    res.innerHTML = "⏳ جاري البحث...";
-    try {
-        let q = query(collection(db, "transfers"), where("ref", "==", input));
-        let snap = await getDocs(q);
-
-        if(snap.empty && /^\d+$/.test(input)) {
-            q = query(collection(db, "transfers"), where("ref", "==", "HW-" + input));
-            snap = await getDocs(q);
-        }
-
-        if(snap.empty) {
-            q = query(collection(db, "cards"), where("ref", "==", input));
-            snap = await getDocs(q);
-            
-            if(snap.empty && /^\d+$/.test(input)) {
-                q = query(collection(db, "cards"), where("ref", "==", "CRD-" + input));
-                snap = await getDocs(q);
-            }
-        }
-
-        if(!snap.empty) {
-            const status = snap.docs[0].data().status;
-            const statusMap = { 'pending': '⏳ قيد الانتظار', 'done': '✅ مكتمل', 'rejected': '❌ مرفوض' };
-            res.innerHTML = `<div style="color:var(--green)">حالة طلبك: ${statusMap[status] || status}</div>`;
-        } else {
-            res.innerHTML = "<div style='color:red'>❌ عذراً، لم نجد طلباً بهذا الرقم</div>";
-        }
-    } catch(e) { 
-        res.innerHTML = "❌ حدث خطأ في الاتصال"; 
+// ── 6. التتبع اللحظي وعرض الكود (Real-time Order Tracking) ──
+window.trackLiveOrder = function(ref) {
+  if(activeOrderListener) activeOrderListener(); // إيقاف التتبع السابق إن وجد
+  
+  const col = ref.startsWith('HW') ? 'transfers' : 'cards';
+  const res = document.getElementById('orderStatusResult');
+  
+  if(res) res.innerHTML = "⏳ جاري الاتصال المباشر بالطلب...";
+  
+  activeOrderListener = onSnapshot(query(collection(db, col), where("ref", "==", ref)), snap => {
+    if(!res) return;
+    
+    if(snap.empty) {
+      // بحث كبديل إذا كان المدخل مجرد أرقام
+      if(/^\d+$/.test(ref)) {
+          window.trackLiveOrder('HW-'+ref);
+          return;
+      }
+      res.innerHTML = "<div style='color:red'>❌ عذراً، لم نجد طلباً بهذا الرقم</div>";
+      return;
     }
+    
+    const data = snap.docs[0].data();
+    const status = data.status;
+    
+    if(status === 'done') {
+       let html = `<div style="color:var(--green); font-size:1.1rem; margin-bottom:10px; font-weight:bold;">✅ تم اكتمال طلبك بنجاح!</div>`;
+       
+       if(data.deliveredCode) {
+           html += `
+           <div style="background:var(--green-light); padding:15px; border-radius:12px; border:2px dashed var(--green); display:inline-block; margin-top:10px;">
+               <div style="font-size:0.85rem; color:var(--mid); margin-bottom:5px;">كود الشحن الخاص بك هو:</div>
+               <div style="font-family:monospace; font-size:1.4rem; font-weight:900; color:var(--ink); letter-spacing:1px; margin-bottom:10px;">${data.deliveredCode}</div>
+               <button onclick="navigator.clipboard.writeText('${data.deliveredCode}').then(()=>window.showToast('📋 تم نسخ الكود بنجاح!'))" 
+                       style="background:var(--green); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-family:inherit;">📋 نسخ الكود</button>
+           </div>`;
+       }
+       res.innerHTML = html;
+       localStorage.removeItem('activeOrderId');
+       if(activeOrderListener) { activeOrderListener(); activeOrderListener = null; }
+    } else if(status === 'rejected') {
+       res.innerHTML = `<div style="color:var(--red); font-weight:bold;">❌ عذراً، تم رفض الطلب. يرجى التواصل مع الدعم.</div>`;
+    } else {
+       res.innerHTML = `<div style="color:#D4A853; font-weight:bold;">⏳ طلبك قيد المراجعة... (سيتم تحديث هذه الخانة تلقائياً)</div>`;
+    }
+  });
+};
+
+window.checkOrderStatus = function() {
+    let input = document.getElementById('orderIdInput').value.trim().replace('#', '').toUpperCase();
+    if(!input) { showToast('⚠️ يرجى إدخال رقم الطلب'); return; }
+    window.trackLiveOrder(input);
 };
 
 function fmt(n){ return Number(n).toLocaleString('ar-MA'); }
@@ -440,4 +485,5 @@ window.showToast = function(msg){
   setTimeout(()=>t.classList.remove('show'),3000);
 };
 
+// بدء تشغيل النظام وتحميل البيانات
 loadContent();

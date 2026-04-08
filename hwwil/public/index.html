@@ -71,9 +71,9 @@
     </div>
 
     <div class="search-order-container" style="max-width:800px; margin: 2rem auto; padding: 1.5rem; background: var(--white); border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
-      <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; font-size: 1.1rem; color: var(--ink);">🔍 تتبع حالة طلبك</h3>
+      <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; font-size: 1.1rem; color: var(--ink);">🔍 تتبع حالة طلبك اللحظية</h3>
       <div style="display: flex; gap: .5rem;">
-        <input type="text" id="orderIdInput" class="form-input" placeholder="أدخل رقم الطلب (مثلاً: HW-12345)" style="flex: 1; border: 1.5px solid #DDE8E3;">
+        <input type="text" id="orderIdInput" class="form-input" placeholder="أدخل رقم الطلب (مثلاً: HW-12345 أو CRD-12345)" style="flex: 1; border: 1.5px solid #DDE8E3;">
         <button onclick="checkOrderStatus()" style="background: var(--green); color: white; border: none; padding: .8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit;">بحث</button>
       </div>
       <div id="orderStatusResult" style="margin-top: 1rem; text-align: center; font-weight: 800; font-size: 1.1rem;"></div>
@@ -194,7 +194,7 @@
     <div class="success-card" id="successCard">
       <div class="success-icon">✅</div>
       <div class="success-title">تم استلام طلبك بنجاح!</div>
-      <div class="success-sub">سيتم مراجعة طلبك وإتمام التحويل في أقرب وقت ممكن.</div>
+      <div class="success-sub">سيتم مراجعة طلبك وإتمام التحويل. يمكنك تتبع طلبك عبر الصفحة الرئيسية.</div>
       <div class="success-ref" id="successRef">رقم الطلب: #——</div>
       <button class="btn-main" onclick="resetTransfer()" style="width:100%">طلب تحويل جديد</button>
     </div>
