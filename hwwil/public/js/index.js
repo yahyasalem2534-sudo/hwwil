@@ -322,7 +322,7 @@ window.renderGamesList = function(list, containerId, emptyMsg) {
   container.innerHTML = list.map(g=>`
     <div class="game-card" onclick="openModal('${g.id}')">
       <div class="game-cover" style="background:${g.bg||'#1a1a2e'}">
-        ${g.logo ? `<img src="${g.logo}" alt="${g.name}" class="game-cover-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><span style="display:none;font-size:3.5rem">${g.icon||'🎮'}</span>` : `<span style="font-size:3.5rem">${g.icon||'🎮'}</span>`}
+        ${g.logo ? `<img src="${g.logo}" alt="${g.name}" class="game-cover-img" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px 12px 0 0;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><span style="display:none;font-size:3.5rem">${g.icon||'🎮'}</span>` : `<span style="font-size:3.5rem">${g.icon||'🎮'}</span>`}
         ${g.badge?`<div class="game-badge">${g.badge}</div>`:''}
       </div>
       <div class="game-body"><div class="game-name">${g.name}</div><div class="game-desc">${g.desc||''}</div>
@@ -340,13 +340,14 @@ window.openModal = function(gameId){
   const iconEl = document.getElementById('modalIcon'); 
   if(iconEl) {
       iconEl.style.background = selectedGame.bg||'#1a1a2e';
-      iconEl.innerHTML = selectedGame.logo ? `<img src="${selectedGame.logo}" style="width:50px;height:50px;object-fit:contain;border-radius:8px"/>` : `<span style="font-size:2.5rem">${selectedGame.icon||'🎮'}</span>`;
+      // 🎯 السطر المحدث لجعل الصورة تملأ مساحتها تماماً داخل النافذة المنبثقة
+      iconEl.innerHTML = selectedGame.logo ? `<img src="${selectedGame.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:8px"/>` : `<span style="font-size:2.5rem">${selectedGame.icon||'🎮'}</span>`;
   }
   
   const playerIdInput = document.getElementById('modalPlayerId');
   if(playerIdInput) {
       playerIdInput.value = ''; 
-      // 🎯 السطر السحري: إخفاء حقل (معرف اللاعب) للبطاقات/الخدمات فقط
+      // إخفاء حقل (معرف اللاعب) للبطاقات/الخدمات فقط
       if(selectedGame.productType === 'service') {
           playerIdInput.parentElement.style.display = 'none';
       } else {
