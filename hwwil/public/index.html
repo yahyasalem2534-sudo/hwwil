@@ -17,6 +17,34 @@
   .status-pending { background: #FEF3C7; color: #D97706; }
   .status-done { background: var(--green-light); color: var(--green); }
   .status-rejected { background: var(--red-light); color: var(--red); }
+
+  /* هذا الكود السحري مخصص للهاتف فقط ليظهر الأقسام بشكل أنيق ومسحوب */
+  @media (max-width: 800px) {
+    nav {
+      flex-wrap: wrap !important;
+      padding: 0.8rem !important;
+    }
+    .logo { order: 1; }
+    .nav-right { order: 2; }
+    .nav-tabs {
+      display: flex !important;
+      order: 3;
+      width: 100%;
+      margin-top: 1rem;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 0.5rem;
+      justify-content: flex-start !important;
+      /* إخفاء شريط التمرير المزعج */
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .nav-tabs::-webkit-scrollbar { display: none; }
+    
+    .nav-tab { flex-shrink: 0; font-size: 0.85rem !important; }
+    #navLoginBtn { padding: 0.4rem 0.6rem !important; font-size: 0.75rem !important; margin-left: 0.3rem !important; }
+    .whatsapp-btn { padding: 0.4rem 0.6rem !important; font-size: 0.75rem !important; }
+  }
 </style>
 </head>
 <body>
@@ -272,8 +300,15 @@
       
       <div class="modal-pkgs" id="modalPkgs"></div>
       
-      <div class="form-group" style="margin-bottom:1rem"><label>معرّف اللاعب / الحساب (اختياري للبطاقات)</label><input class="form-input" id="modalPlayerId" type="text" placeholder="أدخل معرفك أو حسابك"/></div>
-      <div class="form-group" style="margin-bottom:1.2rem"><label>رقم هاتفك للتأكيد</label><input class="form-input" id="modalPhone" type="tel" placeholder="2222 00 222"/></div>
+      <div class="form-group" style="margin-bottom:1rem">
+          <label>معرّف اللاعب / الحساب (اختياري للبطاقات)</label>
+          <input class="form-input" id="modalPlayerId" type="text" placeholder="أدخل معرفك أو حسابك"/>
+      </div>
+      
+      <div class="form-group" style="margin-bottom:1.2rem">
+          <label>رقم هاتفك للتأكيد</label>
+          <input class="form-input" id="modalPhone" type="tel" placeholder="2222 00 222"/>
+      </div>
       
       <div class="calc-box" style="margin-bottom:1.2rem">
         <div class="calc-row calc-total"><span class="calc-label">💰 إجمالي المبلغ</span><span class="calc-val" id="modalTotal">اختر باقة أولاً</span></div>

@@ -1,5 +1,5 @@
 // ══════════════════════════════════════
-// js/index.js — منطق الواجهة الرئيسية للعميل (بدون ربط بالمخزون)
+// js/index.js — منطق الواجهة الرئيسية للعميل
 // ══════════════════════════════════════
 
 import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -343,7 +343,17 @@ window.openModal = function(gameId){
       iconEl.innerHTML = selectedGame.logo ? `<img src="${selectedGame.logo}" style="width:50px;height:50px;object-fit:contain;border-radius:8px"/>` : `<span style="font-size:2.5rem">${selectedGame.icon||'🎮'}</span>`;
   }
   
-  if(document.getElementById('modalPlayerId')) document.getElementById('modalPlayerId').value=''; 
+  const playerIdInput = document.getElementById('modalPlayerId');
+  if(playerIdInput) {
+      playerIdInput.value = ''; 
+      // 🎯 السطر السحري: إخفاء حقل (معرف اللاعب) للبطاقات/الخدمات فقط
+      if(selectedGame.productType === 'service') {
+          playerIdInput.parentElement.style.display = 'none';
+      } else {
+          playerIdInput.parentElement.style.display = 'block';
+      }
+  }
+
   if(document.getElementById('modalPhone')) document.getElementById('modalPhone').value=''; 
   if(document.getElementById('modalTotal')) document.getElementById('modalTotal').textContent='اختر باقة أولاً';
   
@@ -354,7 +364,6 @@ window.openModal = function(gameId){
 
   const pkgsCont = document.getElementById('modalPkgs');
   if(pkgsCont) {
-      // إزالة التحقق من المخزون، جعل الباقة متاحة دائماً
       pkgsCont.innerHTML=(selectedGame.pkgs||[]).map((p,i)=>{
         return `
         <div class="modal-pkg" onclick="selectPkg(${i})">
@@ -387,10 +396,14 @@ window.submitCard = async function(){
     return;
   }
 
-  const pid = document.getElementById('modalPlayerId').value.trim();
-  const phone = document.getElementById('modalPhone').value.trim();
+  const pid = document.getElementById('modalPlayerId') ? document.getElementById('modalPlayerId').value.trim() : '';
+  const phone = document.getElementById('modalPhone') ? document.getElementById('modalPhone').value.trim() : '';
+  
   if(!selectedPkg) { window.showToast('⚠️ اختر باقة أولاً'); return; }
+  
+  // التحقق من الحساب فقط إذا كان المنتج ليس "خدمة/بطاقة"
   if(selectedGame.productType !== 'service' && !pid) { window.showToast('⚠️ أدخل الحساب / معرف اللاعب'); return; }
+  
   if(!phone) { window.showToast('⚠️ أدخل رقم هاتفك'); return; }
   if(!window.currentImageBase64) { window.showToast('⚠️ يرجى إرفاق صورة الوصل'); return; }
 
