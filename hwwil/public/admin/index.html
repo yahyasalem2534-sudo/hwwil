@@ -229,13 +229,16 @@ tr:hover td{background:var(--bg)}
 
     <div id="tabCards" class="table-card" style="display:none">
       <div class="table-header">
-        <div class="table-title">طلبات البطاقات والخدمات الرقمية</div>
+        <div style="display:flex; align-items:center; gap:1rem;">
+           <div class="table-title">طلبات البطاقات والخدمات الرقمية</div>
+           <button class="stock-btn" id="openAddSupplierBtn" style="background:var(--gold); font-size:0.75rem;">➕ إضافة مورد</button>
+        </div>
         <input class="search-input" id="searchCards" placeholder="🔍 بحث..."/>
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>رقم الطلب</th><th>المنتج</th><th>الباقة</th><th>تسليم الكود</th><th>بيانات الحساب</th><th>الهاتف</th><th>التاريخ</th><th>الوصل</th><th>الحالة</th></tr></thead>
-          <tbody id="cardsBody"><tr><td colspan="9" class="loading">⏳ جاري التحميل...</td></tr></tbody>
+          <thead><tr><th>رقم الطلب</th><th>المنتج</th><th>الباقة</th><th>تسليم الكود</th><th>شراء من المورد</th><th>بيانات الحساب</th><th>الهاتف</th><th>التاريخ</th><th>الوصل</th><th>الحالة</th></tr></thead>
+          <tbody id="cardsBody"><tr><td colspan="10" class="loading">⏳ جاري التحميل...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -265,8 +268,8 @@ tr:hover td{background:var(--bg)}
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>الفئة</th><th>البطاقة</th><th>الباقة</th><th>المورد</th><th>الكود</th><th>تاريخ الإضافة</th><th>الحالة</th><th>إجراء</th></tr></thead>
-            <tbody id="stockBody"><tr><td colspan="8" class="loading">⏳ جاري التحميل...</td></tr></tbody>
+            <thead><tr><th>الفئة</th><th>البطاقة</th><th>الباقة</th><th>الكود</th><th>تاريخ الإضافة</th><th>الحالة</th><th>إجراء</th></tr></thead>
+            <tbody id="stockBody"><tr><td colspan="7" class="loading">⏳ جاري التحميل...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -337,17 +340,7 @@ tr:hover td{background:var(--bg)}
       </div>
       
       <div class="form-row">
-        <label class="flabel">٣ — المورد</label>
-        <div style="display: flex; gap: 10px; align-items: center;">
-            <select class="finput" id="supplier" style="flex: 1; cursor: pointer;">
-                <option value="">— اختر المورد المحفوظ —</option>
-            </select>
-            <button type="button" id="openAddSupplierBtn" style="background: var(--green); color: white; border: none; padding: 10px 15px; border-radius: 10px; cursor: pointer; font-weight: bold;">➕ جديد</button>
-        </div>
-      </div>
-      
-      <div class="form-row">
-        <label class="flabel">٤ — الكودات (كل كود في سطر)</label>
+        <label class="flabel">٣ — الكودات (كل كود في سطر)</label>
         <textarea class="finput" id="codesArea" rows="6" style="resize:vertical;font-family:monospace;font-size:.88rem;line-height:1.8" placeholder="XXXX-XXXX-XXXX&#10;YYYY-YYYY-YYYY"></textarea>
         <div style="display:flex;justify-content:space-between;margin-top:.3rem">
           <span style="font-size:.78rem;color:var(--muted)" id="codesCount">٠ كود</span>
@@ -443,18 +436,6 @@ tr:hover td{background:var(--bg)}
       </div>
       <div class="form-row" style="margin-top:1rem"><label class="flabel">معرّف المنتج (ID) — فارغ = تلقائي</label><input class="finput" id="gameId" type="text" placeholder="مثال: netflix"/></div>
       
-      <div class="form-row" style="margin-top:1rem; padding:1rem; background:var(--sand); border-radius:10px;">
-        <label style="display:block; font-weight:800; font-size:.9rem; color:var(--ink); margin-bottom:.8rem;">🔗 بيانات المورد (اختياري)</label>
-        <div style="margin-bottom:.8rem;">
-          <label class="flabel">اسم المورد</label>
-          <input class="finput" id="gameSupName" type="text" placeholder="مثال: متجر سعودي..."/>
-        </div>
-        <div>
-          <label class="flabel">رابط المورد</label>
-          <input class="finput" id="gameSupLink" type="url" dir="ltr" placeholder="https://..."/>
-        </div>
-      </div>
-
       <div class="form-row" style="margin-top:1rem">
         <label class="flabel">تصنيف العرض (الستيكر في واجهة العميل)</label>
         <div style="display: flex; gap: 10px; align-items: center;">
@@ -497,7 +478,7 @@ const app = initializeApp({
 
 const db = getFirestore(app);
 
-// ── إعدادات الصوت للتنبيه اللحظي ──
+// ── إعدادات الصوت ──
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
 function playAlertSound() {
   if(audioCtx.state === 'suspended') audioCtx.resume();
@@ -512,20 +493,18 @@ function playAlertSound() {
 
 // ── AUTH ──
 const ADMIN_USER = 'admin', ADMIN_PASS = 'hawwil2026';
-
 function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value.trim();
   if (u === ADMIN_USER && p === ADMIN_PASS) {
     document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('app').classList.add('show');
-    if(audioCtx.state === 'suspended') audioCtx.resume(); // تفعيل الصوت عند الضغط
+    if(audioCtx.state === 'suspended') audioCtx.resume(); 
     startListeners();
   } else {
     document.getElementById('loginErr').style.display = 'block';
   }
 }
-
 document.getElementById('loginBtn').addEventListener('click', doLogin);
 document.getElementById('logoutBtn').addEventListener('click', () => {
   document.getElementById('loginWrap').style.display = 'flex';
@@ -540,9 +519,9 @@ document.addEventListener('keydown', e => {
 // ── DATA ──
 let allTransfers = [], allCards = [], allStock = [], allBanks = [], allGames = [];
 let isFirstLoadT = true, isFirstLoadC = true;
+window.manualSuppliers = [];
 
 function startListeners() {
-  // التحديث اللحظي للتحويلات
   onSnapshot(query(collection(db,'transfers'), orderBy('createdAt','desc')), snap => {
     snap.docChanges().forEach(change => { if (change.type === 'added' && !isFirstLoadT) playAlertSound(); });
     isFirstLoadT = false;
@@ -550,7 +529,6 @@ function startListeners() {
     renderTransfers(allTransfers); updateStats();
   });
   
-  // التحديث اللحظي للبطاقات والألعاب
   onSnapshot(query(collection(db,'cards'), orderBy('createdAt','desc')), snap => {
     snap.docChanges().forEach(change => { if (change.type === 'added' && !isFirstLoadC) playAlertSound(); });
     isFirstLoadC = false;
@@ -562,32 +540,34 @@ function startListeners() {
     allStock = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderStock(); updateStockStats(); updateCatFilter();
   });
+
   onSnapshot(collection(db,'banks'), snap => {
     allBanks = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderBanksTable();
   });
+
   onSnapshot(collection(db,'games'), snap => {
     allGames = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderGamesTable();
   });
-  loadSuppliers(); 
+
+  loadSuppliers();
 }
 
-// ── LOAD SUPPLIERS ──
 async function loadSuppliers() {
-  const selectBox = document.getElementById('supplier');
-  if(!selectBox) return;
   try {
     const querySnapshot = await getDocs(collection(db, "suppliers"));
-    selectBox.innerHTML = '<option value="">— اختر المورد المحفوظ —</option>';
+    window.manualSuppliers = [];
+    const seen = new Set();
     querySnapshot.forEach((docSnap) => {
       const data = docSnap.data();
-      const option = document.createElement('option');
-      option.value = data.link; 
-      option.dataset.name = data.name; 
-      option.textContent = `🛒 ${data.name}`;
-      selectBox.appendChild(option);
+      if(!seen.has(data.link)) {
+         seen.add(data.link);
+         window.manualSuppliers.push({ name: data.name, link: data.link });
+      }
     });
+    
+    if(allCards.length > 0) renderCards(allCards);
   } catch (error) {
     console.error("Error loading suppliers:", error);
   }
@@ -624,7 +604,6 @@ function updateStockStats() {
   document.getElementById('stCategories').textContent = fmt(new Set(allStock.map(s=>s.category)).size);
 }
 
-// ── عرض الصور في المودال ──
 window.previewImage = function(url) {
   document.getElementById('largeImagePreview').src = url;
   document.getElementById('imagePreviewModal').classList.add('open');
@@ -655,12 +634,25 @@ function renderTransfers(data) {
   }).join('');
 }
 
-// ── RENDER CARDS (تحديث: إضافة خانة الكود) ──
+// ── RENDER CARDS (التصميم الأنظف على الإطلاق) ──
 function renderCards(data) {
   const tbody = document.getElementById('cardsBody');
-  if (!data.length) { tbody.innerHTML=`<tr><td colspan="9"><div class="empty"><div class="empty-icon">🎮</div>لا توجد طلبات</div></td></tr>`; return; }
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="empty-icon">🎮</div>لا توجد طلبات</div></td></tr>`; return; }
+  
   tbody.innerHTML = data.map(r=>{
     const imgUrl = r.image || r.receipt || r.img || ""; 
+    
+    // 💡 قائمة منسدلة نظيفة جداً + زر شراء أنيق وصغير
+    let manualSupHtml = window.manualSuppliers.map(s => `<option value="${s.link}">${s.name}</option>`).join('');
+    let dropdownHtml = `
+    <div style="display:flex; gap:4px; align-items:center; min-width:130px;">
+       <select id="sup_${r.id}" class="status-select" style="flex:1; font-size:0.75rem; padding:4px;">
+          <option value="">— اختر المورد —</option>
+          ${manualSupHtml}
+       </select>
+       <button onclick="const l=document.getElementById('sup_${r.id}').value; if(l){ window.open(l, '_blank'); } else { showToast('⚠️ اختر مورداً أولاً'); }" style="background:var(--gold); color:white; border:none; border-radius:6px; padding:4px 8px; cursor:pointer; font-weight:bold; font-size:0.75rem;">شراء</button>
+    </div>`;
+
     return `<tr>
     <td><span class="ref">${r.ref||'—'}</span></td>
     <td><strong>${r.game||'—'}</strong></td>
@@ -670,6 +662,7 @@ function renderCards(data) {
              value="${r.deliveredCode || ''}" 
              onchange="updateDeliveredCode('${r.id}', this.value)">
     </td>
+    <td>${dropdownHtml}</td>
     <td dir="ltr">${r.playerId||'—'}</td>
     <td dir="ltr">${r.phone||'—'}</td>
     <td style="font-size:.78rem">${fmtDate(r.createdAt)}</td>
@@ -682,7 +675,6 @@ function renderCards(data) {
   }).join('');
 }
 
-// ── حفظ الكود المدخل ──
 window.updateDeliveredCode = async (id, code) => {
   try {
     await updateDoc(doc(db, 'cards', id), { deliveredCode: code });
@@ -705,11 +697,10 @@ function renderStock() {
   });
   document.getElementById('stockCount').textContent = `${fmt(data.length)} بطاقة`;
   const tbody = document.getElementById('stockBody');
-  if (!data.length) { tbody.innerHTML=`<tr><td colspan="8"><div class="empty"><div class="empty-icon">📭</div>لا توجد بطاقات</div></td></tr>`; return; }
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">📭</div>لا توجد بطاقات</div></td></tr>`; return; }
   tbody.innerHTML = data.map(s=>`<tr>
     <td><strong>${s.category||'—'}</strong></td>
     <td>${s.cardType||'—'}</td><td>${s.value||'—'}</td>
-    <td>${s.supplierLink ? `<a href="${s.supplierLink}" target="_blank" style="color:var(--green);text-decoration:none;font-weight:bold;">${s.supplier||'—'} 🔗</a>` : (s.supplier||'—')}</td>
     <td><span class="code-cell" onclick="copyCode('${s.code}')">${s.code||'—'}</span></td>
     <td style="font-size:.78rem">${fmtDate(s.createdAt)}</td>
     <td><select class="status-select" onchange="changeStatus('stock','${s.id}',this.value)">
@@ -863,8 +854,6 @@ function getCodes() {
 function updatePreview() {
   const codes    = getCodes();
   const cardType = document.getElementById('cardType').value;
-  const supplierSelect = document.getElementById('supplier');
-  const supplierName = supplierSelect.options[supplierSelect.selectedIndex]?.dataset.name || '';
   
   const box      = document.getElementById('previewBox');
   if (!codes.length||!cardType) { box.style.display='none'; return; }
@@ -872,14 +861,13 @@ function updatePreview() {
   const preview  = codes.slice(0,3).map(c=>`<div class="code-preview">${c}</div>`).join('');
   const more     = codes.length>3?`<div style="font-size:.78rem;color:var(--muted);margin-top:.3rem">+${codes.length-3} كود...</div>`:'';
   document.getElementById('previewContent').innerHTML=`
-    <div style="font-size:.82rem;color:var(--mid);margin-bottom:.5rem"><strong>${selectedCat}</strong> — ${cardType} ${supplierName?'| '+supplierName:''}</div>
+    <div style="font-size:.82rem;color:var(--mid);margin-bottom:.5rem"><strong>${selectedCat}</strong> — ${cardType}</div>
     ${preview}${more}
     <div style="margin-top:.6rem;font-size:.82rem;font-weight:800;color:var(--green)">إجمالي: ${codes.length} بطاقة</div>`;
 }
 
 document.getElementById('openStockBtn').addEventListener('click', () => {
   document.getElementById('codesArea').value = '';
-  document.getElementById('supplier').value  = '';
   document.getElementById('codesCount').textContent = '٠ كود';
   document.getElementById('previewBox').style.display = 'none';
   updateCardOptions();
@@ -896,7 +884,6 @@ document.getElementById('codesArea').addEventListener('input', () => {
   document.getElementById('codesCount').textContent = getCodes().length+' كود';
   updatePreview();
 });
-document.getElementById('supplier').addEventListener('change', updatePreview);
 document.getElementById('catGrid').addEventListener('click', e => {
   const btn = e.target.closest('.cat-btn'); if (!btn) return;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
@@ -910,9 +897,6 @@ document.getElementById('cardType').addEventListener('change', updatePreview);
 
 document.getElementById('saveStockBtn').addEventListener('click', async () => {
   const cardType = document.getElementById('cardType').value;
-  const supplierSelect = document.getElementById('supplier');
-  const supplierLink = supplierSelect.value;
-  const supplierName = supplierSelect.options[supplierSelect.selectedIndex]?.dataset.name || 'غير محدد';
   const codes    = getCodes();
   const cat      = selectedCat==='أخرى'?(document.getElementById('customCat').value.trim()||'أخرى'):selectedCat;
   
@@ -924,7 +908,7 @@ document.getElementById('saveStockBtn').addEventListener('click', async () => {
   try {
     await Promise.all(codes.map(code=>addDoc(collection(db,'stock'),{
       category:cat, cardType, value:cardType,
-      supplier:supplierName, supplierLink:supplierLink, code, status:'available', createdAt:serverTimestamp()
+      code, status:'available', createdAt:serverTimestamp()
     })));
     showToast(`✅ تم حفظ ${codes.length} بطاقة!`);
     document.getElementById('stockModal').classList.remove('open');
@@ -1034,7 +1018,7 @@ document.getElementById('gameBg').addEventListener('input',   updateGamePreview)
 document.getElementById('openAddGameBtn').addEventListener('click', () => {
   editingGameId=null; gamePkgs=[];
   document.getElementById('gameModalTitle').textContent='➕ إضافة منتج / لعبة';
-  ['gameName','gameLogo','gameDesc','gameBadge','gameId','gameProvider','gameSupName','gameSupLink'].forEach(id=>document.getElementById(id).value='');
+  ['gameName','gameLogo','gameDesc','gameBadge','gameId','gameProvider'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('gameIcon').value='🎮';
   document.getElementById('gameBg').value='#1A1A2E';
   document.getElementById('productType').value='game';
@@ -1062,9 +1046,6 @@ window.openEditGame = (id) => {
   document.getElementById('gameProvider').value = g.provider||'';
   document.getElementById('productType').value  = g.productType||'game';
   
-  document.getElementById('gameSupName').value  = g.supName||'';
-  document.getElementById('gameSupLink').value  = g.supLink||'';
-
   renderPkgsEditor(); updateGamePreview();
   document.getElementById('gameModal').classList.add('open');
 };
@@ -1080,9 +1061,6 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   const provider = document.getElementById('gameProvider').value; 
   const productType = document.getElementById('productType').value;
   
-  const supName  = document.getElementById('gameSupName').value.trim();
-  const supLink  = document.getElementById('gameSupLink').value.trim();
-
   const rawId    = document.getElementById('gameId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'').substring(0,20);
   const finalId  = rawId||'game-'+Date.now();
   
@@ -1092,7 +1070,7 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   btn.disabled=true; btn.textContent='⏳...';
   
   try {
-    const data={name,icon,logo,bg,desc,badge,order,pkgs,provider,supName,supLink,productType};
+    const data={name,icon,logo,bg,desc,badge,order,pkgs,provider,productType};
     if (editingGameId) {
       await updateDoc(doc(db,'games',editingGameId),data);
     } else {
