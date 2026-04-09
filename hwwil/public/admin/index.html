@@ -461,20 +461,8 @@ const app = initializeApp({
 
 const db = getFirestore(app);
 
-// ── إعدادات الصوت ──
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playAlertSound() {
-  if(audioCtx.state === 'suspended') audioCtx.resume();
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-  osc.type = 'sine'; osc.frequency.setValueAtTime(880, audioCtx.currentTime);
-  gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-  osc.connect(gain); gain.connect(audioCtx.destination);
-  osc.start(); gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + 0.5);
-  osc.stop(audioCtx.currentTime + 0.5);
-}
+function playAlertSound() {}
 
-// ── AUTH ──
 const ADMIN_USER = 'admin', ADMIN_PASS = 'hawwil2026';
 function doLogin() {
   const u = document.getElementById('loginUser').value.trim();
@@ -482,7 +470,6 @@ function doLogin() {
   if (u === ADMIN_USER && p === ADMIN_PASS) {
     document.getElementById('loginWrap').style.display = 'none';
     document.getElementById('app').classList.add('show');
-    if(audioCtx.state === 'suspended') audioCtx.resume(); 
     startListeners();
   } else {
     document.getElementById('loginErr').style.display = 'block';
@@ -499,21 +486,15 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('loginWrap').style.display !== 'none') doLogin();
 });
 
-// ── DATA ──
 let allTransfers = [], allCards = [], allStock = [], allBanks = [], allGames = [];
-let isFirstLoadT = true, isFirstLoadC = true;
 
 function startListeners() {
   onSnapshot(query(collection(db,'transfers'), orderBy('createdAt','desc')), snap => {
-    snap.docChanges().forEach(change => { if (change.type === 'added' && !isFirstLoadT) playAlertSound(); });
-    isFirstLoadT = false;
     allTransfers = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderTransfers(allTransfers); updateStats();
   });
   
   onSnapshot(query(collection(db,'cards'), orderBy('createdAt','desc')), snap => {
-    snap.docChanges().forEach(change => { if (change.type === 'added' && !isFirstLoadC) playAlertSound(); });
-    isFirstLoadC = false;
     allCards = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderCards(allCards); updateStats();
   });
@@ -535,7 +516,6 @@ function startListeners() {
   });
 }
 
-// ── TABS ──
 const TAB_IDS = ['transfers','cards','stock','content'];
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
@@ -549,7 +529,6 @@ document.querySelectorAll('.tab').forEach(btn => {
   });
 });
 
-// ── STATS ──
 function updateStats() {
   const all = [...allTransfers,...allCards];
   document.getElementById('sTotal').textContent   = fmt(all.length);
@@ -571,7 +550,6 @@ window.previewImage = function(url) {
   document.getElementById('imagePreviewModal').classList.add('open');
 };
 
-// ── RENDER TRANSFERS ──
 function renderTransfers(data) {
   const tbody = document.getElementById('transfersBody');
   if (!data.length) { tbody.innerHTML=`<tr><td colspan="12"><div class="empty"><div class="empty-icon">📭</div>لا توجد طلبات</div></td></tr>`; return; }
@@ -596,7 +574,6 @@ function renderTransfers(data) {
   }).join('');
 }
 
-// ── RENDER CARDS (النظام الديناميكي الجديد) ──
 function renderCards(data) {
   const tbody = document.getElementById('cardsBody');
   if (!data.length) { tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="empty-icon">🎮</div>لا توجد طلبات</div></td></tr>`; return; }
@@ -604,9 +581,20 @@ function renderCards(data) {
   tbody.innerHTML = data.map(r=>{
     const imgUrl = r.image || r.receipt || r.img || ""; 
     
-    // 🎯 جلب الموردين المحددين لهذه اللعبة فقط
-    const specificGame = allGames.find(g => g.name === r.game || g.id === r.gameId);
-    const gameSups = specificGame ? (specificGame.sups || []) : [];
+    // 🎯 دالة البحث المعدلة: قراءة الموردين القدامى مع نظام الباقات الجديد (sups)
+    const specificGame = allGames.find(g => (g.id && r.gameId && g.id === r.gameId) || g.name === r.game);
+    
+    let gameSups = [];
+    if(specificGame) {
+       // أولاً نتحقق إن كان هناك موردين بنظام المصفوفة الجديد
+       if (specificGame.sups && specificGame.sups.length > 0) {
+           gameSups = specificGame.sups;
+       } 
+       // ثانياً نتحقق من الحقول القديمة (في حال لم تحدثها للمصفوفة بعد)
+       else if (specificGame.supName && specificGame.supLink) {
+           gameSups = [{ name: specificGame.supName, link: specificGame.supLink }];
+       }
+    }
 
     let dropdownHtml = '';
     if(gameSups.length > 0) {
@@ -653,7 +641,6 @@ window.updateDeliveredCode = async (id, code) => {
   }
 };
 
-// ── RENDER STOCK ──
 function renderStock() {
   const catF   = document.getElementById('filterCat').value;
   const statF  = document.getElementById('filterStatus').value;
@@ -686,7 +673,6 @@ function updateCatFilter() {
   sel.innerHTML = '<option value="">كل الفئات</option>'+cats.map(c=>`<option value="${c}" ${c===cur?'selected':''}>${c}</option>`).join('');
 }
 
-// ── BANKS TABLE ──
 function renderBanksTable() {
   const tbody = document.getElementById('banksBody'); if (!tbody) return;
   if (!allBanks.length) { tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">🏦</div>لا توجد بنوك — أضف بنكاً الآن</div></td></tr>`; return; }
@@ -704,7 +690,6 @@ function renderBanksTable() {
     </div></td></tr>`).join('');
 }
 
-// ── GAMES TABLE ──
 function renderGamesTable() {
   const tbody = document.getElementById('gamesBody'); if (!tbody) return;
   if (!allGames.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">🎮</div>لا توجد منتجات — أضف منتجاً الآن</div></td></tr>`; return; }
@@ -728,7 +713,6 @@ function renderGamesTable() {
   }).join('');
 }
 
-// ── ACTIONS ──
 window.changeStatus = async (col, docId, status) => {
   try { await updateDoc(doc(db,col,docId),{status}); showToast('✅ تم تحديث الحالة'); }
   catch { showToast('❌ خطأ في التحديث'); }
@@ -750,7 +734,6 @@ window.deleteGame = async (id) => {
   catch { showToast('❌ خطأ'); }
 };
 
-// ── SEARCH ──
 document.getElementById('searchTransfer').addEventListener('input', function() {
   const q = this.value.toLowerCase();
   renderTransfers(allTransfers.filter(r=>(r.name||'').toLowerCase().includes(q)||(r.phone||'').includes(q)||(r.ref||'').toLowerCase().includes(q)));
@@ -763,7 +746,6 @@ document.getElementById('filterCat').addEventListener('change', renderStock);
 document.getElementById('filterStatus').addEventListener('change', renderStock);
 document.getElementById('searchStock').addEventListener('input', renderStock);
 
-// ── STOCK MODAL ──
 const CARD_OPTIONS = {
   'Apple':['iTunes 10$','iTunes 25$','iTunes 50$','iTunes 100$','App Store 5$','App Store 15$'],
   'Google Play':['Google Play 5$','Google Play 10$','Google Play 25$','Google Play 50$'],
@@ -851,7 +833,6 @@ document.getElementById('saveStockBtn').addEventListener('click', async () => {
   btn.disabled=false; btn.textContent='💾 حفظ البطاقات في المخزون';
 });
 
-// ── BANK MODAL ──
 let editingBankId = null;
 
 function updateBankPreview() {
@@ -930,7 +911,6 @@ function updateGamePreview() {
     : `<span style="font-size:2rem">${icon}</span>`;
 }
 
-// 💡 نظام محرر الموردين المتعدد
 function renderSupsEditor() {
   const cont = document.getElementById('supsEditor');
   cont.innerHTML = gameSups.map((s,i)=>`
@@ -967,9 +947,7 @@ document.getElementById('gameBg').addEventListener('input',   updateGamePreview)
 document.getElementById('openAddGameBtn').addEventListener('click', () => {
   editingGameId=null; gamePkgs=[]; gameSups=[];
   document.getElementById('gameModalTitle').textContent='➕ إضافة منتج / لعبة';
-  
   ['gameName','gameLogo','gameDesc','gameBadge','gameId','gameProvider'].forEach(id=>document.getElementById(id).value='');
-  
   document.getElementById('gameIcon').value='🎮';
   document.getElementById('gameBg').value='#1A1A2E';
   document.getElementById('productType').value='game';
@@ -985,15 +963,14 @@ window.openEditGame = (id) => {
   const g=allGames.find(x=>x.id===id); if (!g) return;
   editingGameId=id; 
   gamePkgs=JSON.parse(JSON.stringify(g.pkgs||[]));
-  gameSups=JSON.parse(JSON.stringify(g.sups||[])); // 💡 استرجاع قائمة الموردين
   
-  // دمج المورد القديم (في حال كان موجوداً قبل التحديث)
+  // 💡 استرجاع الموردين (دعم للحقول القديمة والجديدة)
+  gameSups=JSON.parse(JSON.stringify(g.sups||[]));
   if(g.supName && g.supLink && gameSups.length === 0) {
       gameSups.push({name: g.supName, link: g.supLink});
   }
 
   document.getElementById('gameModalTitle').textContent='✏️ تعديل المنتج';
-  
   document.getElementById('gameName').value     = g.name||'';
   document.getElementById('gameIcon').value     = g.icon||'🎮';
   document.getElementById('gameLogo').value     = g.logo||'';
@@ -1025,12 +1002,13 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   
   if (!name) { showToast('⚠️ أدخل اسم المنتج'); return; }
   const pkgs = gamePkgs.filter(p=>p.amount&&p.price>0);
-  const sups = gameSups.filter(s=>s.name&&s.link); // 💡 فلترة الموردين الفارغين
+  const sups = gameSups.filter(s=>s.name&&s.link);
   
   const btn  = document.getElementById('saveGameBtn');
   btn.disabled=true; btn.textContent='⏳...';
   
   try {
+    // حفظ البيانات في المصفوفة الجديدة sups
     const data={name,icon,logo,bg,desc,badge,order,pkgs,sups,provider,productType};
     if (editingGameId) {
       await updateDoc(doc(db,'games',editingGameId),data);
