@@ -193,7 +193,6 @@ tr:hover td{background:var(--bg)}
     </div>
     <div class="topbar-right">
       <div class="live-badge"><div class="live-dot"></div> مباشر</div>
-      <button class="stock-btn" id="openStockBtn">📦 إضافة بطاقات</button>
       <button class="logout-btn" id="logoutBtn">خروج</button>
     </div>
   </div>
@@ -229,10 +228,7 @@ tr:hover td{background:var(--bg)}
 
     <div id="tabCards" class="table-card" style="display:none">
       <div class="table-header">
-        <div style="display:flex; align-items:center; gap:1rem;">
-           <div class="table-title">طلبات البطاقات والخدمات الرقمية</div>
-           <button class="stock-btn" id="openAddSupplierBtn" style="background:var(--gold); font-size:0.75rem;">➕ إضافة مورد</button>
-        </div>
+        <div class="table-title">طلبات البطاقات والخدمات الرقمية</div>
         <input class="search-input" id="searchCards" placeholder="🔍 بحث..."/>
       </div>
       <div class="table-wrap">
@@ -259,6 +255,7 @@ tr:hover td{background:var(--bg)}
             <option value="used">📤 مستخدم</option>
           </select>
           <input class="search-input" id="searchStock" placeholder="🔍 بحث بالكود..." style="width:200px"/>
+          <button class="stock-btn" id="openStockBtn" style="margin-right:auto">📦 إضافة بطاقات</button>
         </div>
       </div>
       <div class="table-card">
@@ -276,6 +273,7 @@ tr:hover td{background:var(--bg)}
     </div>
 
     <div id="tabContent" style="display:none">
+      
       <div class="content-section">
         <div class="content-section-hdr">
           <div class="content-section-title">🏦 إدارة البنوك</div>
@@ -356,26 +354,6 @@ tr:hover td{background:var(--bg)}
   </div>
 </div>
 
-<div class="modal-overlay" id="addSupplierModal" style="z-index: 600;">
-  <div class="cm-modal" style="max-width: 400px;">
-    <div class="modal-hdr">
-      <div style="font-size:1.1rem;font-weight:900">🔗 إضافة مورد جديد</div>
-      <button class="modal-x" id="closeSupplierBtn">✕</button>
-    </div>
-    <div class="modal-bod">
-      <div class="form-row">
-        <label class="flabel">اسم الموقع/المورد</label>
-        <input class="finput" id="newSupName" type="text" placeholder="مثال: Midasbuy"/>
-      </div>
-      <div class="form-row">
-        <label class="flabel">رابط الموقع (URL)</label>
-        <input class="finput" id="newSupLink" type="url" dir="ltr" placeholder="https://..."/>
-      </div>
-      <button class="save-btn" id="saveSupplierBtn">💾 حفظ المورد</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-overlay" id="bankModal">
   <div class="cm-modal">
     <div class="modal-hdr">
@@ -437,15 +415,8 @@ tr:hover td{background:var(--bg)}
       <div class="form-row" style="margin-top:1rem"><label class="flabel">معرّف المنتج (ID) — فارغ = تلقائي</label><input class="finput" id="gameId" type="text" placeholder="مثال: netflix"/></div>
       
       <div class="form-row" style="margin-top:1rem; padding:1rem; background:var(--sand); border-radius:10px;">
-        <label style="display:block; font-weight:800; font-size:.9rem; color:var(--ink); margin-bottom:.8rem;">🔗 بيانات المورد (اختياري)</label>
-        <div style="margin-bottom:.8rem;">
-          <label class="flabel">اسم المورد</label>
-          <input class="finput" id="gameSupName" type="text" placeholder="مثال: متجر سعودي..."/>
-        </div>
-        <div>
-          <label class="flabel">رابط المورد الخاص بهذه اللعبة</label>
-          <input class="finput" id="gameSupLink" type="url" dir="ltr" placeholder="https://..."/>
-        </div>
+        <label style="display:block; font-weight:800; font-size:.9rem; color:var(--ink); margin-bottom:.8rem;">🔗 الموردين (اختياري)</label>
+        <div id="supsEditor" style="margin-top:.5rem"></div>
       </div>
 
       <div class="form-row" style="margin-top:1rem">
@@ -476,7 +447,7 @@ tr:hover td{background:var(--bg)}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc,
-         orderBy, query, addDoc, deleteDoc, serverTimestamp, getDocs }
+         orderBy, query, addDoc, deleteDoc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const app = initializeApp({
@@ -531,7 +502,6 @@ document.addEventListener('keydown', e => {
 // ── DATA ──
 let allTransfers = [], allCards = [], allStock = [], allBanks = [], allGames = [];
 let isFirstLoadT = true, isFirstLoadC = true;
-window.manualSuppliers = [];
 
 function startListeners() {
   onSnapshot(query(collection(db,'transfers'), orderBy('createdAt','desc')), snap => {
@@ -563,27 +533,6 @@ function startListeners() {
     renderGamesTable();
     if(allCards.length > 0) renderCards(allCards);
   });
-
-  loadSuppliers();
-}
-
-async function loadSuppliers() {
-  try {
-    const querySnapshot = await getDocs(collection(db, "suppliers"));
-    window.manualSuppliers = [];
-    const seen = new Set();
-    querySnapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      if(!seen.has(data.link)) {
-         seen.add(data.link);
-         window.manualSuppliers.push({ name: data.name, link: data.link });
-      }
-    });
-    
-    if(allCards.length > 0) renderCards(allCards);
-  } catch (error) {
-    console.error("Error loading suppliers:", error);
-  }
 }
 
 // ── TABS ──
@@ -647,7 +596,7 @@ function renderTransfers(data) {
   }).join('');
 }
 
-// ── RENDER CARDS (التصميم الأفضل لدمج اللعبة مع الموردين العامين) ──
+// ── RENDER CARDS (النظام الديناميكي الجديد) ──
 function renderCards(data) {
   const tbody = document.getElementById('cardsBody');
   if (!data.length) { tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="empty-icon">🎮</div>لا توجد طلبات</div></td></tr>`; return; }
@@ -655,24 +604,23 @@ function renderCards(data) {
   tbody.innerHTML = data.map(r=>{
     const imgUrl = r.image || r.receipt || r.img || ""; 
     
-    // 🎯 1. البحث عن المورد الخاص باللعبة
+    // 🎯 جلب الموردين المحددين لهذه اللعبة فقط
     const specificGame = allGames.find(g => g.name === r.game || g.id === r.gameId);
-    let specificSupHtml = '';
-    if (specificGame && specificGame.supName && specificGame.supLink) {
-       specificSupHtml = `<option value="${specificGame.supLink}" selected>🎯 الافتراضي: ${specificGame.supName}</option><option disabled>──────────</option>`;
-    }
+    const gameSups = specificGame ? (specificGame.sups || []) : [];
 
-    // 🌐 2. دمج مورد اللعبة كأول خيار، ثم الموردين العامين
-    let manualSupHtml = window.manualSuppliers.map(s => `<option value="${s.link}">${s.name}</option>`).join('');
-    let dropdownHtml = `
-    <div style="display:flex; gap:4px; align-items:center; min-width:130px;">
-       <select id="sup_${r.id}" class="status-select" style="flex:1; font-size:0.75rem; padding:4px;">
-          ${specificSupHtml ? '' : '<option value="">— اختر المورد —</option>'}
-          ${specificSupHtml}
-          ${manualSupHtml}
-       </select>
-       <button onclick="const l=document.getElementById('sup_${r.id}').value; if(l){ window.open(l, '_blank'); } else { showToast('⚠️ اختر مورداً أولاً'); }" style="background:var(--gold); color:white; border:none; border-radius:6px; padding:4px 8px; cursor:pointer; font-weight:bold; font-size:0.75rem;">شراء</button>
-    </div>`;
+    let dropdownHtml = '';
+    if(gameSups.length > 0) {
+       let optionsHtml = gameSups.map((s, idx) => `<option value="${s.link}" ${idx===0?'selected':''}>🛒 ${s.name}</option>`).join('');
+       dropdownHtml = `
+       <div style="display:flex; gap:4px; align-items:center; min-width:140px;">
+          <select id="sup_${r.id}" class="status-select" style="flex:1; font-size:0.75rem; padding:4px; max-width:100px;">
+             ${optionsHtml}
+          </select>
+          <button onclick="const l=document.getElementById('sup_${r.id}').value; if(l){ window.open(l, '_blank'); }" style="background:var(--gold); color:white; border:none; border-radius:6px; padding:4px 8px; cursor:pointer; font-weight:bold; font-size:0.75rem;">شراء</button>
+       </div>`;
+    } else {
+       dropdownHtml = `<span style="font-size:0.75rem; color:var(--muted);">لا يوجد مورد</span>`;
+    }
 
     return `<tr>
     <td><span class="ref">${r.ref||'—'}</span></td>
@@ -814,40 +762,6 @@ document.getElementById('searchCards').addEventListener('input', function() {
 document.getElementById('filterCat').addEventListener('change', renderStock);
 document.getElementById('filterStatus').addEventListener('change', renderStock);
 document.getElementById('searchStock').addEventListener('input', renderStock);
-
-// ── SUPPLIER MODAL LOGIC ──
-document.getElementById('openAddSupplierBtn').addEventListener('click', () => {
-  document.getElementById('newSupName').value = '';
-  document.getElementById('newSupLink').value = '';
-  document.getElementById('addSupplierModal').classList.add('open');
-});
-document.getElementById('closeSupplierBtn').addEventListener('click', () => {
-  document.getElementById('addSupplierModal').classList.remove('open');
-});
-document.getElementById('addSupplierModal').addEventListener('click', e => {
-  if(e.target === document.getElementById('addSupplierModal')) {
-    document.getElementById('addSupplierModal').classList.remove('open');
-  }
-});
-document.getElementById('saveSupplierBtn').addEventListener('click', async () => {
-  const name = document.getElementById('newSupName').value.trim();
-  const link = document.getElementById('newSupLink').value.trim();
-  if(!name || !link) { showToast('⚠️ يرجى إدخال اسم ورابط المورد!'); return; }
-  
-  const btn = document.getElementById('saveSupplierBtn');
-  btn.disabled = true; btn.textContent = '⏳...';
-  try {
-    await addDoc(collection(db, "suppliers"), {
-      name: name, link: link, createdAt: serverTimestamp()
-    });
-    showToast('✅ تم حفظ المورد بنجاح!');
-    document.getElementById('addSupplierModal').classList.remove('open');
-    loadSuppliers(); 
-  } catch(e) {
-    console.error(e); showToast('❌ خطأ في الحفظ');
-  }
-  btn.disabled = false; btn.textContent = '💾 حفظ المورد';
-});
 
 // ── STOCK MODAL ──
 const CARD_OPTIONS = {
@@ -1003,7 +917,7 @@ document.getElementById('saveBankBtn').addEventListener('click', async () => {
 });
 
 // ── GAME MODAL ──
-let editingGameId = null, gamePkgs = [];
+let editingGameId = null, gamePkgs = [], gameSups = [];
 
 function updateGamePreview() {
   const logo = document.getElementById('gameLogo').value.trim();
@@ -1016,6 +930,21 @@ function updateGamePreview() {
     : `<span style="font-size:2rem">${icon}</span>`;
 }
 
+// 💡 نظام محرر الموردين المتعدد
+function renderSupsEditor() {
+  const cont = document.getElementById('supsEditor');
+  cont.innerHTML = gameSups.map((s,i)=>`
+    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
+      <input class="finput" style="flex:1" value="${s.name||''}" oninput="gameSupUpdate(${i},'name',this.value)" placeholder="اسم المتجر..."/>
+      <input class="finput" style="flex:2" type="url" dir="ltr" value="${s.link||''}" oninput="gameSupUpdate(${i},'link',this.value)" placeholder="https://..."/>
+      <button onclick="gameSupRemove(${i})" style="background:var(--red-light);color:var(--red);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:1rem">✕</button>
+    </div>`).join('')
+    +`<button onclick="gameSupAdd()" class="stock-btn" style="font-size:.82rem;padding:.4rem .9rem;margin-top:.3rem;background:var(--mid);">➕ إضافة مورد آخر</button>`;
+}
+window.gameSupAdd    = () => { gameSups.push({name:'',link:''}); renderSupsEditor(); };
+window.gameSupRemove = (i) => { gameSups.splice(i,1); renderSupsEditor(); };
+window.gameSupUpdate = (i,f,v) => { gameSups[i][f]=v; };
+
 function renderPkgsEditor() {
   const cont = document.getElementById('pkgsEditor');
   cont.innerHTML = gamePkgs.map((p,i)=>`
@@ -1026,7 +955,6 @@ function renderPkgsEditor() {
     </div>`).join('')
     +`<button onclick="gamePkgAdd()" class="stock-btn" style="font-size:.82rem;padding:.4rem .9rem;margin-top:.3rem">➕ إضافة باقة</button>`;
 }
-
 window.gamePkgAdd    = () => { gamePkgs.push({amount:'',price:0}); renderPkgsEditor(); };
 window.gamePkgRemove = (i) => { gamePkgs.splice(i,1); renderPkgsEditor(); };
 window.gamePkgUpdate = (i,f,v) => { gamePkgs[i][f]=f==='price'?parseFloat(v)||0:v; };
@@ -1037,17 +965,16 @@ document.getElementById('gameIcon').addEventListener('input', updateGamePreview)
 document.getElementById('gameBg').addEventListener('input',   updateGamePreview);
 
 document.getElementById('openAddGameBtn').addEventListener('click', () => {
-  editingGameId=null; gamePkgs=[];
+  editingGameId=null; gamePkgs=[]; gameSups=[];
   document.getElementById('gameModalTitle').textContent='➕ إضافة منتج / لعبة';
   
-  // 💡 تم إرجاع حقول المورد هنا للتفريغ
-  ['gameName','gameLogo','gameDesc','gameBadge','gameId','gameProvider','gameSupName','gameSupLink'].forEach(id=>document.getElementById(id).value='');
+  ['gameName','gameLogo','gameDesc','gameBadge','gameId','gameProvider'].forEach(id=>document.getElementById(id).value='');
   
   document.getElementById('gameIcon').value='🎮';
   document.getElementById('gameBg').value='#1A1A2E';
   document.getElementById('productType').value='game';
   document.getElementById('gameOrder').value=allGames.length;
-  renderPkgsEditor(); updateGamePreview();
+  renderPkgsEditor(); renderSupsEditor(); updateGamePreview();
   document.getElementById('gameModal').classList.add('open');
 });
 
@@ -1056,7 +983,15 @@ document.getElementById('gameModal').addEventListener('click', e=>{ if(e.target=
 
 window.openEditGame = (id) => {
   const g=allGames.find(x=>x.id===id); if (!g) return;
-  editingGameId=id; gamePkgs=JSON.parse(JSON.stringify(g.pkgs||[]));
+  editingGameId=id; 
+  gamePkgs=JSON.parse(JSON.stringify(g.pkgs||[]));
+  gameSups=JSON.parse(JSON.stringify(g.sups||[])); // 💡 استرجاع قائمة الموردين
+  
+  // دمج المورد القديم (في حال كان موجوداً قبل التحديث)
+  if(g.supName && g.supLink && gameSups.length === 0) {
+      gameSups.push({name: g.supName, link: g.supLink});
+  }
+
   document.getElementById('gameModalTitle').textContent='✏️ تعديل المنتج';
   
   document.getElementById('gameName').value     = g.name||'';
@@ -1070,11 +1005,7 @@ window.openEditGame = (id) => {
   document.getElementById('gameProvider').value = g.provider||'';
   document.getElementById('productType').value  = g.productType||'game';
   
-  // 💡 تم إرجاع حقول المورد هنا للملء
-  document.getElementById('gameSupName').value  = g.supName||'';
-  document.getElementById('gameSupLink').value  = g.supLink||'';
-
-  renderPkgsEditor(); updateGamePreview();
+  renderPkgsEditor(); renderSupsEditor(); updateGamePreview();
   document.getElementById('gameModal').classList.add('open');
 };
 
@@ -1088,22 +1019,19 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   const order    = parseInt(document.getElementById('gameOrder').value)||0;
   const provider = document.getElementById('gameProvider').value; 
   const productType = document.getElementById('productType').value;
-  
-  // 💡 تم إرجاع قراءة حقول المورد
-  const supName  = document.getElementById('gameSupName').value.trim();
-  const supLink  = document.getElementById('gameSupLink').value.trim();
 
   const rawId    = document.getElementById('gameId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'').substring(0,20);
   const finalId  = rawId||'game-'+Date.now();
   
   if (!name) { showToast('⚠️ أدخل اسم المنتج'); return; }
   const pkgs = gamePkgs.filter(p=>p.amount&&p.price>0);
+  const sups = gameSups.filter(s=>s.name&&s.link); // 💡 فلترة الموردين الفارغين
+  
   const btn  = document.getElementById('saveGameBtn');
   btn.disabled=true; btn.textContent='⏳...';
   
   try {
-    // 💡 تم إضافة بيانات الموردين في الحفظ
-    const data={name,icon,logo,bg,desc,badge,order,pkgs,provider,productType,supName,supLink};
+    const data={name,icon,logo,bg,desc,badge,order,pkgs,sups,provider,productType};
     if (editingGameId) {
       await updateDoc(doc(db,'games',editingGameId),data);
     } else {
@@ -1115,7 +1043,6 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   btn.disabled=false; btn.textContent='💾 حفظ المنتج';
 });
 
-// ── HELPERS ──
 function fmt(n) { return Number(n).toLocaleString('ar-MA'); }
 function fmtDate(ts) {
   if (!ts) return '—';
