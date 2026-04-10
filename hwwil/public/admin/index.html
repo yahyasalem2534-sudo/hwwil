@@ -153,9 +153,11 @@ tr:hover td{background:var(--bg)}
 /* =========================================
    💡 أكواد الإخفاء الذكية الخاصة بالمدير
 ========================================= */
+/* إخفاء العمود بالكامل في قسم المخزون فقط للعامل */
 .admin-col { display: none !important; }
 body.is-admin .admin-col { display: table-cell !important; }
 
+/* إخفاء النص فقط في جداول التحويلات والبطاقات */
 .admin-text { display: none !important; }
 body.is-admin .admin-text { display: inline !important; }
 
@@ -265,7 +267,7 @@ body.is-admin .admin-text { display: inline !important; }
             <option value="used">📤 مستخدم</option>
           </select>
           <input class="search-input" id="searchStock" placeholder="🔍 بحث بالكود..." style="width:200px"/>
-          <button class="stock-btn admin-col" id="openStockBtn" style="margin-right:auto">📦 إضافة بطاقات</button>
+          <button class="stock-btn" id="openStockBtn" style="margin-right:auto">📦 إضافة بطاقات</button>
         </div>
       </div>
       <div class="table-card">
@@ -287,11 +289,11 @@ body.is-admin .admin-text { display: inline !important; }
       <div class="content-section">
         <div class="content-section-hdr">
           <div class="content-section-title">🏦 إدارة البنوك</div>
-          <button class="stock-btn admin-col" id="openAddBankBtn">➕ إضافة بنك</button>
+          <button class="stock-btn" id="openAddBankBtn">➕ إضافة بنك</button>
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>البنك</th><th>رابط الشعار</th><th>اللون</th><th>الترتيب</th><th class="admin-col">إجراء</th></tr></thead>
+            <thead><tr><th>البنك</th><th>رابط الشعار</th><th>اللون</th><th>الترتيب</th><th>إجراء</th></tr></thead>
             <tbody id="banksBody"><tr><td colspan="5" class="loading">⏳ جاري التحميل...</td></tr></tbody>
           </table>
         </div>
@@ -300,11 +302,11 @@ body.is-admin .admin-text { display: inline !important; }
       <div class="content-section">
         <div class="content-section-hdr">
           <div class="content-section-title">🎮 إدارة البطاقات والمنتجات</div>
-          <button class="stock-btn admin-col" id="openAddGameBtn">➕ إضافة منتج / لعبة</button>
+          <button class="stock-btn" id="openAddGameBtn">➕ إضافة منتج / لعبة</button>
         </div>
         <div class="table-wrap">
           <table>
-            <thead><tr><th>المنتج</th><th>النوع</th><th>الشارة</th><th>الباقات</th><th>الترتيب</th><th class="admin-col">إجراء</th></tr></thead>
+            <thead><tr><th>المنتج</th><th>النوع</th><th>الشارة</th><th>الباقات</th><th>الترتيب</th><th>إجراء</th></tr></thead>
             <tbody id="gamesBody"><tr><td colspan="6" class="loading">⏳ جاري التحميل...</td></tr></tbody>
           </table>
         </div>
@@ -475,9 +477,6 @@ function playAlertSound() {}
 
 let currentUserRole = ''; 
 
-// ==========================================
-// 💡 إضافة كلاس للمدير ليتفعل سحر الإخفاء
-// ==========================================
 window.doLogin = async function() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value.trim();
@@ -499,7 +498,6 @@ window.doLogin = async function() {
       if (userData.password === p) {
         currentUserRole = userData.role;
         
-        // السر هنا: إذا كان مديراً، يتم تفعيل إظهار الأعمدة المخفية
         if(currentUserRole === 'admin') {
            document.body.classList.add('is-admin');
         } else {
@@ -715,7 +713,6 @@ function renderStock() {
   const tbody = document.getElementById('stockBody');
   if (!data.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">📭</div>لا توجد بطاقات</div></td></tr>`; return; }
   
-  // 💡 إضافة كلاس admin-col للخلية الخاصة بالزر لتختفي بالكامل عن العامل
   tbody.innerHTML = data.map(s=>`<tr>
     <td><strong>${s.category||'—'}</strong></td>
     <td>${s.cardType||'—'}</td><td>${s.value||'—'}</td>
@@ -741,7 +738,7 @@ function renderBanksTable() {
   const tbody = document.getElementById('banksBody'); if (!tbody) return;
   if (!allBanks.length) { tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">🏦</div>لا توجد بنوك — أضف بنكاً الآن</div></td></tr>`; return; }
   
-  // 💡 إضافة كلاس admin-col للخلية لتختفي عن العامل
+  // زر الحذف والتعديل للبنوك يظهر للجميع الآن
   tbody.innerHTML = allBanks.map(b=>`<tr>
     <td><div style="display:flex;align-items:center;gap:.7rem">
       <div style="width:40px;height:40px;border-radius:8px;background:${b.color||'#888'};display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
@@ -750,7 +747,7 @@ function renderBanksTable() {
     <td><span style="font-size:.75rem;color:var(--muted)">${b.logo?b.logo.substring(0,40)+'...':'لا يوجد'}</span></td>
     <td><div style="width:24px;height:24px;border-radius:50%;background:${b.color||'#888'}"></div></td>
     <td>${b.order||0}</td>
-    <td class="admin-col"><div style="display:flex;gap:.4rem">
+    <td><div style="display:flex;gap:.4rem">
       <button class="stock-btn" style="font-size:.75rem;padding:.3rem .7rem" onclick="openEditBank('${b.id}')">✏️</button>
       <button class="del-btn" onclick="deleteBank('${b.id}')">🗑️</button>
     </div></td></tr>`).join('');
@@ -760,7 +757,7 @@ function renderGamesTable() {
   const tbody = document.getElementById('gamesBody'); if (!tbody) return;
   if (!allGames.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">🎮</div>لا توجد منتجات — أضف منتجاً الآن</div></td></tr>`; return; }
   
-  // 💡 إضافة كلاس admin-col للخلية لتختفي عن العامل
+  // زر الحذف والتعديل للمنتجات يظهر للجميع الآن
   tbody.innerHTML = allGames.map(g=>{
     const typeLabel = g.productType === 'service' ? '💳 خدمة' : '🎮 لعبة';
     return `<tr>
@@ -774,7 +771,7 @@ function renderGamesTable() {
     <td>${g.badge||'—'}</td>
     <td>${(g.pkgs||[]).length} باقة</td>
     <td>${g.order||0}</td>
-    <td class="admin-col"><div style="display:flex;gap:.4rem">
+    <td><div style="display:flex;gap:.4rem">
       <button class="stock-btn" style="font-size:.75rem;padding:.3rem .7rem" onclick="openEditGame('${g.id}')">✏️</button>
       <button class="del-btn" onclick="deleteGame('${g.id}')">🗑️</button>
     </div></td></tr>`;
@@ -786,6 +783,7 @@ window.changeStatus = async (col, docId, status) => {
   catch { showToast('❌ خطأ في التحديث'); }
 };
 
+// حماية حذف المخزون للمدير فقط
 window.deleteStock = async (id) => {
   if (currentUserRole !== 'admin') return;
   if (!confirm('حذف هذه البطاقة؟')) return;
@@ -793,14 +791,14 @@ window.deleteStock = async (id) => {
   catch { showToast('❌ خطأ في الحذف'); }
 };
 window.copyCode = (code) => navigator.clipboard.writeText(code).then(()=>showToast('📋 تم نسخ: '+code));
+
+// إزالة الحماية عن حذف البنوك والألعاب لكي يستطيع العامل حذفها
 window.deleteBank = async (id) => {
-  if (currentUserRole !== 'admin') return;
   if (!confirm('حذف هذا البنك؟')) return;
   try { await deleteDoc(doc(db,'banks',id)); showToast('🗑️ تم الحذف'); }
   catch { showToast('❌ خطأ'); }
 };
 window.deleteGame = async (id) => {
-  if (currentUserRole !== 'admin') return;
   if (!confirm('حذف هذا المنتج؟')) return;
   try { await deleteDoc(doc(db,'games',id)); showToast('🗑️ تم الحذف'); }
   catch { showToast('❌ خطأ'); }
