@@ -30,6 +30,7 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--ink);dire
 .login-input:focus{border-color:var(--green)}
 .login-btn{width:100%;padding:.9rem;background:var(--green);color:#fff;border:none;border-radius:12px;font-family:inherit;font-size:1rem;font-weight:800;cursor:pointer;transition:background .2s;margin-top:.5rem}
 .login-btn:hover{background:var(--green-dark)}
+.login-btn:disabled{background:var(--muted);cursor:not-allowed;}
 .login-err{color:var(--red);font-size:.85rem;text-align:center;margin-top:.5rem;display:none}
 
 /* LAYOUT */
@@ -446,7 +447,7 @@ tr:hover td{background:var(--bg)}
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc,
+import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDocs, where,
          orderBy, query, addDoc, deleteDoc, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
@@ -463,24 +464,46 @@ const db = getFirestore(app);
 
 function playAlertSound() {}
 
-const ADMIN_USER = 'admin', ADMIN_PASS = 'hawwil2026';
-function doLogin() {
+// ==========================================
+// 💡 نظام تسجيل الدخول عبر Firebase (تم التعديل هنا)
+// ==========================================
+let currentUserRole = ''; // متغير لحفظ صلاحية المستخدم (admin أو staff)
+
+window.doLogin = async function() {
   const u = document.getElementById('loginUser').value.trim();
   const p = document.getElementById('loginPass').value.trim();
-  if (u === ADMIN_USER && p === ADMIN_PASS) {
-    document.getElementById('loginWrap').style.display = 'none';
-    document.getElementById('app').classList.add('show');
-    startListeners();
-  } else {
-    document.getElementById('loginErr').style.display = 'block';
+  const btn = document.getElementById('loginBtn');
+  const err = document.getElementById('loginErr');
+
+  if(!u || !p) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ جاري التحقق...';
+  err.style.display = 'none';
+
+  try {
+    const qAdmins = query(collection(db, 'admins'), where('username', '==', u));
+    const snap = await getDocs(qAdmins);
+
+    if (!snap.empty) {
+      const userData = snap.docs[0].data();
+      if (userData.password === p) {
+        currentUserRole = userData.role;
+        document.getElementById('loginWrap').style.display = 'none';
+        document.getElementById('app').classList.add('show');
+        startListeners();
+      } else { throw new Error(); }
+    } else { throw new Error(); }
+  } catch (e) {
+    err.style.display = 'block';
   }
+  btn.disabled = false;
+  btn.textContent = '🔐 تسجيل الدخول';
 }
+
 document.getElementById('loginBtn').addEventListener('click', doLogin);
 document.getElementById('logoutBtn').addEventListener('click', () => {
-  document.getElementById('loginWrap').style.display = 'flex';
-  document.getElementById('app').classList.remove('show');
-  document.getElementById('loginUser').value = '';
-  document.getElementById('loginPass').value = '';
+  location.reload(); // إعادة تحميل الصفحة للخروج بشكل نظيف
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('loginWrap').style.display !== 'none') doLogin();
@@ -550,11 +573,29 @@ window.previewImage = function(url) {
   document.getElementById('imagePreviewModal').classList.add('open');
 };
 
+// ==========================================
+// 💡 دالة الحذف للطلبات (تم التعديل هنا)
+// ==========================================
+window.deleteOrder = async (collectionName, docId) => {
+  if (currentUserRole !== 'admin') {
+    showToast('❌ عذراً، لا تملك صلاحية لحذف الطلبات!');
+    return;
+  }
+  if (!confirm('⚠️ هل أنت متأكد من حذف هذا الطلب نهائياً؟')) return;
+  try { 
+    await deleteDoc(doc(db, collectionName, docId)); 
+    showToast('🗑️ تم الحذف بنجاح'); 
+  } catch(e) { 
+    showToast('❌ حدث خطأ في الحذف'); 
+  }
+};
+
 function renderTransfers(data) {
   const tbody = document.getElementById('transfersBody');
   if (!data.length) { tbody.innerHTML=`<tr><td colspan="12"><div class="empty"><div class="empty-icon">📭</div>لا توجد طلبات</div></td></tr>`; return; }
   tbody.innerHTML = data.map(r=>{
     const imgUrl = r.image || r.receipt || r.img || "";
+    // تم إضافة زر الحذف أدناه مع شرط التحقق من الصلاحية
     return `<tr>
     <td><span class="ref">${r.ref||'—'}</span></td>
     <td><strong>${r.name||'—'}</strong></td>
@@ -566,11 +607,16 @@ function renderTransfers(data) {
     <td dir="ltr" style="font-weight:bold; color:var(--ink);">${r.account||'—'}</td>
     <td style="font-size:.78rem">${fmtDate(r.createdAt)}</td>
     <td>${imgUrl ? `<img src="${imgUrl}" onclick="previewImage('${imgUrl}')" style="width:38px;height:38px;border-radius:6px;object-fit:cover;border:1px solid var(--sand);cursor:pointer;" title="اضغط لتكبير الصورة">` : '<span style="color:var(--muted);font-size:.7rem">لا يوجد</span>'}</td>
-    <td><select class="status-select" onchange="changeStatus('transfers','${r.id}',this.value)">
-      <option value="pending" ${r.status==='pending'?'selected':''}>⏳ معلق</option>
-      <option value="done" ${r.status==='done'?'selected':''}>✅ مكتمل</option>
-      <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ مرفوض</option>
-    </select></td></tr>`;
+    <td>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <select class="status-select" onchange="changeStatus('transfers','${r.id}',this.value)">
+          <option value="pending" ${r.status==='pending'?'selected':''}>⏳ معلق</option>
+          <option value="done" ${r.status==='done'?'selected':''}>✅ مكتمل</option>
+          <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ مرفوض</option>
+        </select>
+        ${currentUserRole === 'admin' ? `<button class="del-btn" onclick="deleteOrder('transfers', '${r.id}')" title="حذف الطلب">🗑️</button>` : ''}
+      </div>
+    </td></tr>`;
   }).join('');
 }
 
@@ -581,16 +627,14 @@ function renderCards(data) {
   tbody.innerHTML = data.map(r=>{
     const imgUrl = r.image || r.receipt || r.img || ""; 
     
-    // 🎯 دالة البحث المعدلة: قراءة الموردين القدامى مع نظام الباقات الجديد (sups)
+    // 🎯 دالة البحث المعدلة
     const specificGame = allGames.find(g => (g.id && r.gameId && g.id === r.gameId) || g.name === r.game);
     
     let gameSups = [];
     if(specificGame) {
-       // أولاً نتحقق إن كان هناك موردين بنظام المصفوفة الجديد
        if (specificGame.sups && specificGame.sups.length > 0) {
            gameSups = specificGame.sups;
        } 
-       // ثانياً نتحقق من الحقول القديمة (في حال لم تحدثها للمصفوفة بعد)
        else if (specificGame.supName && specificGame.supLink) {
            gameSups = [{ name: specificGame.supName, link: specificGame.supLink }];
        }
@@ -610,6 +654,7 @@ function renderCards(data) {
        dropdownHtml = `<span style="font-size:0.75rem; color:var(--muted);">لا يوجد مورد</span>`;
     }
 
+    // تم إضافة زر الحذف أدناه مع شرط التحقق من الصلاحية
     return `<tr>
     <td><span class="ref">${r.ref||'—'}</span></td>
     <td><strong>${r.game||'—'}</strong></td>
@@ -624,11 +669,16 @@ function renderCards(data) {
     <td dir="ltr">${r.phone||'—'}</td>
     <td style="font-size:.78rem">${fmtDate(r.createdAt)}</td>
     <td>${imgUrl ? `<img src="${imgUrl}" onclick="previewImage('${imgUrl}')" style="width:38px;height:38px;border-radius:6px;object-fit:cover;border:1px solid var(--sand);cursor:pointer;" title="اضغط لتكبير الصورة">` : '<span style="color:var(--muted);font-size:.7rem">لا يوجد</span>'}</td>
-    <td><select class="status-select" onchange="changeStatus('cards','${r.id}',this.value)">
-      <option value="pending" ${r.status==='pending'?'selected':''}>⏳ معلق</option>
-      <option value="done" ${r.status==='done'?'selected':''}>✅ مكتمل</option>
-      <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ مرفوض</option>
-    </select></td></tr>`;
+    <td>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <select class="status-select" onchange="changeStatus('cards','${r.id}',this.value)">
+          <option value="pending" ${r.status==='pending'?'selected':''}>⏳ معلق</option>
+          <option value="done" ${r.status==='done'?'selected':''}>✅ مكتمل</option>
+          <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ مرفوض</option>
+        </select>
+        ${currentUserRole === 'admin' ? `<button class="del-btn" onclick="deleteOrder('cards', '${r.id}')" title="حذف الطلب">🗑️</button>` : ''}
+      </div>
+    </td></tr>`;
   }).join('');
 }
 
@@ -663,7 +713,9 @@ function renderStock() {
       <option value="available" ${s.status==='available'?'selected':''}>✅ متاح</option>
       <option value="used" ${s.status==='used'?'selected':''}>📤 مستخدم</option>
     </select></td>
-    <td><button class="del-btn" onclick="deleteStock('${s.id}')">🗑️</button></td></tr>`).join('');
+    <td>
+      ${currentUserRole === 'admin' ? `<button class="del-btn" onclick="deleteStock('${s.id}')">🗑️</button>` : ''}
+    </td></tr>`).join('');
 }
 
 function updateCatFilter() {
@@ -686,7 +738,7 @@ function renderBanksTable() {
     <td>${b.order||0}</td>
     <td><div style="display:flex;gap:.4rem">
       <button class="stock-btn" style="font-size:.75rem;padding:.3rem .7rem" onclick="openEditBank('${b.id}')">✏️</button>
-      <button class="del-btn" onclick="deleteBank('${b.id}')">🗑️</button>
+      ${currentUserRole === 'admin' ? `<button class="del-btn" onclick="deleteBank('${b.id}')">🗑️</button>` : ''}
     </div></td></tr>`).join('');
 }
 
@@ -708,7 +760,7 @@ function renderGamesTable() {
     <td>${g.order||0}</td>
     <td><div style="display:flex;gap:.4rem">
       <button class="stock-btn" style="font-size:.75rem;padding:.3rem .7rem" onclick="openEditGame('${g.id}')">✏️</button>
-      <button class="del-btn" onclick="deleteGame('${g.id}')">🗑️</button>
+      ${currentUserRole === 'admin' ? `<button class="del-btn" onclick="deleteGame('${g.id}')">🗑️</button>` : ''}
     </div></td></tr>`;
   }).join('');
 }
@@ -717,18 +769,25 @@ window.changeStatus = async (col, docId, status) => {
   try { await updateDoc(doc(db,col,docId),{status}); showToast('✅ تم تحديث الحالة'); }
   catch { showToast('❌ خطأ في التحديث'); }
 };
+
+// ==========================================
+// 💡 حماية دوال الحذف للمدير فقط (تم التعديل هنا)
+// ==========================================
 window.deleteStock = async (id) => {
+  if (currentUserRole !== 'admin') return;
   if (!confirm('حذف هذه البطاقة؟')) return;
   try { await deleteDoc(doc(db,'stock',id)); showToast('🗑️ تم الحذف'); }
   catch { showToast('❌ خطأ في الحذف'); }
 };
 window.copyCode = (code) => navigator.clipboard.writeText(code).then(()=>showToast('📋 تم نسخ: '+code));
 window.deleteBank = async (id) => {
+  if (currentUserRole !== 'admin') return;
   if (!confirm('حذف هذا البنك؟')) return;
   try { await deleteDoc(doc(db,'banks',id)); showToast('🗑️ تم الحذف'); }
   catch { showToast('❌ خطأ'); }
 };
 window.deleteGame = async (id) => {
+  if (currentUserRole !== 'admin') return;
   if (!confirm('حذف هذا المنتج؟')) return;
   try { await deleteDoc(doc(db,'games',id)); showToast('🗑️ تم الحذف'); }
   catch { showToast('❌ خطأ'); }
@@ -964,7 +1023,6 @@ window.openEditGame = (id) => {
   editingGameId=id; 
   gamePkgs=JSON.parse(JSON.stringify(g.pkgs||[]));
   
-  // 💡 استرجاع الموردين (دعم للحقول القديمة والجديدة)
   gameSups=JSON.parse(JSON.stringify(g.sups||[]));
   if(g.supName && g.supLink && gameSups.length === 0) {
       gameSups.push({name: g.supName, link: g.supLink});
@@ -1008,7 +1066,6 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   btn.disabled=true; btn.textContent='⏳...';
   
   try {
-    // حفظ البيانات في المصفوفة الجديدة sups
     const data={name,icon,logo,bg,desc,badge,order,pkgs,sups,provider,productType};
     if (editingGameId) {
       await updateDoc(doc(db,'games',editingGameId),data);
