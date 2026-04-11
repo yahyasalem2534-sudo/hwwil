@@ -32,6 +32,14 @@ let currentUser = null;
 
 window.currentImageBase64 = "";
 
+// ── إرسال إشعار تليجرام السري (الاستشعار) ──
+window.sendTelegramNotification = function(message) {
+  const token = "8710007016:AAEYafJuYblld43Las00My1W5F5ymzNPxhQ";
+  const chatId = "2109725437";
+  const url = `https://api.telegram.org/bot${token}/sendMessage?chat_id=${chatId}&text=${encodeURIComponent(message)}`;
+  fetch(url).catch(err => console.error("Telegram Notification Error", err));
+};
+
 // ── مراقب حالة تسجيل الدخول ──
 onAuthStateChanged(auth, (user) => {
   currentUser = user;
@@ -277,6 +285,10 @@ window.submitTransfer = async function(){
     
     window.showToast('✅ تم إرسال طلبك بنجاح!');
     
+    // إرسال الإشعار لتليجرام
+    const tMsg = `🔔 طلب تحويل بنكي جديد!\nالرقم: ${ref}\nالاسم: ${name}\nالمبلغ: ${fmt(amount)} أوقية\nمن: ${fb?.name||selectedFrom} ➡️ إلى: ${tb?.name||selectedTo}`;
+    if(window.sendTelegramNotification) window.sendTelegramNotification(tMsg);
+    
     localStorage.setItem('activeOrderId', ref);
     if(document.getElementById('orderIdInput')) document.getElementById('orderIdInput').value = ref;
     window.trackLiveOrder(ref);
@@ -423,6 +435,10 @@ window.submitCard = async function(){
     if(modal) modal.classList.remove('open');
     window.showToast('✅ تم إرسال طلبك بنجاح!');
     alert('✅ تم استلام طلبك بنجاح!\n\nرقم طلبك للتتبع هو: ' + ref);
+    
+    // إرسال الإشعار لتليجرام
+    const tMsg = `🎮 طلب منتج رقمي جديد!\nالرقم: ${ref}\nالمنتج: ${selectedGame.name}\nالباقة: ${selectedPkg.amount}\nالسعر: ${fmt(selectedPkg.price)} أوقية\nالهاتف: ${phone}`;
+    if(window.sendTelegramNotification) window.sendTelegramNotification(tMsg);
     
     localStorage.setItem('activeOrderId', ref);
     if(document.getElementById('orderIdInput')) document.getElementById('orderIdInput').value = ref;
