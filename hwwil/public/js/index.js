@@ -172,7 +172,7 @@ function loadContent() {
   }
 }
 
-// ── السلايدر المتحرك ──
+// ── السلايدر المتحرك (بالتصميم السينمائي المطور) ──
 window.renderSliders = function() {
   const wrapper = document.getElementById('sliderWrapper');
   const dots = document.getElementById('sliderDots');
@@ -194,14 +194,20 @@ window.renderSliders = function() {
 
   wrapper.innerHTML = validSliders.map(s => {
     const g = s.game;
+    const bgUrl = g.logo || '';
+    
+    // الصورة الأصلية واضحة في المنتصف
     const imgHtml = g.logo 
-        ? `<img src="${g.logo}" alt="${g.name}" style="width:100%; height:100%; object-fit:cover;">` 
-        : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:${g.bg||'#1a1a2e'}; font-size:5rem;">${g.icon||'🎮'}</div>`;
+        ? `<img src="${g.logo}" alt="${g.name}">` 
+        : `<div style="position:relative; z-index:2; font-size:5rem; color:#fff;">${g.icon||'🎮'}</div>`;
 
     return `
-    <div class="slide" onclick="openModal('${g.id}')" style="cursor:pointer; position:relative;" title="تسوق ${g.name} الآن">
+    <div class="slide" onclick="openModal('${g.id}')" title="تسوق ${g.name} الآن">
+      <div class="slide-bg" style="background-image: url('${bgUrl}'); background-color: ${g.bg||'#1a1a2e'};"></div>
+      
       ${imgHtml}
-      <div style="position:absolute; bottom:20px; right:20px; background:var(--green); color:white; padding:8px 20px; border-radius:8px; font-weight:800; font-size:0.9rem; box-shadow:0 4px 10px rgba(0,0,0,0.3); border:2px solid white;">تسوق الآن</div>
+      
+      <div class="slide-btn">تسوق الآن</div>
     </div>
   `}).join('');
 
@@ -220,7 +226,7 @@ window.updateSlider = function() {
    const validSlidersCount = document.querySelectorAll('.slide').length;
    if(validSlidersCount === 0) return;
    
-   wrapper.style.transform = `translateX(${currentSlide * 100}%)`; 
+   wrapper.style.transform = `translateX(${currentSlide * -100}%)`; 
    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
 };
 
@@ -463,7 +469,7 @@ window.renderGamesList = function(list, containerId, emptyMsg) {
   container.innerHTML = list.map(g=>`
     <div class="game-card" onclick="openModal('${g.id}')">
       <div class="game-cover" style="background:${g.bg||'#1a1a2e'}">
-        ${g.logo ? `<img src="${g.logo}" alt="${g.name}" class="game-cover-img" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px 12px 0 0;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><span style="display:none;font-size:3.5rem">${g.icon||'🎮'}</span>` : `<span style="font-size:3.5rem">${g.icon||'🎮'}</span>`}
+        ${g.logo ? `<img src="${g.logo}" alt="${g.name}" class="game-cover-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><span style="display:none;font-size:3.5rem">${g.icon||'🎮'}</span>` : `<span style="font-size:3.5rem">${g.icon||'🎮'}</span>`}
         ${g.badge?`<div class="game-badge">${g.badge}</div>`:''}
       </div>
       <div class="game-body"><div class="game-name">${g.name}</div><div class="game-desc">${g.desc||''}</div>
@@ -482,7 +488,7 @@ window.openModal = function(gameId){
   const iconEl = document.getElementById('modalIcon'); 
   if(iconEl) {
       iconEl.style.background = selectedGame.bg||'#1a1a2e';
-      iconEl.innerHTML = selectedGame.logo ? `<img src="${selectedGame.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:8px"/>` : `<span style="font-size:2.5rem">${selectedGame.icon||'🎮'}</span>`;
+      iconEl.innerHTML = selectedGame.logo ? `<img src="${selectedGame.logo}" style="width:100%;height:100%;object-fit:contain;border-radius:8px"/>` : `<span style="font-size:2.5rem">${selectedGame.icon||'🎮'}</span>`;
   }
   
   const playerIdInput = document.getElementById('modalPlayerId');
