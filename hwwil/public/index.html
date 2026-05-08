@@ -36,23 +36,69 @@
   .status-done { background: var(--green-light); color: var(--green); }
   .status-rejected { background: var(--red-light); color: var(--red); }
 
-  /* تنسيقات السلايدر المتحرك الجديد */
-  .main-slider { position: relative; width: 100%; max-width: 1300px; margin: 0 auto 2rem; border-radius: 16px; overflow: hidden; box-shadow: var(--shadow); aspect-ratio: 16/7; background: #eee; }
-  .slider-wrapper { display: flex; width: 100%; height: 100%; transition: transform 0.5s ease-in-out; }
-  .slide { min-width: 100%; height: 100%; position: relative; }
-  .slide img { width: 100%; height: 100%; object-fit: cover; }
-  .slider-nav { position: absolute; top: 50%; width: 100%; display: flex; justify-content: space-between; transform: translateY(-50%); padding: 0 1rem; pointer-events: none; }
-  .nav-btn { background: rgba(0,0,0,0.4); color: white; border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; pointer-events: auto; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: background 0.3s; }
-  .nav-btn:hover { background: var(--green); }
-  .slider-dots { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
-  .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; }
-  .dot.active { background: white; width: 25px; border-radius: 10px; }
+/* ✅ تعديل السلايدر ليكون أنحف وبدون حواف */
+.main-slider { 
+    position: relative; 
+    width: 100vw; 
+    left: 50%; 
+    right: 50%; 
+    margin-left: -50vw; 
+    margin-right: -50vw; 
+    margin-bottom: 2rem; 
+    overflow: hidden; 
+    aspect-ratio: 21/6; /* أنحف لصور البانر */
+    background: #eee; 
+}
+.slider-wrapper { display: flex; width: 100%; height: 100%; transition: transform 0.5s ease-in-out; }
+.slide { min-width: 100%; height: 100%; position: relative; }
+.slide img { width: 100%; height: 100%; object-fit: cover; }
+.slider-nav { position: absolute; top: 50%; width: 100%; display: flex; justify-content: space-between; transform: translateY(-50%); padding: 0 1rem; pointer-events: none; z-index: 10; }
 
-  /* التعديل المطلوب: التأكد من أن صور البطاقات والألعاب تملأ المربع بالكامل */
-  .game-cover { padding: 0 !important; display: block !important; position: relative; overflow: hidden; }
-  .game-cover-img { width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 12px 12px 0 0 !important; }
+/* ✅ أزرار التنقل بيضاوية وخضراء كما طلبت */
+.nav-btn { 
+    background: var(--green); 
+    color: white; 
+    border: none; 
+    width: 50px; 
+    height: 35px; 
+    border-radius: 25px; 
+    cursor: pointer; 
+    pointer-events: auto; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    font-size: 1.2rem; 
+    transition: background 0.3s; 
+}
+.nav-btn:hover { background: var(--green-dark); }
 
-  @media (max-width: 800px) {
+.slider-dots { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+.dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; }
+.dot.active { background: white; width: 25px; border-radius: 10px; }
+
+/* ✅ زر تسوق الآن بيضاوي ذهبي (بدل البرتقالي) */
+.slider-shop-btn {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gold);
+    color: white;
+    border: 2px solid white;
+    padding: 8px 30px;
+    border-radius: 50px;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+    z-index: 5;
+    white-space: nowrap;
+}
+
+/* ✅ التأكد من أن صور الألعاب تملأ المربعات */
+.game-cover { padding: 0 !important; display: block !important; position: relative; overflow: hidden; }
+.game-cover-img { width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 12px 12px 0 0 !important; }
+
+@media (max-width: 800px) {
     nav { flex-wrap: wrap !important; padding: 0.8rem !important; }
     .logo { order: 1; }
     .nav-right { order: 2; }
@@ -62,10 +108,10 @@
     #navLoginBtn { padding: 0.4rem 0.6rem !important; font-size: 0.75rem !important; margin-left: 0.3rem !important; }
     .whatsapp-btn { padding: 0.4rem 0.6rem !important; font-size: 0.75rem !important; }
     .main-slider { aspect-ratio: 16/9; }
-  }
+}
 </style>
 </head>
-<body>
+<body style="margin: 0; padding: 0; overflow-x: hidden;">
 
 <nav>
   <a href="#" class="logo" style="display: flex; align-items: center; gap: 0.5rem;">
@@ -123,14 +169,14 @@
       </div>
     </div>
 
-    <div class="search-order-container" style="max-width:800px; margin: 2rem auto; padding: 1.5rem; background: var(--white); border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
-      <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; font-size: 1.1rem; color: var(--ink);">🔍 تتبع حالة طلبك اللحظية</h3>
-      <div style="display: flex; gap: .5rem;">
-        <input type="text" id="orderIdInput" class="form-input" placeholder="أدخل رقم الطلب (مثلاً: HW-12345 أو CRD-12345)" style="flex: 1; border: 1.5px solid #DDE8E3;">
-        <button onclick="checkOrderStatus()" style="background: var(--green); color: white; border: none; padding: .8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit;">بحث</button>
-      </div>
-      <div id="orderStatusResult" style="margin-top: 1rem; text-align: center; font-weight: 800; font-size: 1.1rem;"></div>
-    </div>
+<div class="search-order-container" style="max-width:800px; margin: 2rem auto; padding: 1.5rem; background: var(--white); border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
+  <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; font-size: 1.1rem; color: var(--ink);">🔍 تتبع حالة طلبك اللحظية</h3>
+  <div style="display: flex; gap: .5rem;">
+    <input type="text" id="orderIdInput" class="form-input" placeholder="أدخل رقم الطلب (مثلاً: HW-12345 أو CRD-12345)" style="flex: 1; border: 1.5px solid #DDE8E3;">
+    <button onclick="checkOrderStatus()" style="background: var(--green); color: white; border: none; padding: .8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit;">بحث</button>
+  </div>
+  <div id="orderStatusResult" style="margin-top: 1rem; text-align: center; font-weight: 800; font-size: 1.1rem;"></div>
+</div>
 
   </div>
 
@@ -204,66 +250,59 @@
       <div class="form-section-title" style="margin-top:1.5rem"><div class="form-section-icon">📤</div>بنك الإرسال</div>
       <div class="banks-grid" id="fromBanks"></div>
 
-      <div class="divider">⬇ سيتم التحويل إلى</div>
-      <div class="form-section-title"><div class="form-section-icon">📥</div>بنك الاستلام</div>
-      <div class="banks-grid" id="toBanks"></div>
-      
-      <div class="form-group full" style="margin-top:1.2rem">
-        <label>رقم حساب المستلم (أو رقم الهاتف المربوط بالبنك) *</label>
-        <input class="form-input" id="toAccount" type="text" placeholder="مثال: 0000123456 أو 33334444"/>
-      </div>
-      
-      <div class="form-group" style="margin-top:.8rem">
-        <label>ملاحظات إضافية (اختياري)</label>
-        <input class="form-input" id="notes" type="text" placeholder="أي معلومات إضافية..."/>
-      </div>
+  <div class="divider">⬇ سيتم التحويل إلى</div>
+  <div class="form-section-title"><div class="form-section-icon">📥</div>بنك الاستلام</div>
+  <div class="banks-grid" id="toBanks"></div>
+  
+  <div class="form-group full" style="margin-top:1.2rem">
+    <label>رقم حساب المستلم (أو رقم الهاتف المربوط بالبنك) *</label>
+    <input class="form-input" id="toAccount" type="text" placeholder="مثال: 0000123456 أو 33334444"/>
+  </div>
+  
+  <div class="form-group" style="margin-top:.8rem">
+    <label>ملاحظات إضافية (اختياري)</label>
+    <input class="form-input" id="notes" type="text" placeholder="أي معلومات إضافية..."/>
+  </div>
 
-      <div style="background: var(--green-light); border: 2px dashed var(--green); border-radius: 12px; padding: 1.5rem; text-align: center; margin-top: 1.5rem;">
-        <div style="font-weight: 800; color: var(--green); font-size: 1.1rem; margin-bottom: 0.5rem;">📱 رقمنا لاستلام الحوالات</div>
-        <div style="font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; color: var(--ink);">34362534</div>
-        <div style="font-size: 0.9rem; color: var(--mid); margin-top: 0.5rem;">يرجى تحويل المبلغ الإجمالي إلى هذا الرقم أولاً، ثم إرفاق صورة الوصل أدناه لتأكيد الطلب.</div>
-      </div>
-      
-      <div class="form-section-title" style="margin-top:1.5rem"><div class="form-section-icon">📸</div>إرفاق صورة الوصل (الدليل) *</div>
-      <div class="form-group full" style="margin-top:1rem">
-        <input type="file" id="receiptImage" accept="image/*" style="display: none;" onchange="handleImagePreview(event, 'transfer')">
-        
-        <div id="uploadPlaceholder" onclick="document.getElementById('receiptImage').click()" style="border: 2px dashed var(--green); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; background: var(--white); transition: all 0.2s;">
-          <div style="font-size: 2rem; margin-bottom: 0.5rem;">📥</div>
-          <div style="font-weight: 700; color: var(--green);">اضغط هنا لاختيار صورة الوصل</div>
-          <div style="font-size: 0.8rem; color: var(--mid); margin-top: 0.3rem;">يدعم JPG, PNG</div>
-        </div>
-
-        <div id="imagePreviewContainer" style="display: none; margin-top: 1rem; position: relative; width: fit-content;">
-          <img id="imgPreview" src="#" alt="معاينة الوصل" style="max-width: 100%; height: auto; max-height: 250px; border-radius: 12px; border: 2px solid var(--green); box-shadow: var(--shadow);">
-          <button type="button" onclick="document.getElementById('receiptImage').click()" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem;">🔄 تغيير الصورة</button>
-        </div>
-      </div>
-
-      <button class="submit-btn" style="margin-top:1.5rem" onclick="submitTransfer()">✅ إرسال طلب التحويل</button>
+  <div style="background: var(--green-light); border: 2px dashed var(--green); border-radius: 12px; padding: 1.5rem; text-align: center; margin-top: 1.5rem;">
+    <div style="font-weight: 800; color: var(--green); font-size: 1.1rem; margin-bottom: 0.5rem;">📱 رقمنا لاستلام الحوالات</div>
+    <div style="font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; color: var(--ink);">34362534</div>
+    <div style="font-size: 0.9rem; color: var(--mid); margin-top: 0.5rem;">يرجى تحويل المبلغ الإجمالي إلى هذا الرقم أولاً، ثم إرفاق صورة الوصل أدناه لتأكيد الطلب.</div>
+  </div>
+  
+  <div class="form-section-title" style="margin-top:1.5rem"><div class="form-section-icon">📸</div>إرفاق صورة الوصل (الدليل) *</div>
+  <div class="form-group full" style="margin-top:1rem">
+    <input type="file" id="receiptImage" accept="image/*" style="display: none;" onchange="handleImagePreview(event, 'transfer')">
+    
+    <div id="uploadPlaceholder" onclick="document.getElementById('receiptImage').click()" style="border: 2px dashed var(--green); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; background: var(--white); transition: all 0.2s;">
+      <div style="font-size: 2rem; margin-bottom: 0.5rem;">📥</div>
+      <div style="font-weight: 700; color: var(--green);">اضغط هنا لاختيار صورة الوصل</div>
+      <div style="font-size: 0.8rem; color: var(--mid); margin-top: 0.3rem;">يدعم JPG, PNG</div>
     </div>
 
-    <div class="success-card" id="successCard">
-      <div class="success-icon">✅</div>
-      <div class="success-title">تم استلام طلبك بنجاح!</div>
-      <div class="success-sub">سيتم مراجعة طلبك وإتمام التحويل. يمكنك تتبع طلبك عبر الصفحة الرئيسية.</div>
-      <div class="success-ref" id="successRef">رقم الطلب: #——</div>
-      <button class="btn-main" onclick="resetTransfer()" style="width:100%">طلب تحويل جديد</button>
+    <div id="imagePreviewContainer" style="display: none; margin-top: 1rem; position: relative; width: fit-content;">
+      <img id="imgPreview" src="#" alt="معاينة الوصل" style="max-width: 100%; height: auto; max-height: 250px; border-radius: 12px; border: 2px solid var(--green); box-shadow: var(--shadow);">
+      <button type="button" onclick="document.getElementById('receiptImage').click()" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem;">🔄 تغيير الصورة</button>
     </div>
+  </div>
+
+  <button class="submit-btn" style="margin-top:1.5rem" onclick="submitTransfer()">✅ إرسال طلب التحويل</button>
+</div>
+
+<div class="success-card" id="successCard">
+  <div class="success-icon">✅</div>
+  <div class="success-title">تم استلام طلبك بنجاح!</div>
+  <div class="success-sub">سيتم مراجعة طلبك وإتمام التحويل. يمكنك تتبع طلبك عبر الصفحة الرئيسية.</div>
+  <div class="success-ref" id="successRef">رقم الطلب: #——</div>
+  <button class="btn-main" onclick="resetTransfer()" style="width:100%">طلب تحويل جديد</button>
+</div>
   </div>
 </div>
 
 <div class="page" id="page-cards">
-  <div class="section" style="padding-top:3rem">
-    <div class="transfer-header" style="margin-bottom:1.5rem">
-      <div style="display:inline-flex;align-items:center;gap:.5rem;background:var(--green-light);color:var(--green);border-radius:99px;padding:.35rem 1rem;font-size:.82rem;font-weight:700;margin-bottom:1rem">🎮💳 البطاقات والخدمات</div>
-      <h2>تسوق البطاقات الرقمية</h2>
-      <p style="color:var(--mid);font-size:1rem">اختر القسم المناسب، حدد الباقة، وسنرسل لك الكود فوراً</p>
-    </div>
-
+  <div class="section" style="padding-top:0">
     <div class="main-slider" id="cardsSlider">
-      <div class="slider-wrapper" id="sliderWrapper">
-        </div>
+      <div class="slider-wrapper" id="sliderWrapper"></div>
       <div class="slider-nav">
         <button class="nav-btn prev" onclick="moveSlider(-1)">❮</button>
         <button class="nav-btn next" onclick="moveSlider(1)">❯</button>
@@ -271,17 +310,17 @@
       <div class="slider-dots" id="sliderDots"></div>
     </div>
 
-    <div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
-      <h3 class="section-title-sm"><span>🎮</span> شحن الألعاب</h3>
-      <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">شحن فوري لأشهر الألعاب (ببجي، فري فاير، والمزيد)</p>
-      <div class="games-grid" id="gamesOnlyGrid"></div>
-    </div>
+<div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow); margin-top: 2rem;">
+  <h3 class="section-title-sm"><span>🎮</span> شحن الألعاب</h3>
+  <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">شحن فوري لأشهر الألعاب (ببجي، فري فاير، والمزيد)</p>
+  <div class="games-grid" id="gamesOnlyGrid"></div>
+</div>
 
-    <div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
-      <h3 class="section-title-sm"><span>💳</span> بطاقات واشتراكات</h3>
-      <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">اشتراكات وبطاقات هدايا (نتفلكس، آبل، بلايستيشن، والمزيد)</p>
-      <div class="games-grid" id="servicesOnlyGrid"></div>
-    </div>
+<div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
+  <h3 class="section-title-sm"><span>💳</span> بطاقات واشتراكات</h3>
+  <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">اشتراكات وبطاقات هدايا (نتفلكس، آبل، بلايستيشن، والمزيد)</p>
+  <div class="games-grid" id="servicesOnlyGrid"></div>
+</div>
   </div>
 </div>
 
@@ -293,22 +332,22 @@
       <button onclick="logoutUser()" class="btn-outline" style="margin-top:1rem; border-color:var(--red); color:var(--red); padding: .4rem 1rem;">تسجيل الخروج</button>
     </div>
 
-    <div style="display:flex; gap:1rem; margin-bottom:1.5rem; border-bottom:1.5px solid var(--sand); padding-bottom:1rem;">
-      <button class="nav-tab active" id="tabMyTransfers" onclick="switchProfileTab('transfers')">🏦 تحويلاتي</button>
-      <button class="nav-tab" id="tabMyCards" onclick="switchProfileTab('cards')">🎮 بطاقاتي</button>
-    </div>
+<div style="display:flex; gap:1rem; margin-bottom:1.5rem; border-bottom:1.5px solid var(--sand); padding-bottom:1rem;">
+  <button class="nav-tab active" id="tabMyTransfers" onclick="switchProfileTab('transfers')">🏦 تحويلاتي</button>
+  <button class="nav-tab" id="tabMyCards" onclick="switchProfileTab('cards')">🎮 بطاقاتي</button>
+</div>
 
-    <div id="myTransfersContainer">
-      <div id="myTransfersList">
-        <p style="text-align:center; padding:2rem; color:var(--muted);">⏳ جاري جلب التحويلات...</p>
-      </div>
-    </div>
+<div id="myTransfersContainer">
+  <div id="myTransfersList">
+    <p style="text-align:center; padding:2rem; color:var(--muted);">⏳ جاري جلب التحويلات...</p>
+  </div>
+</div>
 
-    <div id="myCardsContainer" style="display:none;">
-      <div id="myCardsList">
-        <p style="text-align:center; padding:2rem; color:var(--muted);">⏳ جاري جلب البطاقات...</p>
-      </div>
-    </div>
+<div id="myCardsContainer" style="display:none;">
+  <div id="myCardsList">
+    <p style="text-align:center; padding:2rem; color:var(--muted);">⏳ جاري جلب البطاقات...</p>
+  </div>
+</div>
   </div>
 </div>
 
@@ -324,48 +363,48 @@
         <div><div class="modal-game-name" id="modalGameName"></div><div class="modal-game-sub">اختر الكمية المناسبة</div></div>
       </div>
 
-      <div class="modal-pkgs" id="modalPkgs"></div>
-      
-      <div class="form-section-title" style="margin-top:1.2rem"><div class="form-section-icon">🏦</div>اختر بنك الدفع</div>
-      <div class="banks-grid" id="paymentBanks" style="margin-bottom: 1.2rem; gap: 0.5rem; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));">
-        </div>
-      
-      <div class="form-group" style="margin-bottom:1rem">
-          <label>معرّف اللاعب / الحساب (اختياري للبطاقات)</label>
-          <input class="form-input" id="modalPlayerId" type="text" placeholder="أدخل معرفك أو حسابك"/>
-      </div>
-      
-      <div class="form-group" style="margin-bottom:1.2rem">
-          <label>رقم هاتفك للتأكيد</label>
-          <input class="form-input" id="modalPhone" type="tel" placeholder="2222 00 222"/>
-      </div>
-      
-      <div class="calc-box" style="margin-bottom:1.2rem">
-        <div class="calc-row calc-total"><span class="calc-label">💰 إجمالي المبلغ</span><span class="calc-val" id="modalTotal">اختر باقة أولاً</span></div>
-      </div>
-
-      <div style="background: var(--green-light); border: 2px dashed var(--green); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 1.5rem;">
-        <div style="font-weight: 800; color: var(--green); font-size: 1rem; margin-bottom: 0.3rem;">📱 للطلب يرجى الدفع للرقم:</div>
-        <div style="font-size: 1.5rem; font-weight: 900; letter-spacing: 2px; color: var(--ink);">34362534</div>
-      </div>
-
-      <div class="form-group full" style="margin-bottom:1.5rem">
-        <label style="font-weight: 800; display: block; margin-bottom: 0.5rem;">صورة الوصل (إلزامي) *</label>
-        <input type="file" id="modalReceiptImage" accept="image/*" style="display: none;" onchange="handleImagePreview(event, 'card')">
-        
-        <div id="modalUploadPlaceholder" onclick="document.getElementById('modalReceiptImage').click()" style="border: 2px dashed var(--green); border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; background: var(--white); transition: all 0.2s;">
-          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📥</div>
-          <div style="font-weight: 700; color: var(--green); font-size: 0.9rem;">اضغط لإرفاق وصل الدفع</div>
-        </div>
-
-        <div id="modalImagePreviewContainer" style="display: none; margin-top: 0.5rem; position: relative; width: 100%; text-align: center;">
-          <img id="modalImgPreview" src="#" alt="معاينة الوصل" style="max-width: 100%; height: auto; max-height: 150px; border-radius: 10px; border: 2px solid var(--green);">
-          <button type="button" onclick="document.getElementById('modalReceiptImage').click()" style="position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">🔄 تغيير</button>
-        </div>
-      </div>
-      
-      <button class="submit-btn" onclick="submitCard()">✅ إرسال الطلب الآن</button>
+  <div class="modal-pkgs" id="modalPkgs"></div>
+  
+  <div class="form-section-title" style="margin-top:1.2rem"><div class="form-section-icon">🏦</div>اختر بنك الدفع</div>
+  <div class="banks-grid" id="paymentBanks" style="margin-bottom: 1.2rem; gap: 0.5rem; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));">
     </div>
+  
+  <div class="form-group" style="margin-bottom:1rem">
+      <label>معرّف اللاعب / الحساب (اختياري للبطاقات)</label>
+      <input class="form-input" id="modalPlayerId" type="text" placeholder="أدخل معرفك أو حسابك"/>
+  </div>
+  
+  <div class="form-group" style="margin-bottom:1.2rem">
+      <label>رقم هاتفك للتأكيد</label>
+      <input class="form-input" id="modalPhone" type="tel" placeholder="2222 00 222"/>
+  </div>
+  
+  <div class="calc-box" style="margin-bottom:1.2rem">
+    <div class="calc-row calc-total"><span class="calc-label">💰 إجمالي المبلغ</span><span class="calc-val" id="modalTotal">اختر باقة أولاً</span></div>
+  </div>
+
+  <div style="background: var(--green-light); border: 2px dashed var(--green); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 1.5rem;">
+    <div style="font-weight: 800; color: var(--green); font-size: 1rem; margin-bottom: 0.3rem;">📱 للطلب يرجى الدفع للرقم:</div>
+    <div style="font-size: 1.5rem; font-weight: 900; letter-spacing: 2px; color: var(--ink);">34362534</div>
+  </div>
+
+  <div class="form-group full" style="margin-bottom:1.5rem">
+    <label style="font-weight: 800; display: block; margin-bottom: 0.5rem;">صورة الوصل (إلزامي) *</label>
+    <input type="file" id="modalReceiptImage" accept="image/*" style="display: none;" onchange="handleImagePreview(event, 'card')">
+    
+    <div id="modalUploadPlaceholder" onclick="document.getElementById('modalReceiptImage').click()" style="border: 2px dashed var(--green); border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; background: var(--white); transition: all 0.2s;">
+      <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📥</div>
+      <div style="font-weight: 700; color: var(--green); font-size: 0.9rem;">اضغط لإرفاق وصل الدفع</div>
+    </div>
+
+    <div id="modalImagePreviewContainer" style="display: none; margin-top: 0.5rem; position: relative; width: 100%; text-align: center;">
+      <img id="modalImgPreview" src="#" alt="معاينة الوصل" style="max-width: 100%; height: auto; max-height: 150px; border-radius: 10px; border: 2px solid var(--green);">
+      <button type="button" onclick="document.getElementById('modalReceiptImage').click()" style="position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">🔄 تغيير</button>
+    </div>
+  </div>
+  
+  <button class="submit-btn" onclick="submitCard()">✅ إرسال الطلب الآن</button>
+</div>
   </div>
 </div>
 
@@ -381,22 +420,22 @@
         <button class="nav-tab" id="authRegisterTab" style="flex:1; text-align:center;" onclick="switchAuthMode('register')">حساب جديد</button>
       </div>
 
-      <div class="form-group"><label>البريد الإلكتروني</label><input class="form-input" id="authEmail" type="email" placeholder="example@gmail.com"/></div>
-      <div class="form-group" style="margin-bottom:1.5rem"><label>كلمة المرور</label><input class="form-input" id="authPass" type="password" placeholder="••••••••"/></div>
-      <div id="authErrorMsg" style="color:var(--red); font-size:.85rem; margin-bottom:1rem; text-align:center; display:none;"></div>
-      
-      <button class="submit-btn" id="authSubmitBtn" onclick="handleAuthEmail()">تسجيل الدخول</button>
+  <div class="form-group"><label>البريد الإلكتروني</label><input class="form-input" id="authEmail" type="email" placeholder="example@gmail.com"/></div>
+  <div class="form-group" style="margin-bottom:1.5rem"><label>كلمة المرور</label><input class="form-input" id="authPass" type="password" placeholder="••••••••"/></div>
+  <div id="authErrorMsg" style="color:var(--red); font-size:.85rem; margin-bottom:1rem; text-align:center; display:none;"></div>
+  
+  <button class="submit-btn" id="authSubmitBtn" onclick="handleAuthEmail()">تسجيل الدخول</button>
 
-      <div style="text-align:center; margin:1.5rem 0; color:var(--muted); font-size:.85rem; position:relative;">
-        <hr style="border:none; border-top:1px solid var(--sand); position:absolute; top:50%; width:100%; z-index:1;">
-        <span style="background:var(--white); padding:0 10px; position:relative; z-index:2;">أو</span>
-      </div>
+  <div style="text-align:center; margin:1.5rem 0; color:var(--muted); font-size:.85rem; position:relative;">
+    <hr style="border:none; border-top:1px solid var(--sand); position:absolute; top:50%; width:100%; z-index:1;">
+    <span style="background:var(--white); padding:0 10px; position:relative; z-index:2;">أو</span>
+  </div>
 
-      <button class="submit-btn" style="background:#fff; color:var(--ink); border:1.5px solid var(--sand); display:flex; align-items:center; justify-content:center; gap:.8rem;" onclick="handleAuthGoogle()">
-        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;">
-        المتابعة باستخدام Google
-      </button>
-    </div>
+  <button class="submit-btn" style="background:#fff; color:var(--ink); border:1.5px solid var(--sand); display:flex; align-items:center; justify-content:center; gap:.8rem;" onclick="handleAuthGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;">
+    المتابعة باستخدام Google
+  </button>
+</div>
   </div>
 </div>
 
@@ -409,7 +448,7 @@
       <p class="footer-desc">منصة موريتانية متخصصة في خدمات التحويل بين البنوك وبيع البطاقات الرقمية.</p>
       <div class="footer-contact">
         <div class="footer-contact-item">📱 واتساب: 0022234362534</div>
-        <div class="footer-contact-item">🕐 متاح: ٨ص – ١٢م</div>
+        <div class="footer-contact-item">🕐 متاح: ٨ص – ١2م</div>
       </div>
     </div>
     <div>
