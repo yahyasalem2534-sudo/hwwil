@@ -2,11 +2,11 @@
 // js/index.js — منطق الواجهة الرئيسية للعميل
 // ══════════════════════════════════════
 
-import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, getDocs, where, onSnapshot }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } 
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut }
+from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey:            "AIzaSyA4W0Rq_Rd7c7zmh-Vuw8YV9v4WDFCgoeI",
@@ -50,11 +50,11 @@ onAuthStateChanged(auth, (user) => {
   currentUser = user;
   const loginBtn = document.getElementById('navLoginBtn');
   const profileBtn = document.getElementById('navProfileBtn');
-  
+
   if (user) {
     if(loginBtn) loginBtn.style.display = 'none';
     if(profileBtn) profileBtn.style.display = 'inline-block';
-    
+
     const emailLabel = document.getElementById('profileUserEmail');
     if(emailLabel) emailLabel.textContent = user.email;
 
@@ -94,7 +94,7 @@ window.handleAuthEmail = async () => {
   const btn = document.getElementById('authSubmitBtn');
 
   if(!email || !pass) { errMsg.textContent = 'يرجى إدخال البريد وكلمة المرور'; errMsg.style.display = 'block'; return; }
-  
+
   btn.disabled = true; btn.textContent = '⏳ جاري...';
   errMsg.style.display = 'none';
 
@@ -172,48 +172,43 @@ function loadContent() {
   }
 }
 
-// ── السلايدر المتحرك (بالتصميم السينمائي المطور) ──
+// ── السلايدر المتحرك ──
 window.renderSliders = function() {
   const wrapper = document.getElementById('sliderWrapper');
   const dots = document.getElementById('sliderDots');
   const container = document.getElementById('cardsSlider');
 
   if (!wrapper || !dots || !container) return;
-  
+
   const validSliders = SLIDERS.map(s => {
-      const game = GAMES.find(g => g.id === s.gameId);
-      return game ? { ...s, game } : null;
+    const game = GAMES.find(g => g.id === s.gameId);
+    return game ? { ...s, game } : null;
   }).filter(Boolean);
 
-  if (!validSliders.length) { 
-    container.style.display = 'none'; 
-    return; 
+  if (!validSliders.length) {
+    container.style.display = 'none';
+    return;
   }
-  
+
   container.style.display = 'block';
 
   wrapper.innerHTML = validSliders.map(s => {
     const g = s.game;
-    const bgUrl = g.logo || '';
+    // التعديل: إعطاء الأولوية للبانر العريض، وإذا لم يوجد نستخدم صورة المنتج
+    const banner = s.bannerUrl || g.logo;
     
-    // الصورة الأصلية واضحة في المنتصف
-    const imgHtml = g.logo 
-        ? `<img src="${g.logo}" alt="${g.name}">` 
-        : `<div style="position:relative; z-index:2; font-size:5rem; color:#fff;">${g.icon||'🎮'}</div>`;
+    const imgHtml = banner
+      ? `<img src="${banner}" alt="${g.name}" style="width:100%; height:100%; object-fit:cover;">`
+      : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:${g.bg||'#1a1a2e'}; font-size:5rem;">${g.icon||'🎮'}</div>`;
 
     return `
-    <div class="slide" onclick="openModal('${g.id}')" title="تسوق ${g.name} الآن">
-      <div class="slide-bg" style="background-image: url('${bgUrl}'); background-color: ${g.bg||'#1a1a2e'};"></div>
-      
+    <div class="slide" onclick="openModal('${g.id}')" style="cursor:pointer; position:relative;" title="تسوق ${g.name} الآن">
       ${imgHtml}
-      
-      <div class="slide-btn">تسوق الآن</div>
+      <div style="position:absolute; bottom:20px; right:20px; background:var(--green); color:white; padding:8px 20px; border-radius:8px; font-weight:800; font-size:0.9rem; box-shadow:0 4px 10px rgba(0,0,0,0.3); border:2px solid white;">تسوق الآن</div>
     </div>
-  `}).join('');
+    `}).join('');
 
-  dots.innerHTML = validSliders.map((_, i) => `
-    <div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>
-  `).join('');
+  dots.innerHTML = validSliders.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>`).join('');
 
   currentSlide = 0;
   window.updateSlider();
@@ -221,74 +216,66 @@ window.renderSliders = function() {
 };
 
 window.updateSlider = function() {
-   const wrapper = document.getElementById('sliderWrapper');
-   if(!wrapper) return;
-   const validSlidersCount = document.querySelectorAll('.slide').length;
-   if(validSlidersCount === 0) return;
-   
-   wrapper.style.transform = `translateX(${currentSlide * -100}%)`; 
-   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+  const wrapper = document.getElementById('sliderWrapper');
+  if(!wrapper) return;
+  const validSlidersCount = document.querySelectorAll('.slide').length;
+  if(validSlidersCount === 0) return;
+
+  wrapper.style.transform = `translateX(${currentSlide * 100}%)`;
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
 };
 
 window.moveSlider = function(dir) {
-   currentSlide += dir;
-   const validSlidersCount = document.querySelectorAll('.slide').length;
-   if(currentSlide < 0) currentSlide = validSlidersCount - 1;
-   if(currentSlide >= validSlidersCount) currentSlide = 0;
-   window.updateSlider();
-   startAutoSlide();
+  currentSlide += dir;
+  const validSlidersCount = document.querySelectorAll('.slide').length;
+  if(currentSlide < 0) currentSlide = validSlidersCount - 1;
+  if(currentSlide >= validSlidersCount) currentSlide = 0;
+  window.updateSlider();
+  startAutoSlide();
 };
 
-window.goToSlide = function(i) { 
-    currentSlide = i; 
-    window.updateSlider(); 
-    startAutoSlide(); 
+window.goToSlide = function(i) {
+  currentSlide = i;
+  window.updateSlider();
+  startAutoSlide();
 };
 
 function startAutoSlide() {
-   clearInterval(sliderInterval);
-   sliderInterval = setInterval(() => { window.moveSlider(1); }, 4000);
+  clearInterval(sliderInterval);
+  sliderInterval = setInterval(() => { window.moveSlider(1); }, 4000);
 }
 
 // ── بنوك الدفع (البطاقات) ──
 window.renderPaymentBanks = function() {
-   const cont = document.getElementById('paymentBanks');
-   if(!cont) return;
-   
-   if(!PAYMENT_BANKS.length) {
-      cont.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;padding:0.5rem;width:100%;text-align:center">لا توجد طرق دفع مضافة.</p>';
-      return;
-   }
-   
-   cont.innerHTML = PAYMENT_BANKS.map(b => `
-     <label class="bank-btn pb-btn" id="pb-${b.id}" style="display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:10px; border:1.5px solid var(--sand); border-radius:10px; background:var(--white);">
-       <input type="radio" name="selectedPB" value="${b.name}" style="display:none;" onchange="selectPaymentBank('${b.id}', '${b.name}')">
-       <div style="width:36px; height:36px; border-radius:8px; background:${b.color||'#0A7C4E'}; display:flex; justify-content:center; align-items:center; margin-bottom:5px;">
-         ${b.logo ? `<img src="${b.logo}" style="width:100%;height:100%;object-fit:contain">` : `<span style="color:#fff;font-size:12px;font-weight:bold">${b.name.substring(0,3)}</span>`}
-       </div>
-       <div style="font-size:0.8rem; font-weight:700; color:var(--ink);">${b.name}</div>
-     </label>
-   `).join('');
+  const cont = document.getElementById('paymentBanks');
+  if(!cont) return;
+
+  if(!PAYMENT_BANKS.length) {
+    cont.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;padding:0.5rem;width:100%;text-align:center">لا توجد طرق دفع مضافة.</p>';
+    return;
+  }
+
+  cont.innerHTML = PAYMENT_BANKS.map(b => `<label class="bank-btn pb-btn" id="pb-${b.id}" style="display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:10px; border:1.5px solid var(--sand); border-radius:10px; background:var(--white);"> <input type="radio" name="selectedPB" value="${b.name}" style="display:none;" onchange="selectPaymentBank('${b.id}', '${b.name}')"> <div style="width:36px; height:36px; border-radius:8px; background:${b.color||'#0A7C4E'}; display:flex; justify-content:center; align-items:center; margin-bottom:5px;"> ${b.logo ?`<img src="${b.logo}" style="width:100%;height:100%;object-fit:contain">`:`<span style="color:#fff;font-size:12px;font-weight:bold">${b.name.substring(0,3)}</span>`} </div> <div style="font-size:0.8rem; font-weight:700; color:var(--ink);">${b.name}</div> </label> `).join('');
 };
 
 window.selectPaymentBank = function(id, name) {
-   document.querySelectorAll('.pb-btn').forEach(el => {
-      el.style.borderColor = 'var(--sand)';
-      el.style.background = 'var(--white)';
-   });
-   const selectedEl = document.getElementById('pb-'+id);
-   if(selectedEl) {
-      selectedEl.style.borderColor = 'var(--green)';
-      selectedEl.style.background = 'var(--green-light)';
-   }
-   
-   const payBoxes = document.querySelectorAll('#modal .calc-box ~ div[style*="background: var(--green-light)"]');
-   if(payBoxes.length > 0) {
-       const title = payBoxes[0].querySelector('div:first-child');
-       if(title) {
-           title.innerHTML = `📱 للطلب يرجى الدفع عبر ${name} للرقم:`;
-       }
-   }
+  document.querySelectorAll('.pb-btn').forEach(el => {
+    el.style.borderColor = 'var(--sand)';
+    el.style.background = 'var(--white)';
+  });
+  const selectedEl = document.getElementById('pb-'+id);
+  if(selectedEl) {
+    selectedEl.style.borderColor = 'var(--green)';
+    selectedEl.style.background = 'var(--green-light)';
+  }
+
+  const payBoxes = document.querySelectorAll('#modal .calc-box ~ div[style*="background: var(--green-light)"]');
+  if(payBoxes.length > 0) {
+    const title = payBoxes[0].querySelector('div:first-child');
+    if(title) {
+      title.innerHTML = `📱 للطلب يرجى الدفع عبر ${name} للرقم:`;
+    }
+  }
 };
 
 // ── معالجة وضغط الصور ──
@@ -301,10 +288,10 @@ window.handleImagePreview = function(event, type = 'transfer') {
       img.onload = () => {
         const canvas = document.createElement('canvas');
         let width = img.width; let height = img.height;
-        const MAX_SIZE = 800; 
-        if (width > height && width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } 
+        const MAX_SIZE = 800;
+        if (width > height && width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
         else if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
-        
+
         canvas.width = width; canvas.height = height;
         const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
         const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6); 
@@ -328,31 +315,26 @@ window.handleImagePreview = function(event, type = 'transfer') {
 window.showPage = function(name){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  
+
   const pageEl = document.getElementById('page-'+name);
   if(pageEl) pageEl.classList.add('active');
-  
+
   if(name === 'home') document.querySelectorAll('.nav-tab')[0]?.classList.add('active');
   if(name === 'transfer') document.querySelectorAll('.nav-tab')[1]?.classList.add('active');
   if(name === 'cards') document.querySelectorAll('.nav-tab')[2]?.classList.add('active');
   if(name === 'profile') {
     document.getElementById('navProfileBtn')?.classList.add('active');
-    window.loadUserOrders(); 
+    window.loadUserOrders();
   }
-  
+
   window.scrollTo({top:0,behavior:'smooth'});
 };
 
 window.renderBanks = function(containerId, type){
   const container = document.getElementById(containerId);
-  if(!container) return; 
+  if(!container) return;
   if(!BANKS.length) { container.innerHTML = '<p style="color:var(--mid);font-size:.85rem;padding:.5rem;width:100%;text-align:center">لا توجد بنوك متاحة حالياً.</p>'; return; }
-  container.innerHTML = BANKS.map(b=>`
-    <button class="bank-btn" id="${type}-${b.id}" onclick="selectBank('${type}','${b.id}')">
-      <div class="bank-logo-wrap">
-        ${b.logo ? `<img src="${b.logo}" alt="${b.name}" class="bank-logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><div class="bank-logo-fallback" style="display:none;background:${b.color||'#0A7C4E'}">${(b.name||'').substring(0,3)}</div>` : `<div class="bank-logo-fallback" style="background:${b.color||'#0A7C4E'}">${(b.name||'').substring(0,3)}</div>`}
-      </div><div class="bank-name">${b.name}</div>
-    </button>`).join('');
+  container.innerHTML = BANKS.map(b=>`<button class="bank-btn" id="${type}-${b.id}" onclick="selectBank('${type}','${b.id}')"> <div class="bank-logo-wrap"> ${b.logo ?`<img src="${b.logo}" alt="${b.name}" class="bank-logo-img" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"/><div class="bank-logo-fallback" style="display:none;background:${b.color||'#0A7C4E'}">${(b.name||'').substring(0,3)}</div>`:`<div class="bank-logo-fallback" style="background:${b.color||'#0A7C4E'}">${(b.name||'').substring(0,3)}</div>`} </div><div class="bank-name">${b.name}</div> </button>`).join('');
 };
 
 window.selectBank = function(type, id){
@@ -362,7 +344,7 @@ window.selectBank = function(type, id){
   });
   const selectedEl = document.getElementById(type+'-'+id);
   if(selectedEl) selectedEl.classList.add('selected');
-  
+
   if(type==='from') selectedFrom=id; else selectedTo=id;
 };
 
@@ -374,7 +356,7 @@ window.calcAmount = function(){
   const cSent = document.getElementById('calcSent');
   const cComm = document.getElementById('calcComm');
   const cRecv = document.getElementById('calcReceive');
-  
+
   if(cSent) cSent.textContent = amt ? fmt(amt)+' أوقية':'—';
   if(cComm) cComm.textContent = amt ? '-'+fmt(comm)+' أوقية':'—';
   if(cRecv) cRecv.textContent = amt ? fmt(recv)+' أوقية':'—';
@@ -394,40 +376,40 @@ window.submitTransfer = async function(){
   const rate = parseFloat(document.getElementById('commRate').value);
   const account = document.getElementById('toAccount').value.trim();
   const notes = document.getElementById('notes').value.trim();
-  
+
   if(!name || !phone || !amount || !selectedFrom || !selectedTo || !account){ window.showToast('⚠️ يرجى ملء جميع الحقول'); return; }
   if(selectedFrom === selectedTo){ window.showToast('⚠️ بنك الإرسال والاستلام لا يمكن أن يكونا نفس البنك'); return; }
   if(!window.currentImageBase64) { window.showToast('⚠️ يرجى إرفاق صورة الوصل (الدليل)'); return; }
-  
+
   const comm = amount*rate/100; const recv = amount-comm;
   const ref  = 'HW-'+Math.floor(Math.random()*90000+10000);
   const btn  = document.querySelector('#page-transfer .submit-btn');
-  
+
   if(btn) { btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...'; }
-  
+
   try {
     const fb = BANKS.find(b=>b.id===selectedFrom); const tb = BANKS.find(b=>b.id===selectedTo);
     await addDoc(collection(db,'transfers'),{
-      uid: currentUser.uid, 
+      uid: currentUser.uid,
       ref: ref, name: name, phone: phone, amount: amount, commRate: rate, commission: comm, receive: recv,
       fromBank: fb?.name||selectedFrom, toBank: tb?.name||selectedTo, account: account, notes: notes,
       image: window.currentImageBase64, status: 'pending', createdAt: serverTimestamp()
     });
-    
+
     if(document.getElementById('successRef')) document.getElementById('successRef').textContent='رقم الطلب: #'+ref;
     if(document.getElementById('transferForm')) document.getElementById('transferForm').style.display='none';
     if(document.getElementById('successCard')) document.getElementById('successCard').style.display='block';
-    
+
     window.showToast('✅ تم إرسال طلبك بنجاح!');
-    
+
     // إرسال الإشعار لتليجرام
     const tMsg = `🔔 طلب تحويل بنكي جديد!\nالرقم: ${ref}\nالاسم: ${name}\nالمبلغ: ${fmt(amount)} أوقية\nمن: ${fb?.name||selectedFrom} ➡️ إلى: ${tb?.name||selectedTo}`;
     if(window.sendTelegramNotification) window.sendTelegramNotification(tMsg);
-    
+
     localStorage.setItem('activeOrderId', ref);
     if(document.getElementById('orderIdInput')) document.getElementById('orderIdInput').value = ref;
     window.trackLiveOrder(ref);
-    
+
   } catch(e){ console.error(e); window.showToast('❌ خطأ في الإرسال'); }
   if(btn) { btn.disabled = false; btn.textContent = '✅ إرسال طلب التحويل'; }
 };
@@ -435,15 +417,15 @@ window.submitTransfer = async function(){
 window.resetTransfer = function(){
   if(document.getElementById('transferForm')) document.getElementById('transferForm').style.display='block';
   if(document.getElementById('successCard')) document.getElementById('successCard').style.display='none';
-  
+
   ['clientName','clientPhone','sendAmount','toAccount','notes'].forEach(id=>{ if(document.getElementById(id)) document.getElementById(id).value=''; });
-  
+
   if(document.getElementById('calcSent')) document.getElementById('calcSent').textContent='—';
   if(document.getElementById('calcComm')) document.getElementById('calcComm').textContent='—';
   if(document.getElementById('calcReceive')) document.getElementById('calcReceive').textContent='—';
-  
+
   selectedFrom=selectedTo=null; document.querySelectorAll('.bank-btn').forEach(b=>b.classList.remove('selected'));
-  
+
   window.currentImageBase64 = "";
   if(document.getElementById('imgPreview')) document.getElementById('imgPreview').src = "#";
   if(document.getElementById('imagePreviewContainer')) document.getElementById('imagePreviewContainer').style.display = 'none';
@@ -456,7 +438,7 @@ window.filterGames = function(provider, btnEl) {
   if(btnEl) { document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); btnEl.classList.add('active'); }
   let filtered = GAMES;
   if(provider && provider !== 'all') filtered = GAMES.filter(g => g.provider === provider);
-  const gamesOnly = filtered.filter(g => g.productType === 'game' || !g.productType); 
+  const gamesOnly = filtered.filter(g => g.productType === 'game' || !g.productType);
   const servicesOnly = filtered.filter(g => g.productType === 'service');
   window.renderGamesList(gamesOnly, 'gamesOnlyGrid', '🎮 لا توجد ألعاب');
   window.renderGamesList(servicesOnly, 'servicesOnlyGrid', '💳 لا توجد بطاقات');
@@ -466,44 +448,35 @@ window.renderGamesList = function(list, containerId, emptyMsg) {
   const container = document.getElementById(containerId);
   if(!container) return;
   if(!list || !list.length) { container.innerHTML = `<p style="color:var(--mid);font-size:.85rem;padding:2rem;width:100%;text-align:center">${emptyMsg}</p>`; return; }
-  container.innerHTML = list.map(g=>`
-    <div class="game-card" onclick="openModal('${g.id}')">
-      <div class="game-cover" style="background:${g.bg||'#1a1a2e'}">
-        ${g.logo ? `<img src="${g.logo}" alt="${g.name}" class="game-cover-img" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><span style="display:none;font-size:3.5rem">${g.icon||'🎮'}</span>` : `<span style="font-size:3.5rem">${g.icon||'🎮'}</span>`}
-        ${g.badge?`<div class="game-badge">${g.badge}</div>`:''}
-      </div>
-      <div class="game-body"><div class="game-name">${g.name}</div><div class="game-desc">${g.desc||''}</div>
-        <div class="packages-grid">${(g.pkgs||[]).slice(0,3).map(p=>`<div class="pkg"><div class="pkg-amount">${p.amount}</div><div class="pkg-price">${fmt(p.price)} أوقية</div></div>`).join('')}</div>
-      </div>
-    </div>`).join('');
+  container.innerHTML = list.map(g=>`<div class="game-card" onclick="openModal('${g.id}')"> <div class="game-cover" style="background:${g.bg||'#1a1a2e'}"> ${g.logo ?`<img src="${g.logo}" alt="${g.name}" class="game-cover-img" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px 12px 0 0;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><span style="display:none;font-size:3.5rem">${g.icon||'🎮'}</span>`:`<span style="font-size:3.5rem">${g.icon||'🎮'}</span>`} ${g.badge?`<div class="game-badge">${g.badge}</div>`:''} </div> <div class="game-body"><div class="game-name">${g.name}</div><div class="game-desc">${g.desc||''}</div> <div class="packages-grid">${(g.pkgs||[]).slice(0,3).map(p=>`<div class="pkg"><div class="pkg-amount">${p.amount}</div><div class="pkg-price">${fmt(p.price)} أوقية</div></div>`).join('')}</div> </div> </div>`).join('');
 };
 
 window.openModal = function(gameId){
-  selectedGame = GAMES.find(g=>g.id===gameId); selectedPkg  = null; window.currentImageBase64 = ""; 
+  selectedGame = GAMES.find(g=>g.id===gameId); selectedPkg  = null; window.currentImageBase64 = "";
   if(!selectedGame) return;
-  
+
   if(document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = selectedGame.name;
   if(document.getElementById('modalGameName')) document.getElementById('modalGameName').textContent = selectedGame.name;
-  
-  const iconEl = document.getElementById('modalIcon'); 
+
+  const iconEl = document.getElementById('modalIcon');
   if(iconEl) {
-      iconEl.style.background = selectedGame.bg||'#1a1a2e';
-      iconEl.innerHTML = selectedGame.logo ? `<img src="${selectedGame.logo}" style="width:100%;height:100%;object-fit:contain;border-radius:8px"/>` : `<span style="font-size:2.5rem">${selectedGame.icon||'🎮'}</span>`;
-  }
-  
-  const playerIdInput = document.getElementById('modalPlayerId');
-  if(playerIdInput) {
-      playerIdInput.value = ''; 
-      if(selectedGame.productType === 'service') {
-          playerIdInput.parentElement.style.display = 'none';
-      } else {
-          playerIdInput.parentElement.style.display = 'block';
-      }
+    iconEl.style.background = selectedGame.bg||'#1a1a2e';
+    iconEl.innerHTML = selectedGame.logo ? `<img src="${selectedGame.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:8px"/>` : `<span style="font-size:2.5rem">${selectedGame.icon||'🎮'}</span>`;
   }
 
-  if(document.getElementById('modalPhone')) document.getElementById('modalPhone').value=''; 
+  const playerIdInput = document.getElementById('modalPlayerId');
+  if(playerIdInput) {
+    playerIdInput.value = '';
+    if(selectedGame.productType === 'service') {
+      playerIdInput.parentElement.style.display = 'none';
+    } else {
+      playerIdInput.parentElement.style.display = 'block';
+    }
+  }
+
+  if(document.getElementById('modalPhone')) document.getElementById('modalPhone').value='';
   if(document.getElementById('modalTotal')) document.getElementById('modalTotal').textContent='اختر باقة أولاً';
-  
+
   if(document.getElementById('modalImgPreview')) document.getElementById('modalImgPreview').src = "#";
   if(document.getElementById('modalImagePreviewContainer')) document.getElementById('modalImagePreviewContainer').style.display = 'none';
   if(document.getElementById('modalUploadPlaceholder')) document.getElementById('modalUploadPlaceholder').style.display = 'block';
@@ -511,25 +484,22 @@ window.openModal = function(gameId){
 
   const pkgsCont = document.getElementById('modalPkgs');
   if(pkgsCont) {
-      pkgsCont.innerHTML=(selectedGame.pkgs||[]).map((p,i)=>{
-        return `
-        <div class="modal-pkg" onclick="selectPkg(${i})">
-          <div class="modal-pkg-amount">${p.amount}</div><div class="modal-pkg-price">${fmt(p.price)} أوقية</div>
-        </div>`;
-      }).join('');
+    pkgsCont.innerHTML=(selectedGame.pkgs||[]).map((p,i)=>{
+      return ` <div class="modal-pkg" onclick="selectPkg(${i})"> <div class="modal-pkg-amount">${p.amount}</div><div class="modal-pkg-price">${fmt(p.price)} أوقية</div> </div>`;
+    }).join('');
   }
 
   // تحديد أول بنك دفع افتراضياً
   if(PAYMENT_BANKS.length > 0) {
-      window.selectPaymentBank(PAYMENT_BANKS[0].id, PAYMENT_BANKS[0].name);
-      const firstInput = document.querySelector(`input[name="selectedPB"][value="${PAYMENT_BANKS[0].name}"]`);
-      if(firstInput) firstInput.checked = true;
+    window.selectPaymentBank(PAYMENT_BANKS[0].id, PAYMENT_BANKS[0].name);
+    const firstInput = document.querySelector(`input[name="selectedPB"][value="${PAYMENT_BANKS[0].name}"]`);
+    if(firstInput) firstInput.checked = true;
   } else {
-      const payBoxes = document.querySelectorAll('#modal .calc-box ~ div[style*="background: var(--green-light)"]');
-      if(payBoxes.length > 0) {
-          const title = payBoxes[0].querySelector('div:first-child');
-          if(title) title.innerHTML = `📱 للطلب يرجى الدفع للرقم:`;
-      }
+    const payBoxes = document.querySelectorAll('#modal .calc-box ~ div[style*="background: var(--green-light)"]');
+    if(payBoxes.length > 0) {
+      const title = payBoxes[0].querySelector('div:first-child');
+      if(title) title.innerHTML = `📱 للطلب يرجى الدفع للرقم:`;
+    }
   }
 
   const modal = document.getElementById('modal');
@@ -542,11 +512,11 @@ window.selectPkg = function(i){
   if(document.getElementById('modalTotal')) document.getElementById('modalTotal').textContent=fmt(selectedPkg.price)+' أوقية';
 };
 
-window.closeModal = function(e){ 
-    const modal = document.getElementById('modal');
-    if(!e || e.target === modal) {
-        if(modal) modal.classList.remove('open'); 
-    }
+window.closeModal = function(e){
+  const modal = document.getElementById('modal');
+  if(!e || e.target === modal) {
+    if(modal) modal.classList.remove('open');
+  }
 };
 
 // ── إرسال طلب البطاقة ──
@@ -559,7 +529,7 @@ window.submitCard = async function(){
 
   const pid = document.getElementById('modalPlayerId') ? document.getElementById('modalPlayerId').value.trim() : '';
   const phone = document.getElementById('modalPhone') ? document.getElementById('modalPhone').value.trim() : '';
-  
+
   if(!selectedPkg) { window.showToast('⚠️ اختر باقة أولاً'); return; }
   if(selectedGame.productType !== 'service' && !pid) { window.showToast('⚠️ أدخل الحساب / معرف اللاعب'); return; }
   if(!phone) { window.showToast('⚠️ أدخل رقم هاتفك'); return; }
@@ -574,33 +544,33 @@ window.submitCard = async function(){
 
   try {
     await addDoc(collection(db,'cards'),{
-      uid: currentUser.uid, 
-      ref, 
-      game:selectedGame.name, 
-      gameId:selectedGame.id, 
-      package:selectedPkg.amount, 
+      uid: currentUser.uid,
+      ref,
+      game:selectedGame.name,
+      gameId:selectedGame.id,
+      package:selectedPkg.amount,
       price:selectedPkg.price,
       paymentBank: paymentBankName,
-      playerId:pid || 'غير مطلوب', 
-      phone, 
-      image: window.currentImageBase64, 
-      status:'pending', 
+      playerId:pid || 'غير مطلوب',
+      phone,
+      image: window.currentImageBase64,
+      status:'pending',
       createdAt:serverTimestamp()
     });
-    
+
     const modal = document.getElementById('modal');
     if(modal) modal.classList.remove('open');
     window.showToast('✅ تم إرسال طلبك بنجاح!');
     alert('✅ تم استلام طلبك بنجاح!\n\nرقم طلبك للتتبع هو: ' + ref);
-    
+
     // إرسال الإشعار لتليجرام مضافاً إليه اسم البنك
     const tMsg = `🎮 طلب منتج رقمي جديد!\nالرقم: ${ref}\nالمنتج: ${selectedGame.name}\nالباقة: ${selectedPkg.amount}\nالسعر: ${fmt(selectedPkg.price)} أوقية\nدفع عبر: ${paymentBankName}\nالهاتف: ${phone}`;
     if(window.sendTelegramNotification) window.sendTelegramNotification(tMsg);
-    
+
     localStorage.setItem('activeOrderId', ref);
     if(document.getElementById('orderIdInput')) document.getElementById('orderIdInput').value = ref;
     window.trackLiveOrder(ref);
-    
+
     const pageProfile = document.getElementById('page-profile');
     if(pageProfile && pageProfile.classList.contains('active')) window.loadUserOrders();
 
@@ -614,7 +584,7 @@ window.switchProfileTab = function(tab) {
   const tabCards = document.getElementById('tabMyCards');
   const contTrans = document.getElementById('myTransfersContainer');
   const contCards = document.getElementById('myCardsContainer');
-  
+
   if(tabTrans) tabTrans.classList.toggle('active', tab === 'transfers');
   if(tabCards) tabCards.classList.toggle('active', tab === 'cards');
   if(contTrans) contTrans.style.display = tab === 'transfers' ? 'block' : 'none';
@@ -631,7 +601,7 @@ window.loadUserOrders = async function() {
   if(!currentUser) return;
   const transList = document.getElementById('myTransfersList');
   const cardsList = document.getElementById('myCardsList');
-  
+
   if(transList) transList.innerHTML = '<p style="text-align:center; padding:2rem;">⏳ جاري جلب التحويلات...</p>';
   if(cardsList) cardsList.innerHTML = '<p style="text-align:center; padding:2rem;">⏳ جاري جلب البطاقات...</p>';
 
@@ -639,7 +609,7 @@ window.loadUserOrders = async function() {
     const tQ = query(collection(db, 'transfers'), where('uid', '==', currentUser.uid));
     const tSnap = await getDocs(tQ);
     let transfers = tSnap.docs.map(d => d.data());
-    transfers.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0)); 
+    transfers.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
 
     if(transList) {
         if(transfers.length === 0) {
@@ -707,7 +677,7 @@ window.trackLiveOrder = function(ref) {
   const col = ref.startsWith('HW') ? 'transfers' : 'cards';
   const res = document.getElementById('orderStatusResult');
   if(res) res.innerHTML = "⏳ جاري الاتصال المباشر بالطلب...";
-  
+
   activeOrderListener = onSnapshot(query(collection(db, col), where("ref", "==", ref)), snap => {
     if(!res) return;
     if(snap.empty) {
@@ -716,40 +686,36 @@ window.trackLiveOrder = function(ref) {
     }
     const data = snap.docs[0].data();
     if(data.status === 'done') {
-       let html = `<div style="color:var(--green); font-size:1.1rem; margin-bottom:10px; font-weight:bold;">✅ تم اكتمال طلبك بنجاح!</div>`;
-       if(data.deliveredCode) {
-           html += `<div style="background:var(--green-light); padding:15px; border-radius:12px; border:2px dashed var(--green); display:inline-block; margin-top:10px;">
-               <div style="font-size:0.85rem; color:var(--mid); margin-bottom:5px;">كود الشحن الخاص بك هو:</div>
-               <div style="font-family:monospace; font-size:1.4rem; font-weight:900; color:var(--ink); margin-bottom:10px;">${data.deliveredCode}</div>
-               <button onclick="navigator.clipboard.writeText('${data.deliveredCode}').then(()=>window.showToast('📋 تم النسخ'))" style="background:var(--green); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-family:inherit;">📋 نسخ الكود</button>
-           </div>`;
-       }
-       res.innerHTML = html;
-       localStorage.removeItem('activeOrderId');
-       if(activeOrderListener) { activeOrderListener(); activeOrderListener = null; }
+      let html = `<div style="color:var(--green); font-size:1.1rem; margin-bottom:10px; font-weight:bold;">✅ تم اكتمال طلبك بنجاح!</div>`;
+      if(data.deliveredCode) {
+        html += `<div style="background:var(--green-light); padding:15px; border-radius:12px; border:2px dashed var(--green); display:inline-block; margin-top:10px;"> <div style="font-size:0.85rem; color:var(--mid); margin-bottom:5px;">كود الشحن الخاص بك هو:</div> <div style="font-family:monospace; font-size:1.4rem; font-weight:900; color:var(--ink); margin-bottom:10px;">${data.deliveredCode}</div> <button onclick="navigator.clipboard.writeText('${data.deliveredCode}').then(()=>window.showToast('📋 تم النسخ'))" style="background:var(--green); color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:bold; font-family:inherit;">📋 نسخ الكود</button> </div>`;
+      }
+      res.innerHTML = html;
+      localStorage.removeItem('activeOrderId');
+      if(activeOrderListener) { activeOrderListener(); activeOrderListener = null; }
     } else if(data.status === 'rejected') {
-       res.innerHTML = `<div style="color:var(--red); font-weight:bold;">❌ عذراً، تم رفض الطلب. يرجى التواصل مع الدعم.</div>`;
+      res.innerHTML = `<div style="color:var(--red); font-weight:bold;">❌ عذراً، تم رفض الطلب. يرجى التواصل مع الدعم.</div>`;
     } else {
-       res.innerHTML = `<div style="color:#D4A853; font-weight:bold;">⏳ طلبك قيد المراجعة... (سيتم تحديث هذه الخانة تلقائياً)</div>`;
+      res.innerHTML = `<div style="color:#D4A853; font-weight:bold;">⏳ طلبك قيد المراجعة... (سيتم تحديث هذه الخانة تلقائياً)</div>`;
     }
   });
 };
 
 window.checkOrderStatus = function() {
-    const inputEl = document.getElementById('orderIdInput');
-    if(!inputEl) return;
-    let input = inputEl.value.trim().replace('#', '').toUpperCase();
-    if(!input) { window.showToast('⚠️ يرجى إدخال رقم الطلب'); return; }
-    window.trackLiveOrder(input);
+  const inputEl = document.getElementById('orderIdInput');
+  if(!inputEl) return;
+  let input = inputEl.value.trim().replace('#', '').toUpperCase();
+  if(!input) { window.showToast('⚠️ يرجى إدخال رقم الطلب'); return; }
+  window.trackLiveOrder(input);
 };
 
 function fmt(n){ return Number(n).toLocaleString('ar-MA'); }
-window.showToast = function(msg){ 
-    const t=document.getElementById('toast'); 
-    if(!t) return; 
-    t.textContent=msg; 
-    t.classList.add('show'); 
-    setTimeout(()=>t.classList.remove('show'),3000); 
+window.showToast = function(msg){
+  const t=document.getElementById('toast');
+  if(!t) return;
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
 };
 
 // بدء التشغيل
