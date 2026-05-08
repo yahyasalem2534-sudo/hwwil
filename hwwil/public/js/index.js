@@ -153,11 +153,13 @@ function loadContent() {
     }
   });
 
+  // جلب السلايدر
   onSnapshot(query(collection(db,'sliders'), orderBy('order','asc')), snap => {
     SLIDERS = snap.docs.map(d => ({id:d.id, ...d.data()}));
     window.renderSliders();
   });
 
+  // جلب بنوك الدفع
   onSnapshot(query(collection(db,'payment_banks'), orderBy('order','asc')), snap => {
     PAYMENT_BANKS = snap.docs.map(d => ({id:d.id, ...d.data()}));
     window.renderPaymentBanks();
@@ -175,21 +177,35 @@ window.renderSliders = function() {
   const wrapper = document.getElementById('sliderWrapper');
   const dots = document.getElementById('sliderDots');
   const container = document.getElementById('cardsSlider');
-  
+
   if (!wrapper || !dots || !container) return;
-  if (!SLIDERS.length) { 
+  
+  const validSliders = SLIDERS.map(s => {
+      const game = GAMES.find(g => g.id === s.gameId);
+      return game ? { ...s, game } : null;
+  }).filter(Boolean);
+
+  if (!validSliders.length) { 
     container.style.display = 'none'; 
     return; 
   }
+  
   container.style.display = 'block';
 
-  wrapper.innerHTML = SLIDERS.map(s => `
-    <div class="slide" onclick="openModal('${s.gameId}')" style="cursor:pointer;" title="اضغط للشراء الآن">
-      <img src="${s.url}" alt="عرض" style="width:100%; height:100%; object-fit:cover;">
-    </div>
-  `).join('');
+  wrapper.innerHTML = validSliders.map(s => {
+    const g = s.game;
+    const imgHtml = g.logo 
+        ? `<img src="${g.logo}" alt="${g.name}" style="width:100%; height:100%; object-fit:cover;">` 
+        : `<div style="width:100%; height:100%; display:flex; align-items:center; justify-content:center; background:${g.bg||'#1a1a2e'}; font-size:5rem;">${g.icon||'🎮'}</div>`;
 
-  dots.innerHTML = SLIDERS.map((_, i) => `
+    return `
+    <div class="slide" onclick="openModal('${g.id}')" style="cursor:pointer; position:relative;" title="تسوق ${g.name} الآن">
+      ${imgHtml}
+      <div style="position:absolute; bottom:20px; right:20px; background:var(--green); color:white; padding:8px 20px; border-radius:8px; font-weight:800; font-size:0.9rem; box-shadow:0 4px 10px rgba(0,0,0,0.3); border:2px solid white;">تسوق الآن</div>
+    </div>
+  `}).join('');
+
+  dots.innerHTML = validSliders.map((_, i) => `
     <div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>
   `).join('');
 
@@ -201,14 +217,18 @@ window.renderSliders = function() {
 window.updateSlider = function() {
    const wrapper = document.getElementById('sliderWrapper');
    if(!wrapper) return;
-   wrapper.style.transform = `translateX(${currentSlide * 100}%)`;
+   const validSlidersCount = document.querySelectorAll('.slide').length;
+   if(validSlidersCount === 0) return;
+   
+   wrapper.style.transform = `translateX(${currentSlide * 100}%)`; 
    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
 };
 
 window.moveSlider = function(dir) {
    currentSlide += dir;
-   if(currentSlide < 0) currentSlide = SLIDERS.length - 1;
-   if(currentSlide >= SLIDERS.length) currentSlide = 0;
+   const validSlidersCount = document.querySelectorAll('.slide').length;
+   if(currentSlide < 0) currentSlide = validSlidersCount - 1;
+   if(currentSlide >= validSlidersCount) currentSlide = 0;
    window.updateSlider();
    startAutoSlide();
 };
@@ -256,7 +276,6 @@ window.selectPaymentBank = function(id, name) {
       selectedEl.style.background = 'var(--green-light)';
    }
    
-   // تغيير النص فقط مع إبقاء الرقم ثابتاً للعميل
    const payBoxes = document.querySelectorAll('#modal .calc-box ~ div[style*="background: var(--green-light)"]');
    if(payBoxes.length > 0) {
        const title = payBoxes[0].querySelector('div:first-child');
@@ -540,7 +559,6 @@ window.submitCard = async function(){
   if(!phone) { window.showToast('⚠️ أدخل رقم هاتفك'); return; }
   if(!window.currentImageBase64) { window.showToast('⚠️ يرجى إرفاق صورة الوصل'); return; }
 
-  // التقاط البنك الذي اختاره العميل
   const pbInput = document.querySelector('input[name="selectedPB"]:checked');
   const paymentBankName = pbInput ? pbInput.value : 'غير محدد';
 
