@@ -627,13 +627,11 @@ function startListeners() {
     if(allCards.length > 0) renderCards(allCards);
   });
 
-  // Listener for Sliders
   onSnapshot(query(collection(db,'sliders'), orderBy('order','asc')), snap => {
     allSliders = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderSlidersTable();
   });
 
-  // Listener for Payment Banks
   onSnapshot(query(collection(db,'payment_banks'), orderBy('order','asc')), snap => {
     allPaymentBanks = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderPaymentBanksTable();
@@ -884,7 +882,7 @@ function renderGamesTable() {
   }).join('');
 }
 
-// 🟢 دالة عرض السلايدر 
+// 🟢 دالة عرض السلايدر
 function renderSlidersTable() {
   const tbody = document.getElementById('slidersBody'); 
   if(!tbody) return;
