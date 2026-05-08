@@ -153,11 +153,8 @@ tr:hover td{background:var(--bg)}
 /* =========================================
    💡 أكواد الإخفاء الذكية الخاصة بالمدير
 ========================================= */
-/* إخفاء العمود بالكامل في قسم المخزون فقط للعامل */
 .admin-col { display: none !important; }
 body.is-admin .admin-col { display: table-cell !important; }
-
-/* إخفاء النص فقط في جداول التحويلات والبطاقات */
 .admin-text { display: none !important; }
 body.is-admin .admin-text { display: inline !important; }
 
@@ -529,7 +526,6 @@ body.is-admin .admin-text { display: inline !important; }
 </div>
 
 <div class="toast" id="toast"></div>
-
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, onSnapshot, doc, updateDoc, setDoc, getDocs, where,
@@ -627,11 +623,13 @@ function startListeners() {
     if(allCards.length > 0) renderCards(allCards);
   });
 
+  // Listener for Sliders
   onSnapshot(query(collection(db,'sliders'), orderBy('order','asc')), snap => {
     allSliders = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderSlidersTable();
   });
 
+  // Listener for Payment Banks
   onSnapshot(query(collection(db,'payment_banks'), orderBy('order','asc')), snap => {
     allPaymentBanks = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderPaymentBanksTable();
@@ -882,7 +880,7 @@ function renderGamesTable() {
   }).join('');
 }
 
-// 🟢 دالة عرض السلايدر
+// 🟢 دالة عرض السلايدر (تم التعديل لإزالة الرابط)
 function renderSlidersTable() {
   const tbody = document.getElementById('slidersBody'); 
   if(!tbody) return;
@@ -891,11 +889,11 @@ function renderSlidersTable() {
       return; 
   }
   tbody.innerHTML = allSliders.map(s => {
-    const linkedGame = allGames.find(g => g.id === s.gameId);
-    const gameName = linkedGame ? linkedGame.name : '—';
-    const imgHtml = (linkedGame && linkedGame.logo) 
-      ? `<img src="${linkedGame.logo}" style="height:50px; width:80px; object-fit:cover; border-radius:8px;">` 
-      : `<div style="height:50px; width:80px; border-radius:8px; background:${linkedGame?linkedGame.bg:'#eee'}; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">${linkedGame?linkedGame.icon:'🎮'}</div>`;
+    const g = allGames.find(x => x.id === s.gameId);
+    const gameName = g ? g.name : '—';
+    const imgHtml = (g && g.logo) 
+      ? `<img src="${g.logo}" style="height:50px; width:80px; object-fit:cover; border-radius:8px;">` 
+      : `<div style="height:50px; width:80px; border-radius:8px; background:${g?g.bg:'#eee'}; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">${g?g.icon:'🎮'}</div>`;
     return `<tr>
     <td>${imgHtml}</td>
     <td><strong>${gameName}</strong></td>
@@ -1107,7 +1105,7 @@ document.getElementById('saveStockBtn').addEventListener('click', async () => {
   btn.textContent='💾 حفظ البطاقات في المخزون';
 });
 
-// 🟢 إدارة أزرار السلايدر 
+// 🟢 إدارة أزرار السلايدر (تم التعديل لإزالة الرابط)
 document.getElementById('openAddSliderBtn').addEventListener('click', () => {
   document.getElementById('sliderOrder').value = allSliders.length;
   document.getElementById('sliderPreviewCont').style.display = 'none';
@@ -1170,7 +1168,7 @@ document.getElementById('saveSliderBtn').addEventListener('click', async () => {
   btn.textContent='💾 حفظ العرض';
 });
 
-// 🔵 إدارة بنوك دفع البطاقات الجديدة
+// 🔵 أزرار إدارة بنوك الدفع (للبطاقات)
 document.getElementById('openAddPaymentBankBtn').addEventListener('click', () => {
   const select = document.getElementById('pbBankSelect');
   select.innerHTML = '<option value="">— اختر البنك —</option>' + allBanks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
