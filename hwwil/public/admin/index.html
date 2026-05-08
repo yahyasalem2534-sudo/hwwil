@@ -884,7 +884,7 @@ function renderGamesTable() {
   }).join('');
 }
 
-// 🟢 دالة عرض السلايدر بدون رابط خارجي
+// 🟢 دالة عرض السلايدر
 function renderSlidersTable() {
   const tbody = document.getElementById('slidersBody'); 
   if(!tbody) return;
@@ -893,11 +893,11 @@ function renderSlidersTable() {
       return; 
   }
   tbody.innerHTML = allSliders.map(s => {
-    const g = allGames.find(x => x.id === s.gameId);
-    const gameName = g ? g.name : '—';
-    const imgHtml = (g && g.logo) 
-      ? `<img src="${g.logo}" style="height:50px; width:80px; object-fit:cover; border-radius:8px;">` 
-      : `<div style="height:50px; width:80px; border-radius:8px; background:${g?g.bg:'#eee'}; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">${g?g.icon:'🎮'}</div>`;
+    const linkedGame = allGames.find(g => g.id === s.gameId);
+    const gameName = linkedGame ? linkedGame.name : '—';
+    const imgHtml = (linkedGame && linkedGame.logo) 
+      ? `<img src="${linkedGame.logo}" style="height:50px; width:80px; object-fit:cover; border-radius:8px;">` 
+      : `<div style="height:50px; width:80px; border-radius:8px; background:${linkedGame?linkedGame.bg:'#eee'}; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">${linkedGame?linkedGame.icon:'🎮'}</div>`;
     return `<tr>
     <td>${imgHtml}</td>
     <td><strong>${gameName}</strong></td>
