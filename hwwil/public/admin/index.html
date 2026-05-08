@@ -245,8 +245,8 @@ body.is-admin .admin-text { display: inline !important; }
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>رقم الطلب</th><th>المنتج</th><th>الباقة</th><th>تسليم الكود</th><th>شراء من المورد</th><th>بيانات الحساب</th><th>الهاتف</th><th>التاريخ</th><th>الوصل</th><th>الحالة<span class="admin-text"> والإجراء</span></th></tr></thead>
-          <tbody id="cardsBody"><tr><td colspan="10" class="loading">⏳ جاري التحميل...</td></tr></tbody>
+          <thead><tr><th>رقم الطلب</th><th>المنتج</th><th>الباقة</th><th>دفع عبر</th><th>تسليم الكود</th><th>شراء من المورد</th><th>بيانات الحساب</th><th>الهاتف</th><th>التاريخ</th><th>الوصل</th><th>الحالة<span class="admin-text"> والإجراء</span></th></tr></thead>
+          <tbody id="cardsBody"><tr><td colspan="11" class="loading">⏳ جاري التحميل...</td></tr></tbody>
         </table>
       </div>
     </div>
@@ -288,7 +288,33 @@ body.is-admin .admin-text { display: inline !important; }
       
       <div class="content-section">
         <div class="content-section-hdr">
-          <div class="content-section-title">🏦 إدارة البنوك</div>
+          <div class="content-section-title">🖼️ إدارة صور السلايدر</div>
+          <button class="stock-btn" id="openAddSliderBtn">➕ إضافة صورة</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>الصورة</th><th>الرابط (URL)</th><th>المنتج المرتبط</th><th>الترتيب</th><th>إجراء</th></tr></thead>
+            <tbody id="slidersBody"><tr><td colspan="5" class="loading">⏳ جاري التحميل...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <div class="content-section-hdr">
+          <div class="content-section-title">💳 بنوك دفع البطاقات (يختارها العميل)</div>
+          <button class="stock-btn" id="openAddPaymentBankBtn">➕ اختيار بنك دفع</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>البنك</th><th>الترتيب</th><th>إجراء</th></tr></thead>
+            <tbody id="paymentBanksBody"><tr><td colspan="3" class="loading">⏳ جاري التحميل...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="content-section">
+        <div class="content-section-hdr">
+          <div class="content-section-title">🏦 إدارة البنوك (للتحويل البنكي)</div>
           <button class="stock-btn" id="openAddBankBtn">➕ إضافة بنك</button>
         </div>
         <div class="table-wrap">
@@ -320,6 +346,57 @@ body.is-admin .admin-text { display: inline !important; }
   <div style="max-width: 90%; max-height: 90%; margin: auto; position: relative;">
     <span style="position:absolute; top:-40px; right:0; color:white; font-size:2.5rem; cursor:pointer; font-weight:bold;">&times;</span>
     <img id="largeImagePreview" src="" style="max-width: 100%; max-height: 85vh; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+  </div>
+</div>
+
+<div class="modal-overlay" id="sliderModal">
+  <div class="cm-modal">
+    <div class="modal-hdr">
+      <div style="font-size:1.1rem;font-weight:900" id="sliderModalTitle">➕ إضافة صورة للسلايدر</div>
+      <button class="modal-x" id="closeSliderBtn">✕</button>
+    </div>
+    <div class="modal-bod">
+      <div class="form-row">
+        <label class="flabel">رابط الصورة (URL) *</label>
+        <input class="finput" id="sliderImgUrl" type="url" placeholder="https://..."/>
+      </div>
+      <div class="form-row">
+        <label class="flabel">المنتج المرتبط (الذي سيفتح عند الضغط) *</label>
+        <select class="finput" id="sliderGameId">
+          <option value="">— اختر المنتج —</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="flabel">الترتيب</label>
+        <input class="finput" id="sliderOrder" type="number" value="0"/>
+      </div>
+      <div id="sliderPreviewCont" style="margin-top:1rem; display:none;">
+        <img id="sliderPreviewImg" src="" style="width:100%; border-radius:12px; border:2px solid var(--green);">
+      </div>
+      <button class="save-btn" id="saveSliderBtn" style="margin-top:1rem">💾 حفظ الصورة</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="paymentBankModal">
+  <div class="cm-modal">
+    <div class="modal-hdr">
+      <div style="font-size:1.1rem;font-weight:900" id="paymentBankModalTitle">➕ اختيار بنك دفع للبطاقات</div>
+      <button class="modal-x" id="closePaymentBankBtn">✕</button>
+    </div>
+    <div class="modal-bod">
+      <div class="form-row">
+        <label class="flabel" style="color:var(--green);">اختر البنك (من قائمة بنوك التحويل) *</label>
+        <select class="finput" id="pbBankSelect" style="border-color:var(--green); font-weight:bold;">
+          <option value="">— اختر البنك —</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <label class="flabel">الترتيب</label>
+        <input class="finput" id="pbOrder" type="number" value="0"/>
+      </div>
+      <button class="save-btn" id="savePaymentBankBtn" style="margin-top:1rem">💾 إضافة البنك للدفع</button>
+    </div>
   </div>
 </div>
 
@@ -524,7 +601,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('loginWrap').style.display !== 'none') doLogin();
 });
 
-let allTransfers = [], allCards = [], allStock = [], allBanks = [], allGames = [];
+let allTransfers = [], allCards = [], allStock = [], allBanks = [], allGames = [], allSliders = [], allPaymentBanks = [];
 
 function startListeners() {
   onSnapshot(query(collection(db,'transfers'), orderBy('createdAt','desc')), snap => {
@@ -552,6 +629,18 @@ function startListeners() {
     renderGamesTable();
     if(allCards.length > 0) renderCards(allCards);
   });
+
+  // Listener for Sliders
+  onSnapshot(query(collection(db,'sliders'), orderBy('order','asc')), snap => {
+    allSliders = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderSlidersTable();
+  });
+
+  // Listener for Payment Banks
+  onSnapshot(query(collection(db,'payment_banks'), orderBy('order','asc')), snap => {
+    allPaymentBanks = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderPaymentBanksTable();
+  });
 }
 
 const TAB_IDS = ['transfers','cards','stock','content'];
@@ -576,6 +665,7 @@ function updateStats() {
     allTransfers.reduce((s,r)=>s+(r.amount||0),0)+allCards.reduce((s,r)=>s+(r.price||0),0)
   ));
 }
+
 function updateStockStats() {
   document.getElementById('stTotal').textContent      = fmt(allStock.length);
   document.getElementById('stAvail').textContent      = fmt(allStock.filter(s=>s.status==='available').length);
@@ -604,7 +694,10 @@ window.deleteOrder = async (collectionName, docId) => {
 
 function renderTransfers(data) {
   const tbody = document.getElementById('transfersBody');
-  if (!data.length) { tbody.innerHTML=`<tr><td colspan="12"><div class="empty"><div class="empty-icon">📭</div>لا توجد طلبات</div></td></tr>`; return; }
+  if (!data.length) { 
+      tbody.innerHTML=`<tr><td colspan="12"><div class="empty"><div class="empty-icon">📭</div>لا توجد طلبات</div></td></tr>`; 
+      return; 
+  }
   tbody.innerHTML = data.map(r=>{
     const imgUrl = r.image || r.receipt || r.img || "";
     return `<tr>
@@ -633,11 +726,15 @@ function renderTransfers(data) {
 
 function renderCards(data) {
   const tbody = document.getElementById('cardsBody');
-  if (!data.length) { tbody.innerHTML=`<tr><td colspan="10"><div class="empty"><div class="empty-icon">🎮</div>لا توجد طلبات</div></td></tr>`; return; }
+  if (!data.length) { 
+      tbody.innerHTML=`<tr><td colspan="11"><div class="empty"><div class="empty-icon">🎮</div>لا توجد طلبات</div></td></tr>`; 
+      return; 
+  }
   
   tbody.innerHTML = data.map(r=>{
     const imgUrl = r.image || r.receipt || r.img || ""; 
     const specificGame = allGames.find(g => (g.id && r.gameId && g.id === r.gameId) || g.name === r.game);
+    const paymentBank = r.paymentBank || '—';
     
     let gameSups = [];
     if(specificGame) {
@@ -667,6 +764,7 @@ function renderCards(data) {
     <td><span class="ref">${r.ref||'—'}</span></td>
     <td><strong>${r.game||'—'}</strong></td>
     <td>${r.package||'—'}</td>
+    <td style="color:var(--green); font-weight:bold;">${paymentBank}</td>
     <td>
       <input type="text" class="code-input-field" placeholder="الصق الكود هنا..." 
              value="${r.deliveredCode || ''}" 
@@ -703,15 +801,20 @@ function renderStock() {
   const catF   = document.getElementById('filterCat').value;
   const statF  = document.getElementById('filterStatus').value;
   const searchF= document.getElementById('searchStock').value.toLowerCase();
+  
   const data   = allStock.filter(s => {
     if (catF   && s.category !== catF)  return false;
     if (statF  && s.status   !== statF) return false;
     if (searchF && !(s.code||'').toLowerCase().includes(searchF)) return false;
     return true;
   });
+  
   document.getElementById('stockCount').textContent = `${fmt(data.length)} بطاقة`;
   const tbody = document.getElementById('stockBody');
-  if (!data.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">📭</div>لا توجد بطاقات</div></td></tr>`; return; }
+  if (!data.length) { 
+      tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">📭</div>لا توجد بطاقات</div></td></tr>`; 
+      return; 
+  }
   
   tbody.innerHTML = data.map(s=>`<tr>
     <td><strong>${s.category||'—'}</strong></td>
@@ -735,10 +838,13 @@ function updateCatFilter() {
 }
 
 function renderBanksTable() {
-  const tbody = document.getElementById('banksBody'); if (!tbody) return;
-  if (!allBanks.length) { tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">🏦</div>لا توجد بنوك — أضف بنكاً الآن</div></td></tr>`; return; }
+  const tbody = document.getElementById('banksBody'); 
+  if (!tbody) return;
+  if (!allBanks.length) { 
+      tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">🏦</div>لا توجد بنوك — أضف بنكاً الآن</div></td></tr>`; 
+      return; 
+  }
   
-  // زر الحذف والتعديل للبنوك يظهر للجميع الآن
   tbody.innerHTML = allBanks.map(b=>`<tr>
     <td><div style="display:flex;align-items:center;gap:.7rem">
       <div style="width:40px;height:40px;border-radius:8px;background:${b.color||'#888'};display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
@@ -754,10 +860,13 @@ function renderBanksTable() {
 }
 
 function renderGamesTable() {
-  const tbody = document.getElementById('gamesBody'); if (!tbody) return;
-  if (!allGames.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">🎮</div>لا توجد منتجات — أضف منتجاً الآن</div></td></tr>`; return; }
+  const tbody = document.getElementById('gamesBody'); 
+  if (!tbody) return;
+  if (!allGames.length) { 
+      tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">🎮</div>لا توجد منتجات — أضف منتجاً الآن</div></td></tr>`; 
+      return; 
+  }
   
-  // زر الحذف والتعديل للمنتجات يظهر للجميع الآن
   tbody.innerHTML = allGames.map(g=>{
     const typeLabel = g.productType === 'service' ? '💳 خدمة' : '🎮 لعبة';
     return `<tr>
@@ -778,40 +887,120 @@ function renderGamesTable() {
   }).join('');
 }
 
+// 🟢 دالة عرض السلايدر
+function renderSlidersTable() {
+  const tbody = document.getElementById('slidersBody'); 
+  if(!tbody) return;
+  if(!allSliders.length) { 
+      tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">🖼️</div>لا توجد صور</div></td></tr>`; 
+      return; 
+  }
+  tbody.innerHTML = allSliders.map(s => {
+    const linkedGame = allGames.find(g => g.id === s.gameId);
+    const gameName = linkedGame ? linkedGame.name : '—';
+    return `<tr>
+    <td><img src="${s.url}" style="height:50px; border-radius:8px; object-fit:cover;"></td>
+    <td><a href="${s.url}" target="_blank" style="font-size:0.8rem;">رابط الصورة</a></td>
+    <td><strong>${gameName}</strong></td>
+    <td>${s.order||0}</td>
+    <td><button class="del-btn" onclick="deleteSlider('${s.id}')">🗑️</button></td>
+  </tr>`}).join('');
+}
+
+// 🔵 دالة عرض بنوك الدفع (البطاقات)
+function renderPaymentBanksTable() {
+  const tbody = document.getElementById('paymentBanksBody'); 
+  if(!tbody) return;
+  if(!allPaymentBanks.length) { 
+      tbody.innerHTML=`<tr><td colspan="3"><div class="empty"><div class="empty-icon">💳</div>لا توجد بنوك دفع</div></td></tr>`; 
+      return; 
+  }
+  tbody.innerHTML = allPaymentBanks.map(b => `<tr>
+    <td>
+      <div style="display:flex;align-items:center;gap:.7rem">
+        <div style="width:36px;height:36px;border-radius:8px;background:${b.color||'#0A7C4E'};display:flex;align-items:center;justify-content:center;overflow:hidden;">
+          ${b.logo?`<img src="${b.logo}" style="width:100%;height:100%;object-fit:contain">`:`<span style="color:#fff;font-size:.7rem;font-weight:bold">${(b.name||'').substring(0,3)}</span>`}
+        </div>
+        <strong>${b.name||'—'}</strong>
+      </div>
+    </td>
+    <td>${b.order||0}</td>
+    <td><button class="del-btn" onclick="deletePaymentBank('${b.id}')">🗑️</button></td>
+  </tr>`).join('');
+}
+
 window.changeStatus = async (col, docId, status) => {
-  try { await updateDoc(doc(db,col,docId),{status}); showToast('✅ تم تحديث الحالة'); }
-  catch { showToast('❌ خطأ في التحديث'); }
+  try { 
+      await updateDoc(doc(db,col,docId),{status}); 
+      showToast('✅ تم تحديث الحالة'); 
+  } catch { 
+      showToast('❌ خطأ في التحديث'); 
+  }
 };
 
-// حماية حذف المخزون للمدير فقط
 window.deleteStock = async (id) => {
   if (currentUserRole !== 'admin') return;
   if (!confirm('حذف هذه البطاقة؟')) return;
-  try { await deleteDoc(doc(db,'stock',id)); showToast('🗑️ تم الحذف'); }
-  catch { showToast('❌ خطأ في الحذف'); }
+  try { 
+      await deleteDoc(doc(db,'stock',id)); 
+      showToast('🗑️ تم الحذف'); 
+  } catch { 
+      showToast('❌ خطأ في الحذف'); 
+  }
 };
+
 window.copyCode = (code) => navigator.clipboard.writeText(code).then(()=>showToast('📋 تم نسخ: '+code));
 
-// إزالة الحماية عن حذف البنوك والألعاب لكي يستطيع العامل حذفها
 window.deleteBank = async (id) => {
   if (!confirm('حذف هذا البنك؟')) return;
-  try { await deleteDoc(doc(db,'banks',id)); showToast('🗑️ تم الحذف'); }
-  catch { showToast('❌ خطأ'); }
+  try { 
+      await deleteDoc(doc(db,'banks',id)); 
+      showToast('🗑️ تم الحذف'); 
+  } catch { 
+      showToast('❌ خطأ'); 
+  }
 };
+
 window.deleteGame = async (id) => {
   if (!confirm('حذف هذا المنتج؟')) return;
-  try { await deleteDoc(doc(db,'games',id)); showToast('🗑️ تم الحذف'); }
-  catch { showToast('❌ خطأ'); }
+  try { 
+      await deleteDoc(doc(db,'games',id)); 
+      showToast('🗑️ تم الحذف'); 
+  } catch { 
+      showToast('❌ خطأ'); 
+  }
+};
+
+window.deleteSlider = async (id) => {
+  if(!confirm('حذف هذه الصورة من السلايدر؟')) return;
+  try { 
+      await deleteDoc(doc(db,'sliders',id)); 
+      showToast('🗑️ تم الحذف'); 
+  } catch { 
+      showToast('❌ خطأ'); 
+  }
+};
+
+window.deletePaymentBank = async (id) => {
+  if(!confirm('حذف بنك الدفع هذا؟')) return;
+  try { 
+      await deleteDoc(doc(db,'payment_banks',id)); 
+      showToast('🗑️ تم الحذف'); 
+  } catch { 
+      showToast('❌ خطأ'); 
+  }
 };
 
 document.getElementById('searchTransfer').addEventListener('input', function() {
   const q = this.value.toLowerCase();
   renderTransfers(allTransfers.filter(r=>(r.name||'').toLowerCase().includes(q)||(r.phone||'').includes(q)||(r.ref||'').toLowerCase().includes(q)));
 });
+
 document.getElementById('searchCards').addEventListener('input', function() {
   const q = this.value.toLowerCase();
   renderCards(allCards.filter(r=>(r.game||'').toLowerCase().includes(q)||(r.ref||'').toLowerCase().includes(q)));
 });
+
 document.getElementById('filterCat').addEventListener('change', renderStock);
 document.getElementById('filterStatus').addEventListener('change', renderStock);
 document.getElementById('searchStock').addEventListener('input', renderStock);
@@ -843,10 +1032,15 @@ function updatePreview() {
   const cardType = document.getElementById('cardType').value;
   
   const box      = document.getElementById('previewBox');
-  if (!codes.length||!cardType) { box.style.display='none'; return; }
+  if (!codes.length||!cardType) { 
+      box.style.display='none'; 
+      return; 
+  }
+  
   box.style.display='block';
   const preview  = codes.slice(0,3).map(c=>`<div class="code-preview">${c}</div>`).join('');
   const more     = codes.length>3?`<div style="font-size:.78rem;color:var(--muted);margin-top:.3rem">+${codes.length-3} كود...</div>`:'';
+  
   document.getElementById('previewContent').innerHTML=`
     <div style="font-size:.82rem;color:var(--mid);margin-bottom:.5rem"><strong>${selectedCat}</strong> — ${cardType}</div>
     ${preview}${more}
@@ -860,25 +1054,31 @@ document.getElementById('openStockBtn').addEventListener('click', () => {
   updateCardOptions();
   document.getElementById('stockModal').classList.add('open');
 });
+
 document.getElementById('closeStockBtn').addEventListener('click', () => document.getElementById('stockModal').classList.remove('open'));
 document.getElementById('stockModal').addEventListener('click', e => { if(e.target===document.getElementById('stockModal')) document.getElementById('stockModal').classList.remove('open'); });
+
 document.getElementById('clearCodesBtn').addEventListener('click', () => {
   document.getElementById('codesArea').value='';
   document.getElementById('codesCount').textContent='٠ كود';
   document.getElementById('previewBox').style.display='none';
 });
+
 document.getElementById('codesArea').addEventListener('input', () => {
   document.getElementById('codesCount').textContent = getCodes().length+' كود';
   updatePreview();
 });
+
 document.getElementById('catGrid').addEventListener('click', e => {
-  const btn = e.target.closest('.cat-btn'); if (!btn) return;
+  const btn = e.target.closest('.cat-btn'); 
+  if (!btn) return;
   document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   selectedCat = btn.dataset.cat;
   document.getElementById('customCat').style.display = selectedCat==='أخرى'?'block':'none';
   updateCardOptions();
 });
+
 document.getElementById('customCat').addEventListener('input', updateCardOptions);
 document.getElementById('cardType').addEventListener('change', updatePreview);
 
@@ -891,7 +1091,9 @@ document.getElementById('saveStockBtn').addEventListener('click', async () => {
   if (!codes.length) { showToast('⚠️ أدخل كود واحد على الأقل'); return; }
   
   const btn = document.getElementById('saveStockBtn');
-  btn.disabled=true; btn.textContent='⏳ جاري الحفظ...';
+  btn.disabled=true; 
+  btn.textContent='⏳ جاري الحفظ...';
+  
   try {
     await Promise.all(codes.map(code=>addDoc(collection(db,'stock'),{
       category:cat, cardType, value:cardType,
@@ -899,8 +1101,116 @@ document.getElementById('saveStockBtn').addEventListener('click', async () => {
     })));
     showToast(`✅ تم حفظ ${codes.length} بطاقة!`);
     document.getElementById('stockModal').classList.remove('open');
-  } catch(e) { console.error("STOCK ERROR:", e); showToast('❌ خطأ في الحفظ: '+e.message); }
-  btn.disabled=false; btn.textContent='💾 حفظ البطاقات في المخزون';
+  } catch(e) { 
+      console.error("STOCK ERROR:", e); 
+      showToast('❌ خطأ في الحفظ: '+e.message); 
+  }
+  
+  btn.disabled=false; 
+  btn.textContent='💾 حفظ البطاقات في المخزون';
+});
+
+// 🟢 إدارة أزرار السلايدر 
+document.getElementById('openAddSliderBtn').addEventListener('click', () => {
+  document.getElementById('sliderImgUrl').value='';
+  document.getElementById('sliderOrder').value = allSliders.length;
+  document.getElementById('sliderPreviewCont').style.display = 'none';
+  
+  const gameSelect = document.getElementById('sliderGameId');
+  gameSelect.innerHTML = '<option value="">— اختر المنتج —</option>' + allGames.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
+
+  document.getElementById('sliderModal').classList.add('open');
+});
+
+document.getElementById('closeSliderBtn').addEventListener('click', () => document.getElementById('sliderModal').classList.remove('open'));
+
+document.getElementById('sliderImgUrl').addEventListener('input', (e) => {
+  const url = e.target.value.trim();
+  const cont = document.getElementById('sliderPreviewCont');
+  const img = document.getElementById('sliderPreviewImg');
+  if(url) { 
+      img.src = url; 
+      cont.style.display = 'block'; 
+  } else { 
+      cont.style.display = 'none'; 
+  }
+});
+
+document.getElementById('saveSliderBtn').addEventListener('click', async () => {
+  const url = document.getElementById('sliderImgUrl').value.trim();
+  const order = parseInt(document.getElementById('sliderOrder').value)||0;
+  const gameId = document.getElementById('sliderGameId').value;
+  
+  if(!url) { showToast('⚠️ أدخل رابط الصورة'); return; }
+  if(!gameId) { showToast('⚠️ اختر المنتج المرتبط'); return; }
+  
+  const btn = document.getElementById('saveSliderBtn');
+  btn.disabled=true; 
+  btn.textContent='⏳...';
+  
+  try {
+    await addDoc(collection(db,'sliders'), { 
+        url, 
+        order, 
+        gameId, 
+        createdAt:serverTimestamp() 
+    });
+    showToast('✅ تم إضافة الصورة');
+    document.getElementById('sliderModal').classList.remove('open');
+  } catch(e) { 
+      showToast('❌ '+e.message); 
+  }
+  
+  btn.disabled=false; 
+  btn.textContent='💾 حفظ الصورة';
+});
+
+// 🔵 إدارة بنوك دفع البطاقات الجديدة
+document.getElementById('openAddPaymentBankBtn').addEventListener('click', () => {
+  const select = document.getElementById('pbBankSelect');
+  select.innerHTML = '<option value="">— اختر البنك —</option>' + allBanks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+  document.getElementById('pbOrder').value = allPaymentBanks.length;
+  document.getElementById('paymentBankModal').classList.add('open');
+});
+
+document.getElementById('closePaymentBankBtn').addEventListener('click', () => document.getElementById('paymentBankModal').classList.remove('open'));
+
+document.getElementById('savePaymentBankBtn').addEventListener('click', async () => {
+  const bankId = document.getElementById('pbBankSelect').value;
+  const order = parseInt(document.getElementById('pbOrder').value)||0;
+  
+  if(!bankId) { 
+      showToast('⚠️ يرجى اختيار البنك'); 
+      return; 
+  }
+  
+  const selectedBank = allBanks.find(b => b.id === bankId);
+  if(!selectedBank) return;
+  
+  const name = selectedBank.name;
+  const logo = selectedBank.logo || '';
+  const color = selectedBank.color || '#0A7C4E';
+  
+  const btn = document.getElementById('savePaymentBankBtn');
+  btn.disabled=true; 
+  btn.textContent='⏳...';
+  
+  try {
+    await addDoc(collection(db,'payment_banks'), { 
+        name, 
+        logo, 
+        color, 
+        order, 
+        createdAt:serverTimestamp() 
+    });
+    showToast('✅ تم إضافة بنك الدفع');
+    document.getElementById('paymentBankModal').classList.remove('open');
+  } catch(e) { 
+      showToast('❌ '+e.message); 
+  }
+  
+  btn.disabled=false; 
+  btn.textContent='💾 إضافة البنك للدفع';
 });
 
 let editingBankId = null;
@@ -910,6 +1220,7 @@ function updateBankPreview() {
   const color = document.getElementById('bankColor').value;
   const name  = document.getElementById('bankName').value.trim();
   const prev  = document.getElementById('bankPreview');
+  
   prev.style.background = color;
   prev.innerHTML = logo
     ? `<img src="${logo}" style="width:40px;height:40px;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:900;font-size:.85rem>${name.substring(0,3)||'؟'}</span>'">`
@@ -929,11 +1240,14 @@ document.getElementById('openAddBankBtn').addEventListener('click', () => {
   updateBankPreview();
   document.getElementById('bankModal').classList.add('open');
 });
+
 document.getElementById('closeBankBtn').addEventListener('click', ()=>document.getElementById('bankModal').classList.remove('open'));
 document.getElementById('bankModal').addEventListener('click', e=>{ if(e.target===document.getElementById('bankModal')) document.getElementById('bankModal').classList.remove('open'); });
 
 window.openEditBank = (id) => {
-  const b = allBanks.find(x=>x.id===id); if (!b) return;
+  const b = allBanks.find(x=>x.id===id); 
+  if (!b) return;
+  
   editingBankId = id;
   document.getElementById('bankModalTitle').textContent = '✏️ تعديل البنك';
   document.getElementById('bankName').value  = b.name||'';
@@ -941,6 +1255,7 @@ window.openEditBank = (id) => {
   document.getElementById('bankColor').value = b.color||'#0A7C4E';
   document.getElementById('bankOrder').value = b.order||0;
   document.getElementById('bankId').value    = b.id||'';
+  
   updateBankPreview();
   document.getElementById('bankModal').classList.add('open');
 };
@@ -952,9 +1267,13 @@ document.getElementById('saveBankBtn').addEventListener('click', async () => {
   const order = parseInt(document.getElementById('bankOrder').value)||0;
   const rawId = document.getElementById('bankId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
   const finalId = rawId||'bank-'+Date.now();
+  
   if (!name) { showToast('⚠️ أدخل اسم البنك'); return; }
+  
   const btn = document.getElementById('saveBankBtn');
-  btn.disabled=true; btn.textContent='⏳...';
+  btn.disabled=true; 
+  btn.textContent='⏳...';
+  
   try {
     if (editingBankId) {
       await updateDoc(doc(db,'banks',editingBankId),{name,logo,color,order});
@@ -963,8 +1282,13 @@ document.getElementById('saveBankBtn').addEventListener('click', async () => {
     }
     showToast('✅ تم حفظ البنك');
     document.getElementById('bankModal').classList.remove('open');
-  } catch(e) { console.error("BANK ERROR:", e); showToast('❌ '+e.message); }
-  btn.disabled=false; btn.textContent='💾 حفظ البنك';
+  } catch(e) { 
+      console.error("BANK ERROR:", e); 
+      showToast('❌ '+e.message); 
+  }
+  
+  btn.disabled=false; 
+  btn.textContent='💾 حفظ البنك';
 });
 
 // ── GAME MODAL ──
@@ -975,6 +1299,7 @@ function updateGamePreview() {
   const bg   = document.getElementById('gameBg').value;
   const icon = document.getElementById('gameIcon').value||'🎮';
   const prev = document.getElementById('gamePreview');
+  
   prev.style.background = bg;
   prev.innerHTML = logo
     ? `<img src="${logo}" style="width:48px;height:48px;object-fit:contain;border-radius:8px" onerror="this.outerHTML='<span style=font-size:2rem>${icon}</span>'">`
@@ -991,9 +1316,20 @@ function renderSupsEditor() {
     </div>`).join('')
     +`<button onclick="gameSupAdd()" class="stock-btn" style="font-size:.82rem;padding:.4rem .9rem;margin-top:.3rem;background:var(--mid);">➕ إضافة مورد آخر</button>`;
 }
-window.gameSupAdd    = () => { gameSups.push({name:'',link:''}); renderSupsEditor(); };
-window.gameSupRemove = (i) => { gameSups.splice(i,1); renderSupsEditor(); };
-window.gameSupUpdate = (i,f,v) => { gameSups[i][f]=v; };
+
+window.gameSupAdd = () => { 
+    gameSups.push({name:'',link:''}); 
+    renderSupsEditor(); 
+};
+
+window.gameSupRemove = (i) => { 
+    gameSups.splice(i,1); 
+    renderSupsEditor(); 
+};
+
+window.gameSupUpdate = (i,f,v) => { 
+    gameSups[i][f]=v; 
+};
 
 function renderPkgsEditor() {
   const cont = document.getElementById('pkgsEditor');
@@ -1005,9 +1341,20 @@ function renderPkgsEditor() {
     </div>`).join('')
     +`<button onclick="gamePkgAdd()" class="stock-btn" style="font-size:.82rem;padding:.4rem .9rem;margin-top:.3rem">➕ إضافة باقة</button>`;
 }
-window.gamePkgAdd    = () => { gamePkgs.push({amount:'',price:0}); renderPkgsEditor(); };
-window.gamePkgRemove = (i) => { gamePkgs.splice(i,1); renderPkgsEditor(); };
-window.gamePkgUpdate = (i,f,v) => { gamePkgs[i][f]=f==='price'?parseFloat(v)||0:v; };
+
+window.gamePkgAdd = () => { 
+    gamePkgs.push({amount:'',price:0}); 
+    renderPkgsEditor(); 
+};
+
+window.gamePkgRemove = (i) => { 
+    gamePkgs.splice(i,1); 
+    renderPkgsEditor(); 
+};
+
+window.gamePkgUpdate = (i,f,v) => { 
+    gamePkgs[i][f]=f==='price'?parseFloat(v)||0:v; 
+};
 
 document.getElementById('gameName').addEventListener('input', updateGamePreview);
 document.getElementById('gameLogo').addEventListener('input', updateGamePreview);
@@ -1015,14 +1362,21 @@ document.getElementById('gameIcon').addEventListener('input', updateGamePreview)
 document.getElementById('gameBg').addEventListener('input',   updateGamePreview);
 
 document.getElementById('openAddGameBtn').addEventListener('click', () => {
-  editingGameId=null; gamePkgs=[]; gameSups=[];
+  editingGameId=null; 
+  gamePkgs=[]; 
+  gameSups=[];
   document.getElementById('gameModalTitle').textContent='➕ إضافة منتج / لعبة';
+  
   ['gameName','gameLogo','gameDesc','gameBadge','gameId','gameProvider'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('gameIcon').value='🎮';
   document.getElementById('gameBg').value='#1A1A2E';
   document.getElementById('productType').value='game';
   document.getElementById('gameOrder').value=allGames.length;
-  renderPkgsEditor(); renderSupsEditor(); updateGamePreview();
+  
+  renderPkgsEditor(); 
+  renderSupsEditor(); 
+  updateGamePreview();
+  
   document.getElementById('gameModal').classList.add('open');
 });
 
@@ -1030,11 +1384,13 @@ document.getElementById('closeGameBtn').addEventListener('click', ()=>document.g
 document.getElementById('gameModal').addEventListener('click', e=>{ if(e.target===document.getElementById('gameModal')) document.getElementById('gameModal').classList.remove('open'); });
 
 window.openEditGame = (id) => {
-  const g=allGames.find(x=>x.id===id); if (!g) return;
+  const g=allGames.find(x=>x.id===id); 
+  if (!g) return;
+  
   editingGameId=id; 
   gamePkgs=JSON.parse(JSON.stringify(g.pkgs||[]));
-  
   gameSups=JSON.parse(JSON.stringify(g.sups||[]));
+  
   if(g.supName && g.supLink && gameSups.length === 0) {
       gameSups.push({name: g.supName, link: g.supLink});
   }
@@ -1051,7 +1407,10 @@ window.openEditGame = (id) => {
   document.getElementById('gameProvider').value = g.provider||'';
   document.getElementById('productType').value  = g.productType||'game';
   
-  renderPkgsEditor(); renderSupsEditor(); updateGamePreview();
+  renderPkgsEditor(); 
+  renderSupsEditor(); 
+  updateGamePreview();
+  
   document.getElementById('gameModal').classList.add('open');
 };
 
@@ -1070,11 +1429,13 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   const finalId  = rawId||'game-'+Date.now();
   
   if (!name) { showToast('⚠️ أدخل اسم المنتج'); return; }
+  
   const pkgs = gamePkgs.filter(p=>p.amount&&p.price>0);
   const sups = gameSups.filter(s=>s.name&&s.link);
   
   const btn  = document.getElementById('saveGameBtn');
-  btn.disabled=true; btn.textContent='⏳...';
+  btn.disabled=true; 
+  btn.textContent='⏳...';
   
   try {
     const data={name,icon,logo,bg,desc,badge,order,pkgs,sups,provider,productType};
@@ -1085,22 +1446,34 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
     }
     showToast('✅ تم الحفظ بنجاح');
     document.getElementById('gameModal').classList.remove('open');
-  } catch(e) { console.error("GAME ERROR:", e); showToast('❌ '+e.message); }
-  btn.disabled=false; btn.textContent='💾 حفظ المنتج';
+  } catch(e) { 
+      console.error("GAME ERROR:", e); 
+      showToast('❌ '+e.message); 
+  }
+  
+  btn.disabled=false; 
+  btn.textContent='💾 حفظ المنتج';
 });
 
-function fmt(n) { return Number(n).toLocaleString('ar-MA'); }
+function fmt(n) { 
+    return Number(n).toLocaleString('ar-MA'); 
+}
+
 function fmtDate(ts) {
   if (!ts) return '—';
   try {
     const d=ts.toDate?ts.toDate():new Date(ts);
     return d.toLocaleDateString('ar-MA',{day:'2-digit',month:'2-digit',year:'numeric'})
       +' '+d.toLocaleTimeString('ar-MA',{hour:'2-digit',minute:'2-digit'});
-  } catch { return '—'; }
+  } catch { 
+      return '—'; 
+  }
 }
+
 function showToast(msg) {
   const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
+  t.textContent=msg; 
+  t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3000);
 }
 </script>

@@ -23,12 +23,17 @@ const auth = getAuth(app);
 
 let BANKS = [];
 let GAMES = [];
+let SLIDERS = [];
+let PAYMENT_BANKS = [];
 let selectedFrom = null;
 let selectedTo   = null;
 let selectedGame = null;
 let selectedPkg  = null;
 let activeOrderListener = null;
 let currentUser = null;
+
+let currentSlide = 0;
+let sliderInterval = null;
 
 window.currentImageBase64 = "";
 
@@ -143,10 +148,19 @@ function loadContent() {
     if(document.getElementById('gamesOnlyGrid') || document.getElementById('servicesOnlyGrid')) {
       window.filterGames('all');
     }
-    // تحديث النافذة إذا كانت مفتوحة
     if(selectedGame && document.getElementById('modal') && document.getElementById('modal').classList.contains('open')) {
       window.openModal(selectedGame.id);
     }
+  });
+
+  onSnapshot(query(collection(db,'sliders'), orderBy('order','asc')), snap => {
+    SLIDERS = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    window.renderSliders();
+  });
+
+  onSnapshot(query(collection(db,'payment_banks'), orderBy('order','asc')), snap => {
+    PAYMENT_BANKS = snap.docs.map(d => ({id:d.id, ...d.data()}));
+    window.renderPaymentBanks();
   });
 
   const savedOrder = localStorage.getItem('activeOrderId');
@@ -155,6 +169,102 @@ function loadContent() {
     window.trackLiveOrder(savedOrder);
   }
 }
+
+// ── السلايدر المتحرك ──
+window.renderSliders = function() {
+  const wrapper = document.getElementById('sliderWrapper');
+  const dots = document.getElementById('sliderDots');
+  const container = document.getElementById('cardsSlider');
+  
+  if (!wrapper || !dots || !container) return;
+  if (!SLIDERS.length) { 
+    container.style.display = 'none'; 
+    return; 
+  }
+  container.style.display = 'block';
+
+  wrapper.innerHTML = SLIDERS.map(s => `
+    <div class="slide" onclick="openModal('${s.gameId}')" style="cursor:pointer;" title="اضغط للشراء الآن">
+      <img src="${s.url}" alt="عرض" style="width:100%; height:100%; object-fit:cover;">
+    </div>
+  `).join('');
+
+  dots.innerHTML = SLIDERS.map((_, i) => `
+    <div class="dot ${i === 0 ? 'active' : ''}" onclick="goToSlide(${i})"></div>
+  `).join('');
+
+  currentSlide = 0;
+  window.updateSlider();
+  startAutoSlide();
+};
+
+window.updateSlider = function() {
+   const wrapper = document.getElementById('sliderWrapper');
+   if(!wrapper) return;
+   wrapper.style.transform = `translateX(${currentSlide * 100}%)`;
+   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentSlide));
+};
+
+window.moveSlider = function(dir) {
+   currentSlide += dir;
+   if(currentSlide < 0) currentSlide = SLIDERS.length - 1;
+   if(currentSlide >= SLIDERS.length) currentSlide = 0;
+   window.updateSlider();
+   startAutoSlide();
+};
+
+window.goToSlide = function(i) { 
+    currentSlide = i; 
+    window.updateSlider(); 
+    startAutoSlide(); 
+};
+
+function startAutoSlide() {
+   clearInterval(sliderInterval);
+   sliderInterval = setInterval(() => { window.moveSlider(1); }, 4000);
+}
+
+// ── بنوك الدفع (البطاقات) ──
+window.renderPaymentBanks = function() {
+   const cont = document.getElementById('paymentBanks');
+   if(!cont) return;
+   
+   if(!PAYMENT_BANKS.length) {
+      cont.innerHTML = '<p style="color:var(--muted);font-size:0.85rem;padding:0.5rem;width:100%;text-align:center">لا توجد طرق دفع مضافة.</p>';
+      return;
+   }
+   
+   cont.innerHTML = PAYMENT_BANKS.map(b => `
+     <label class="bank-btn pb-btn" id="pb-${b.id}" style="display:flex; flex-direction:column; align-items:center; cursor:pointer; padding:10px; border:1.5px solid var(--sand); border-radius:10px; background:var(--white);">
+       <input type="radio" name="selectedPB" value="${b.name}" style="display:none;" onchange="selectPaymentBank('${b.id}', '${b.name}')">
+       <div style="width:36px; height:36px; border-radius:8px; background:${b.color||'#0A7C4E'}; display:flex; justify-content:center; align-items:center; margin-bottom:5px;">
+         ${b.logo ? `<img src="${b.logo}" style="width:100%;height:100%;object-fit:contain">` : `<span style="color:#fff;font-size:12px;font-weight:bold">${b.name.substring(0,3)}</span>`}
+       </div>
+       <div style="font-size:0.8rem; font-weight:700; color:var(--ink);">${b.name}</div>
+     </label>
+   `).join('');
+};
+
+window.selectPaymentBank = function(id, name) {
+   document.querySelectorAll('.pb-btn').forEach(el => {
+      el.style.borderColor = 'var(--sand)';
+      el.style.background = 'var(--white)';
+   });
+   const selectedEl = document.getElementById('pb-'+id);
+   if(selectedEl) {
+      selectedEl.style.borderColor = 'var(--green)';
+      selectedEl.style.background = 'var(--green-light)';
+   }
+   
+   // تغيير النص فقط مع إبقاء الرقم ثابتاً للعميل
+   const payBoxes = document.querySelectorAll('#modal .calc-box ~ div[style*="background: var(--green-light)"]');
+   if(payBoxes.length > 0) {
+       const title = payBoxes[0].querySelector('div:first-child');
+       if(title) {
+           title.innerHTML = `📱 للطلب يرجى الدفع عبر ${name} للرقم:`;
+       }
+   }
+};
 
 // ── معالجة وضغط الصور ──
 window.handleImagePreview = function(event, type = 'transfer') {
@@ -346,20 +456,19 @@ window.renderGamesList = function(list, containerId, emptyMsg) {
 window.openModal = function(gameId){
   selectedGame = GAMES.find(g=>g.id===gameId); selectedPkg  = null; window.currentImageBase64 = ""; 
   if(!selectedGame) return;
+  
   if(document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = selectedGame.name;
   if(document.getElementById('modalGameName')) document.getElementById('modalGameName').textContent = selectedGame.name;
   
   const iconEl = document.getElementById('modalIcon'); 
   if(iconEl) {
       iconEl.style.background = selectedGame.bg||'#1a1a2e';
-      // 🎯 السطر المحدث لجعل الصورة تملأ مساحتها تماماً داخل النافذة المنبثقة
       iconEl.innerHTML = selectedGame.logo ? `<img src="${selectedGame.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:8px"/>` : `<span style="font-size:2.5rem">${selectedGame.icon||'🎮'}</span>`;
   }
   
   const playerIdInput = document.getElementById('modalPlayerId');
   if(playerIdInput) {
       playerIdInput.value = ''; 
-      // إخفاء حقل (معرف اللاعب) للبطاقات/الخدمات فقط
       if(selectedGame.productType === 'service') {
           playerIdInput.parentElement.style.display = 'none';
       } else {
@@ -384,6 +493,20 @@ window.openModal = function(gameId){
         </div>`;
       }).join('');
   }
+
+  // تحديد أول بنك دفع افتراضياً
+  if(PAYMENT_BANKS.length > 0) {
+      window.selectPaymentBank(PAYMENT_BANKS[0].id, PAYMENT_BANKS[0].name);
+      const firstInput = document.querySelector(`input[name="selectedPB"][value="${PAYMENT_BANKS[0].name}"]`);
+      if(firstInput) firstInput.checked = true;
+  } else {
+      const payBoxes = document.querySelectorAll('#modal .calc-box ~ div[style*="background: var(--green-light)"]');
+      if(payBoxes.length > 0) {
+          const title = payBoxes[0].querySelector('div:first-child');
+          if(title) title.innerHTML = `📱 للطلب يرجى الدفع للرقم:`;
+      }
+  }
+
   const modal = document.getElementById('modal');
   if(modal) modal.classList.add('open');
 };
@@ -413,12 +536,13 @@ window.submitCard = async function(){
   const phone = document.getElementById('modalPhone') ? document.getElementById('modalPhone').value.trim() : '';
   
   if(!selectedPkg) { window.showToast('⚠️ اختر باقة أولاً'); return; }
-  
-  // التحقق من الحساب فقط إذا كان المنتج ليس "خدمة/بطاقة"
   if(selectedGame.productType !== 'service' && !pid) { window.showToast('⚠️ أدخل الحساب / معرف اللاعب'); return; }
-  
   if(!phone) { window.showToast('⚠️ أدخل رقم هاتفك'); return; }
   if(!window.currentImageBase64) { window.showToast('⚠️ يرجى إرفاق صورة الوصل'); return; }
+
+  // التقاط البنك الذي اختاره العميل
+  const pbInput = document.querySelector('input[name="selectedPB"]:checked');
+  const paymentBankName = pbInput ? pbInput.value : 'غير محدد';
 
   const ref = 'CRD-'+Math.floor(Math.random()*90000+10000);
   const btn = document.querySelector('#modal .submit-btn');
@@ -427,8 +551,17 @@ window.submitCard = async function(){
   try {
     await addDoc(collection(db,'cards'),{
       uid: currentUser.uid, 
-      ref, game:selectedGame.name, gameId:selectedGame.id, package:selectedPkg.amount, price:selectedPkg.price,
-      playerId:pid || 'غير مطلوب', phone, image: window.currentImageBase64, status:'pending', createdAt:serverTimestamp()
+      ref, 
+      game:selectedGame.name, 
+      gameId:selectedGame.id, 
+      package:selectedPkg.amount, 
+      price:selectedPkg.price,
+      paymentBank: paymentBankName,
+      playerId:pid || 'غير مطلوب', 
+      phone, 
+      image: window.currentImageBase64, 
+      status:'pending', 
+      createdAt:serverTimestamp()
     });
     
     const modal = document.getElementById('modal');
@@ -436,8 +569,8 @@ window.submitCard = async function(){
     window.showToast('✅ تم إرسال طلبك بنجاح!');
     alert('✅ تم استلام طلبك بنجاح!\n\nرقم طلبك للتتبع هو: ' + ref);
     
-    // إرسال الإشعار لتليجرام
-    const tMsg = `🎮 طلب منتج رقمي جديد!\nالرقم: ${ref}\nالمنتج: ${selectedGame.name}\nالباقة: ${selectedPkg.amount}\nالسعر: ${fmt(selectedPkg.price)} أوقية\nالهاتف: ${phone}`;
+    // إرسال الإشعار لتليجرام مضافاً إليه اسم البنك
+    const tMsg = `🎮 طلب منتج رقمي جديد!\nالرقم: ${ref}\nالمنتج: ${selectedGame.name}\nالباقة: ${selectedPkg.amount}\nالسعر: ${fmt(selectedPkg.price)} أوقية\nدفع عبر: ${paymentBankName}\nالهاتف: ${phone}`;
     if(window.sendTelegramNotification) window.sendTelegramNotification(tMsg);
     
     localStorage.setItem('activeOrderId', ref);
