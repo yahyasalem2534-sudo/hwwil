@@ -25,7 +25,60 @@
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet"/>
 <link rel="stylesheet" href="css/index.css"/>
 <link rel="stylesheet" href="css/main.css"/>
+
+<!-- ✅ سكربت سريع لمنع الوميض الأبيض عند فتح الموقع في الوضع الليلي -->
+<script>
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  document.documentElement.setAttribute('data-theme', savedTheme);
+</script>
+
 <style>
+  /* ✅ متغيرات الوضع الليلي المحسنة (سواد أعمق وتباين أفضل) */
+  [data-theme="dark"] {
+    --white: #141414; /* خلفية البطاقات والمربعات */
+    --sand: #080808;  /* خلفية الموقع الأساسية (أسود عميق) */
+    --ink: #fdfdfd;   /* لون النصوص */
+    --mid: #a0a0a5;
+    --shadow: 0 12px 40px rgba(0, 0, 0, 0.95); /* شادو أسود كثيف وقوي */
+    --green-light: rgba(10, 124, 78, 0.2);
+  }
+
+  /* ✅ إبراز الشادو الأسود والحدود الخفيفة للبطاقات في الوضع الليلي فقط */
+  [data-theme="dark"] .order-card, 
+  [data-theme="dark"] .search-order-container, 
+  [data-theme="dark"] .game-card, 
+  [data-theme="dark"] .form-card,
+  [data-theme="dark"] .modal,
+  [data-theme="dark"] .success-card { 
+      box-shadow: var(--shadow) !important; 
+      border-color: #222 !important; /* لون حدود خفيف جداً لتمييز المربع */
+  }
+  
+  body { background-color: var(--sand); color: var(--ink); transition: background-color 0.3s ease, color 0.3s ease; }
+  
+  /* ✅ حل مشكلة الفوتر: يتم تغيير ألوانه للقائمة والفوتر فقط في الوضع الليلي */
+  nav, footer { transition: background-color 0.3s ease, border-color 0.3s ease; }
+  [data-theme="dark"] nav, [data-theme="dark"] footer { background-color: var(--white) !important; }
+  [data-theme="dark"] nav { border-bottom: 1px solid var(--sand) !important; }
+  [data-theme="dark"] footer { border-top: 1px solid var(--sand) !important; }
+  
+  /* ✅ تحسين ألوان نصوص الفوتر في الوضع الليلي */
+  [data-theme="dark"] .footer-desc, 
+  [data-theme="dark"] .footer-contact-item, 
+  [data-theme="dark"] .fl a, 
+  [data-theme="dark"] .footer-bottom div { color: var(--mid) !important; }
+  [data-theme="dark"] .fh { color: var(--ink) !important; }
+
+  .order-card, .search-order-container, .game-card, .form-card, .modal { transition: background-color 0.3s ease, border-color 0.3s ease; }
+
+  /* ✅ تأثيرات التحميل الوهمية (Skeleton Loaders) */
+  @keyframes pulse-bg {
+    0% { background-color: var(--sand); }
+    50% { background-color: rgba(150, 150, 150, 0.2); }
+    100% { background-color: var(--sand); }
+  }
+  .skeleton { animation: pulse-bg 1.5s infinite ease-in-out; border-radius: 4px; }
+
   .section-title-sm { font-size: 1.4rem; font-weight: 800; color: var(--ink); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.6rem; }
   .section-title-sm span { font-size: 1.8rem; }
   .order-card { background: var(--white); border: 1.5px solid var(--sand); border-radius: 12px; padding: 1.2rem; margin-bottom: 1rem; box-shadow: var(--shadow); }
@@ -36,79 +89,90 @@
   .status-done { background: var(--green-light); color: var(--green); }
   .status-rejected { background: var(--red-light); color: var(--red); }
 
-/* ✅ تعديل السلايدر ليكون أنحف وبدون حواف */
-.main-slider { 
-    position: relative; 
-    width: 100vw; 
-    left: 50%; 
-    right: 50%; 
-    margin-left: -50vw; 
-    margin-right: -50vw; 
-    margin-bottom: 2rem; 
-    overflow: hidden; 
-    aspect-ratio: 21/6; /* أنحف لصور البانر */
-    background: #eee; 
-}
-.slider-wrapper { display: flex; width: 100%; height: 100%; transition: transform 0.5s ease-in-out; }
-.slide { min-width: 100%; height: 100%; position: relative; }
-.slide img { width: 100%; height: 100%; object-fit: cover; }
-.slider-nav { position: absolute; top: 50%; width: 100%; display: flex; justify-content: space-between; transform: translateY(-50%); padding: 0 1rem; pointer-events: none; z-index: 10; }
+  /* السلايدر والتصميم السابق */
+  .main-slider { 
+      position: relative; width: 100vw; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; 
+      margin-top: 3.5rem; margin-bottom: 2rem; overflow: hidden; aspect-ratio: 21/6; background: #000; 
+      box-shadow: inset 0 0 50px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.5); 
+  }
+  .slider-wrapper { display: flex; width: 100%; height: 100%; transition: transform 0.6s ease-in-out; }
+  .slide { min-width: 100%; height: 100%; position: relative; cursor: pointer; }
+  .slide img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .slider-nav { position: absolute; top: 50%; width: 100%; display: flex; justify-content: space-between; transform: translateY(-50%); padding: 0 1.5rem; pointer-events: none; z-index: 10; }
+  .nav-btn { background: rgba(0, 0, 0, 0.5); color: white; border: none; width: 45px; height: 45px; border-radius: 50%; cursor: pointer; pointer-events: auto; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; transition: 0.3s; }
+  .nav-btn:hover { background: rgba(0, 0, 0, 0.8); transform: scale(1.1); }
+  .slider-dots { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
+  .dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.4); cursor: pointer; transition: 0.3s; }
+  .dot.active { background: white; width: 25px; border-radius: 10px; }
+  .slider-shop-btn {
+      position: absolute; bottom: 35px; left: 50%; transform: translateX(-50%);
+      background: #ffffff; color: var(--green) !important; border: none; padding: 12px 50px; 
+      border-radius: 50px; font-weight: 900; font-size: 1.1rem; cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.4); 
+      z-index: 15; white-space: nowrap; transition: all 0.3s ease;
+  }
+  .slider-shop-btn:hover { transform: translateX(-50%) translateY(-3px) scale(1.05); box-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 50px rgba(255, 255, 255, 0.6); }
+  .game-cover { padding: 0 !important; display: block !important; position: relative; overflow: hidden; height: 180px; }
+  .game-cover-img { width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 12px 12px 0 0 !important; }
 
-/* ✅ أزرار التنقل بيضاوية وخضراء كما طلبت */
-.nav-btn { 
-    background: var(--green); 
-    color: white; 
-    border: none; 
-    width: 50px; 
-    height: 35px; 
-    border-radius: 25px; 
-    cursor: pointer; 
-    pointer-events: auto; 
-    display: flex; 
-    align-items: center; 
-    justify-content: center; 
-    font-size: 1.2rem; 
-    transition: background 0.3s; 
-}
-.nav-btn:hover { background: var(--green-dark); }
-
-.slider-dots { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; z-index: 10; }
-.dot { width: 10px; height: 10px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; }
-.dot.active { background: white; width: 25px; border-radius: 10px; }
-
-/* ✅ زر تسوق الآن بيضاوي ذهبي (بدل البرتقالي) */
-.slider-shop-btn {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--gold);
-    color: white;
-    border: 2px solid white;
-    padding: 8px 30px;
-    border-radius: 50px;
-    font-weight: 800;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-    z-index: 5;
-    white-space: nowrap;
-}
-
-/* ✅ التأكد من أن صور الألعاب تملأ المربعات */
-.game-cover { padding: 0 !important; display: block !important; position: relative; overflow: hidden; }
-.game-cover-img { width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 12px 12px 0 0 !important; }
-
-@media (max-width: 800px) {
-    nav { flex-wrap: wrap !important; padding: 0.8rem !important; }
-    .logo { order: 1; }
-    .nav-right { order: 2; }
-    .nav-tabs { display: flex !important; order: 3; width: 100%; margin-top: 1rem; overflow-x: auto; white-space: nowrap; padding-bottom: 0.5rem; justify-content: flex-start !important; -ms-overflow-style: none; scrollbar-width: none; }
-    .nav-tabs::-webkit-scrollbar { display: none; }
-    .nav-tab { flex-shrink: 0; font-size: 0.85rem !important; }
-    #navLoginBtn { padding: 0.4rem 0.6rem !important; font-size: 0.75rem !important; margin-left: 0.3rem !important; }
-    .whatsapp-btn { padding: 0.4rem 0.6rem !important; font-size: 0.75rem !important; }
-    .main-slider { aspect-ratio: 16/9; }
-}
+  @media (max-width: 800px) {
+      /* 1. ترتيب القائمة العلوية بشكل أنيق ومدمج جداً */
+      nav { 
+          flex-wrap: wrap !important; 
+          padding: 8px 15px !important; 
+          justify-content: space-between !important;
+      }
+      .logo { order: 1; margin-bottom: 5px; }
+      .nav-right { 
+          order: 2; 
+          display: flex;
+          align-items: center;
+          gap: 8px; 
+          margin-bottom: 5px;
+      }
+      #navLoginBtn, .whatsapp-btn {
+          padding: 0.35rem 0.6rem !important;
+          font-size: 0.75rem !important;
+          margin: 0 !important;
+      }
+      
+      /* التبويبات بخط فاصل وتوسيط مثالي */
+      .nav-tabs { 
+          display: flex !important; 
+          order: 3; 
+          width: 100%; 
+          margin-top: 2px !important; 
+          padding-top: 8px !important;
+          padding-bottom: 5px !important;
+          border-top: 1px solid var(--sand); 
+          overflow-x: auto; 
+          white-space: nowrap; 
+          justify-content: center !important; 
+          gap: 15px;
+      }
+      .nav-tab {
+          font-size: 0.85rem !important;
+          padding: 0.4rem 0.8rem !important;
+      }
+      
+      /* 2. إرجاع السلايدر ليمتد على كامل الشاشة (من الحافة للحافة) بدون حواف دائرية */
+      .main-slider { 
+          position: relative !important;
+          width: 100vw !important;
+          left: 50% !important;
+          right: 50% !important;
+          margin-left: -50vw !important;
+          margin-right: -50vw !important;
+          border-radius: 0 !important; 
+          margin-top: 2.5rem !important; 
+          aspect-ratio: 16/9 !important; 
+      } 
+      .slider-shop-btn { 
+          padding: 8px 30px !important; 
+          font-size: 0.95rem !important; 
+          bottom: 20px !important; 
+      }
+  }
 </style>
 </head>
 <body style="margin: 0; padding: 0; overflow-x: hidden;">
@@ -123,7 +187,9 @@
     <button class="nav-tab" onclick="showPage('cards')">البطاقات والألعاب</button>
     <button class="nav-tab" id="navProfileBtn" onclick="showPage('profile')" style="display:none;">👤 حسابي</button>
   </div>
-  <div class="nav-right">
+  <div class="nav-right" style="display:flex; align-items:center;">
+    <!-- ✅ زر تبديل الوضع الليلي والنهاري -->
+    <button id="themeToggleBtn" onclick="toggleTheme()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; padding:0 5px; transition: transform 0.3s; outline:none;" title="الوضع الليلي">🌙</button>
     <button class="btn-outline" id="navLoginBtn" onclick="openAuthModal()" style="padding: 0.4rem 1rem; font-size: 0.85rem; margin-left: 0.5rem;">دخول / تسجيل</button>
     <button class="whatsapp-btn" onclick="window.open('https://wa.me/22234362534','_blank')">📞 تواصل معنا</button>
   </div>
@@ -206,7 +272,12 @@
       <h2 class="section-title">البطاقات <span>والألعاب</span></h2>
       <a href="#" class="see-all" onclick="showPage('cards');return false">عرض الكل ←</a>
     </div>
-    <div class="games-grid" id="homeGamesGrid"></div>
+    <div class="games-grid" id="homeGamesGrid">
+      <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+      <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+      <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+      <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+    </div>
   </div>
 
   <div style="max-width:1300px;margin:0 auto">
@@ -313,13 +384,19 @@
 <div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow); margin-top: 2rem;">
   <h3 class="section-title-sm"><span>🎮</span> شحن الألعاب</h3>
   <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">شحن فوري لأشهر الألعاب (ببجي، فري فاير، والمزيد)</p>
-  <div class="games-grid" id="gamesOnlyGrid"></div>
+  <div class="games-grid" id="gamesOnlyGrid">
+    <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+    <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+  </div>
 </div>
 
 <div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
   <h3 class="section-title-sm"><span>💳</span> بطاقات واشتراكات</h3>
   <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">اشتراكات وبطاقات هدايا (نتفلكس، آبل، بلايستيشن، والمزيد)</p>
-  <div class="games-grid" id="servicesOnlyGrid"></div>
+  <div class="games-grid" id="servicesOnlyGrid">
+    <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+    <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+  </div>
 </div>
   </div>
 </div>
@@ -339,13 +416,11 @@
 
 <div id="myTransfersContainer">
   <div id="myTransfersList">
-    <p style="text-align:center; padding:2rem; color:var(--muted);">⏳ جاري جلب التحويلات...</p>
   </div>
 </div>
 
 <div id="myCardsContainer" style="display:none;">
   <div id="myCardsList">
-    <p style="text-align:center; padding:2rem; color:var(--muted);">⏳ جاري جلب البطاقات...</p>
   </div>
 </div>
   </div>
@@ -431,7 +506,8 @@
     <span style="background:var(--white); padding:0 10px; position:relative; z-index:2;">أو</span>
   </div>
 
-  <button class="submit-btn" style="background:#fff; color:var(--ink); border:1.5px solid var(--sand); display:flex; align-items:center; justify-content:center; gap:.8rem;" onclick="handleAuthGoogle()">
+  <!-- ✅ تم تعديل خلفية الزر لتعمل بانسجام مع الوضع الليلي والنهاري -->
+  <button class="submit-btn" style="background:var(--white); color:var(--ink); border:1.5px solid var(--sand); display:flex; align-items:center; justify-content:center; gap:.8rem;" onclick="handleAuthGoogle()">
     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;">
     المتابعة باستخدام Google
   </button>
@@ -455,7 +531,7 @@
       <div class="fh">الخدمات</div>
       <ul class="fl">
         <li><a href="#" onclick="showPage('transfer');return false">التحويل البنكي</a></li>
-        <li><a href="#" onclick="showPage('cards');return false">البطاقات الرقمية</a></li>
+        <li><a href="#" onclick="showPage('cards');return false">البيانات الرقمية</a></li>
       </ul>
     </div>
     <div>
@@ -470,9 +546,15 @@
   <div class="footer-bottom">
     <div>© ٢٠٢٦ حوّل — جميع الحقوق محفوظة</div>
     <div class="footer-social">
-      <button class="soc" onclick="window.open('https://www.facebook.com/share/1HhNm2E6GH/?mibextid=wwXIfr','_blank')">📘</button>
-      <button class="soc" onclick="window.open('https://www.tiktok.com/@hawwil2.web.app?_r=1&_t=ZS-96BizYmtasS','_blank')">📱</button>
-      <button class="soc" onclick="window.open('https://wa.me/22234362534','_blank')">💬</button>
+      <button class="soc" style="display:flex; align-items:center; justify-content:center; padding:8px;" onclick="window.open('https://www.facebook.com/share/1HhNm2E6GH/?mibextid=wwXIfr','_blank')">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="#0A7C4E"><path d="M22.675 0H1.325C.593 0 0 .593 0 1.325v21.351C0 23.407.593 24 1.325 24H12.82v-9.294H9.692v-3.622h3.128V8.413c0-3.1 1.893-4.788 4.659-4.788 1.325 0 2.463.099 2.795.143v3.24l-1.918.001c-1.504 0-1.795.715-1.795 1.763v2.313h3.587l-.467 3.622h-3.12V24h6.116c.73 0 1.323-.593 1.323-1.325V1.325C24 .593 23.407 0 22.675 0z"/></svg>
+      </button>
+      <button class="soc" style="display:flex; align-items:center; justify-content:center; padding:8px;" onclick="window.open('https://www.tiktok.com/@hawwil2.web.app?_r=1&_t=ZS-96BizYmtasS','_blank')">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="#0A7C4E"><path d="M12.525.02c1.31-.02 2.61-.01 3.91.04 1.5.06 2.92.54 4.19 1.45.69.5 1.3 1.1 1.8 1.82.52.74.87 1.58 1.05 2.47.16.8.2 1.62.2 2.44v1.89c-1.34-.14-2.65-.47-3.87-1.04-1.01-.48-1.93-1.12-2.73-1.9-.3-.29-.58-.6-.83-.93-.05-.07-.11-.14-.17-.22v6.62c-.01 2.22-.64 4.38-1.83 6.18-1.14 1.73-2.76 3.03-4.66 3.73-1.81.66-3.8.84-5.74.52-1.82-.3-3.48-1.1-4.88-2.31-1.32-1.14-2.28-2.64-2.76-4.32-.47-1.63-.5-3.37-.12-4.99.37-1.58 1.16-3.03 2.29-4.18 1.25-1.27 2.87-2.11 4.67-2.38 1.37-.2 2.76-.11 4.07.29.35.1.7.23 1.04.38v3.42c-1.42-.51-2.98-.54-4.42-.08-1.13.36-2.12 1.1-2.75 2.1-.56.88-.82 1.95-.73 3.02.09 1.07.54 2.08 1.28 2.85 1.05 1.09 2.59 1.59 4.1 1.36 1.47-.23 2.76-1.14 3.47-2.45.64-1.18.91-2.54.89-3.9v-13.6c.01 0 .01 0 0 0z"/></svg>
+      </button>
+      <button class="soc" style="display:flex; align-items:center; justify-content:center; padding:8px;" onclick="window.open('https://wa.me/22234362534','_blank')">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="#0A7C4E"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.328-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.05-.148-.67-1.613-.918-2.194-.242-.582-.487-.5-.67-.504-.173-.005-.371-.005-.57-.005s-.52.075-.792.37c-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.123.57-.081 1.758-.47 2.006-1.123.248-.653.248-1.213.173-1.328-.074-.115-.272-.188-.57-.337L17.472 14.382zM12.004 0C5.383 0 0 5.38 0 12c0 2.124.61 4.103 1.661 5.772l-.986 3.593 3.692-.968A11.948 11.948 0 0 0 12.004 24c6.621 0 12.004-5.38 12.004-12s-5.383-12-12.004-12z"/></svg>
+      </button>
     </div>
   </div>
 </footer>

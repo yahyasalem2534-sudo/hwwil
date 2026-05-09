@@ -37,6 +37,29 @@ let sliderInterval = null;
 
 window.currentImageBase64 = "";
 
+// ── إعداد الوضع الليلي ──
+document.addEventListener("DOMContentLoaded", () => {
+  const savedTheme = localStorage.getItem('theme') || 'light';
+  const themeBtn = document.getElementById('themeToggleBtn');
+  if (themeBtn) {
+    themeBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+  }
+});
+
+window.toggleTheme = function() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', newTheme);
+  localStorage.setItem('theme', newTheme);
+  
+  const btn = document.getElementById('themeToggleBtn');
+  if (btn) {
+    btn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    btn.style.transform = 'scale(0.8)';
+    setTimeout(() => btn.style.transform = 'scale(1)', 150);
+  }
+};
+
 // ── إرسال إشعار تليجرام السري (الاستشعار) ──
 window.sendTelegramNotification = function(message) {
   const token = "8710007016:AAEYafJuYblld43Las00My1W5F5ymzNPxhQ";
@@ -194,7 +217,6 @@ window.renderSliders = function() {
 
   wrapper.innerHTML = validSliders.map(s => {
     const g = s.game;
-    // التعديل: إعطاء الأولوية للبانر العريض، وإذا لم يوجد نستخدم صورة المنتج
     const banner = s.bannerUrl || g.logo;
     
     const imgHtml = banner
@@ -204,7 +226,7 @@ window.renderSliders = function() {
     return `
     <div class="slide" onclick="openModal('${g.id}')" style="cursor:pointer; position:relative;" title="تسوق ${g.name} الآن">
       ${imgHtml}
-      <div style="position:absolute; bottom:20px; right:20px; background:var(--green); color:white; padding:8px 20px; border-radius:8px; font-weight:800; font-size:0.9rem; box-shadow:0 4px 10px rgba(0,0,0,0.3); border:2px solid white;">تسوق الآن</div>
+      <button class="slider-shop-btn">تسوق الآن</button>
     </div>
     `}).join('');
 
@@ -433,7 +455,7 @@ window.resetTransfer = function(){
   if(document.getElementById('receiptImage')) document.getElementById('receiptImage').value = '';
 };
 
-// ── الألعاب ──
+// ── الألعاب والبطاقات ──
 window.filterGames = function(provider, btnEl) {
   if(btnEl) { document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active')); btnEl.classList.add('active'); }
   let filtered = GAMES;
@@ -705,7 +727,7 @@ window.checkOrderStatus = function() {
   const inputEl = document.getElementById('orderIdInput');
   if(!inputEl) return;
   let input = inputEl.value.trim().replace('#', '').toUpperCase();
-  if(!input) { window.showToast('⚠️ يرجى إدخال رقم الطلب'); return; }
+  if(!input) { window.showToast('⚠️ يرجى إدخل رقم الطلب'); return; }
   window.trackLiveOrder(input);
 };
 
