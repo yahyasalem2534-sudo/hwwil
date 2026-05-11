@@ -27,7 +27,6 @@
 <link rel="stylesheet" href="css/index.css"/>
 <link rel="stylesheet" href="css/main.css"/>
 
-<!-- ✅ سكربت سريع لمنع الوميض الأبيض عند فتح الموقع في الوضع الليلي -->
 <script>
   const savedTheme = localStorage.getItem('theme') || 'light';
   document.documentElement.setAttribute('data-theme', savedTheme);
@@ -189,7 +188,6 @@
     <button class="nav-tab" id="navProfileBtn" onclick="showPage('profile')" style="display:none;">👤 حسابي</button>
   </div>
   <div class="nav-right" style="display:flex; align-items:center;">
-    <!-- ✅ زر تبديل الوضع الليلي والنهاري -->
     <button id="themeToggleBtn" onclick="toggleTheme()" style="background:none; border:none; font-size:1.4rem; cursor:pointer; padding:0 5px; transition: transform 0.3s; outline:none;" title="الوضع الليلي">🌙</button>
     <button class="btn-outline" id="navLoginBtn" onclick="openAuthModal()" style="padding: 0.4rem 1rem; font-size: 0.85rem; margin-left: 0.5rem;">دخول / تسجيل</button>
     <button class="whatsapp-btn" onclick="window.open('https://wa.me/22234362534','_blank')">📞 تواصل معنا</button>
@@ -507,7 +505,6 @@
     <span style="background:var(--white); padding:0 10px; position:relative; z-index:2;">أو</span>
   </div>
 
-  <!-- ✅ تم تعديل خلفية الزر لتعمل بانسجام مع الوضع الليلي والنهاري -->
   <button class="submit-btn" style="background:var(--white); color:var(--ink); border:1.5px solid var(--sand); display:flex; align-items:center; justify-content:center; gap:.8rem;" onclick="handleAuthGoogle()">
     <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;">
     المتابعة باستخدام Google
@@ -538,9 +535,9 @@
     <div>
       <div class="fh">دعم</div>
       <ul class="fl">
-        <li><a href="#">الأسئلة الشائعة</a></li>
-        <li><a href="#">سياسة الخصوصية</a></li>
-        <li><a href="#">تواصل معنا</a></li>
+        <li><a href="faq.html">الأسئلة الشائعة</a></li>
+        <li><a href="privacy.html">سياسة الخصوصية</a></li>
+        <li><a href="https://wa.me/22234362534" target="_blank">تواصل معنا</a></li>
       </ul>
     </div>
   </div>
