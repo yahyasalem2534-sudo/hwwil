@@ -14,7 +14,7 @@ const firebaseConfig = {
   projectId:         "hawwil2",
   storageBucket:     "hawwil2.firebasestorage.app",
   messagingSenderId: "350634992471",
-  appId:             "1:350634992471:web:5c1da802f0bad15332715c"
+  appId:             "1:350634992471:web:96e296f582dda728829412"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -635,7 +635,7 @@ window.loadUserOrders = async function() {
 
     if(transList) {
         if(transfers.length === 0) {
-          transList.innerHTML = '<p style="text-align:center; padding:2rem; color:var(--muted); background:var(--white); border-radius:12px; border:1px solid var(--sand);">لا توجد تحويلات سابقة.</p>';
+          transList.innerHTML = '<p style="text-align:center; padding:2rem; color:var(--muted); background:var(--white); border-radius:12px; border:1px solid var(--sand); border-radius:12px;">لا توجد تحويلات سابقة.</p>';
         } else {
           transList.innerHTML = transfers.map(t => `
             <div class="order-card">

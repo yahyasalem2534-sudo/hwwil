@@ -5,12 +5,12 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey:            "AIzaSyCov8KnTUdzywlejDGk74WODUEbZfx1nIc",
-  authDomain:        "hawwil.firebaseapp.com",
-  projectId:         "hawwil",
-  storageBucket:     "hawwil.firebasestorage.app",
-  messagingSenderId: "797332872661",
-  appId:             "1:797332872661:web:5c1da802f0bad15332715c"
+  apiKey:            "AIzaSyA4W0Rq_Rd7c7zmh-Vuw8YV9v4WDFCgoeI",
+  authDomain:        "hawwil2.firebaseapp.com",
+  projectId:         "hawwil2",
+  storageBucket:     "hawwil2.firebasestorage.app",
+  messagingSenderId: "350634992471",
+  appId:             "1:350634992471:web:96e296f582dda728829412"
 };
 
 const app = initializeApp(firebaseConfig);
