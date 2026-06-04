@@ -520,6 +520,14 @@ body.is-admin .admin-text { display: inline !important; }
         </div>
       </div>
 
+      <div class="form-row" style="margin-top:1rem; background: var(--sand); padding: 1rem; border-radius: 10px;">
+        <label class="flabel" style="color:var(--green)">نطاق البطاقة (عالمية أم إقليمية) *</label>
+        <select class="finput" id="gameIsGlobal" onchange="renderPkgsEditor()" style="border-color:var(--green); font-weight:bold;">
+          <option value="true">🌍 بطاقة عالمية (تُعرض الباقات مباشرة كما هي)</option>
+          <option value="false">📍 بطاقة إقليمية (تُقسم الباقات حسب الدولة)</option>
+        </select>
+      </div>
+
       <div class="form-row" style="margin-top:1rem">
         <label class="flabel">الباقات والأسعار</label>
         <div id="pkgsEditor" style="margin-top:.5rem"></div>
@@ -883,7 +891,6 @@ function renderGamesTable() {
   }).join('');
 }
 
-// 🟢 دالة عرض السلايدر 
 function renderSlidersTable() {
   const tbody = document.getElementById('slidersBody'); 
   if(!tbody) return;
@@ -894,7 +901,6 @@ function renderSlidersTable() {
   tbody.innerHTML = allSliders.map(s => {
     const linkedGame = allGames.find(g => g.id === s.gameId);
     const gameName = linkedGame ? linkedGame.name : '—';
-    // التعديل: قراءة صورة البانر الجديدة (Base64)
     const imgHtml = (s.bannerUrl) 
       ? `<img src="${s.bannerUrl}" style="height:50px; width:80px; object-fit:cover; border-radius:8px;">` 
       : `<div style="height:50px; width:80px; border-radius:8px; background:${linkedGame?linkedGame.bg:'#eee'}; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">${linkedGame?linkedGame.icon:'🎮'}</div>`;
@@ -906,7 +912,6 @@ function renderSlidersTable() {
   </tr>`}).join('');
 }
 
-// 🔵 دالة عرض بنوك الدفع (البطاقات)
 function renderPaymentBanksTable() {
   const tbody = document.getElementById('paymentBanksBody'); 
   if(!tbody) return;
@@ -1109,7 +1114,6 @@ document.getElementById('saveStockBtn').addEventListener('click', async () => {
   btn.textContent='💾 حفظ البطاقات في المخزون';
 });
 
-// 🟢 إدارة السلايدر (التعديل: إضافة صورة Base64)
 let currentBannerBase64 = "";
 
 window.handleBannerPreview = async (event) => {
@@ -1124,7 +1128,6 @@ window.handleBannerPreview = async (event) => {
         img.onload = () => {
             const canvas = document.createElement('canvas');
             let width = img.width, height = img.height;
-            // ضغط الصورة إلى 1200 بكسل كحد أقصى للسرعة
             if (width > 1200) { height *= 1200 / width; width = 1200; }
             canvas.width = width; canvas.height = height;
             const ctx = canvas.getContext('2d');
@@ -1167,7 +1170,7 @@ document.getElementById('saveSliderBtn').addEventListener('click', async () => {
     await addDoc(collection(db,'sliders'), { 
         gameId, 
         order, 
-        bannerUrl: currentBannerBase64, // التعديل: حفظ الصورة
+        bannerUrl: currentBannerBase64, 
         createdAt:serverTimestamp() 
     });
     showToast('✅ تم إضافة العرض');
@@ -1180,7 +1183,6 @@ document.getElementById('saveSliderBtn').addEventListener('click', async () => {
   btn.textContent='💾 حفظ العرض';
 });
 
-// 🔵 إدارة بنوك دفع البطاقات
 document.getElementById('openAddPaymentBankBtn').addEventListener('click', () => {
   const select = document.getElementById('pbBankSelect');
   select.innerHTML = '<option value="">— اختر البنك —</option>' + allBanks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
@@ -1306,7 +1308,6 @@ document.getElementById('saveBankBtn').addEventListener('click', async () => {
   btn.textContent='💾 حفظ البنك';
 });
 
-// ── GAME MODAL ──
 let editingGameId = null, gamePkgs = [], gameSups = [];
 
 function updateGamePreview() {
@@ -1346,19 +1347,41 @@ window.gameSupUpdate = (i,f,v) => {
     gameSups[i][f]=v; 
 };
 
-function renderPkgsEditor() {
+// 🟢 دالة عرض الباقات (تدعم Datalist)
+window.renderPkgsEditor = function() {
   const cont = document.getElementById('pkgsEditor');
-  cont.innerHTML = gamePkgs.map((p,i)=>`
+  
+  const gameIsGlobalElement = document.getElementById('gameIsGlobal');
+  const isGlobal = gameIsGlobalElement ? gameIsGlobalElement.value === 'true' : true;
+
+  let html = gamePkgs.map((p,i) => `
     <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
-      <input class="finput" style="flex:1" value="${p.amount||''}" oninput="gamePkgUpdate(${i},'amount',this.value)" placeholder="مثال: 60 UC"/>
+      ${!isGlobal ? `<input class="finput" list="regionsList" style="flex:1" value="${p.region||''}" oninput="gamePkgUpdate(${i},'region',this.value)" placeholder="الدولة (مثال: 🇫🇷 فرنسي)"/>` : ''}
+      <input class="finput" style="flex:1" value="${p.amount||''}" oninput="gamePkgUpdate(${i},'amount',this.value)" placeholder="الباقة (مثال: 10$)"/>
       <input class="finput" style="width:110px" type="number" value="${p.price||''}" oninput="gamePkgUpdate(${i},'price',this.value)" placeholder="السعر"/>
       <button onclick="gamePkgRemove(${i})" style="background:var(--red-light);color:var(--red);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:1rem">✕</button>
-    </div>`).join('')
-    +`<button onclick="gamePkgAdd()" class="stock-btn" style="font-size:.82rem;padding:.4rem .9rem;margin-top:.3rem">➕ إضافة باقة</button>`;
-}
+    </div>`).join('');
+    
+  html += `<button onclick="gamePkgAdd()" class="stock-btn" style="font-size:.82rem;padding:.4rem .9rem;margin-top:.3rem; background: var(--green); color: white;">➕ إضافة باقة</button>`;
+  
+  if (!isGlobal) {
+    html += `
+      <datalist id="regionsList">
+        <option value="US">🇺🇸 أمريكي</option>
+        <option value="FR">🇫🇷 فرنسي</option>
+        <option value="AE">🇦🇪 إماراتي</option>
+        <option value="SA">🇸🇦 سعودي</option>
+        <option value="TR">🇹🇷 تركي</option>
+        <option value="UK">🇬🇧 بريطاني</option>
+      </datalist>
+    `;
+  }
+  
+  cont.innerHTML = html;
+};
 
 window.gamePkgAdd = () => { 
-    gamePkgs.push({amount:'',price:0}); 
+    gamePkgs.push({region: '', amount:'',price:0}); 
     renderPkgsEditor(); 
 };
 
@@ -1368,7 +1391,7 @@ window.gamePkgRemove = (i) => {
 };
 
 window.gamePkgUpdate = (i,f,v) => { 
-    gamePkgs[i][f]=f==='price'?parseFloat(v)||0:v; 
+    gamePkgs[i][f] = f === 'price' ? parseFloat(v)||0 : v; 
 };
 
 document.getElementById('gameName').addEventListener('input', updateGamePreview);
@@ -1387,6 +1410,7 @@ document.getElementById('openAddGameBtn').addEventListener('click', () => {
   document.getElementById('gameBg').value='#1A1A2E';
   document.getElementById('productType').value='game';
   document.getElementById('gameOrder').value=allGames.length;
+  document.getElementById('gameIsGlobal').value = 'true';
   
   renderPkgsEditor(); 
   renderSupsEditor(); 
@@ -1421,6 +1445,7 @@ window.openEditGame = (id) => {
   document.getElementById('gameId').value       = g.id||'';
   document.getElementById('gameProvider').value = g.provider||'';
   document.getElementById('productType').value  = g.productType||'game';
+  document.getElementById('gameIsGlobal').value = g.isGlobal !== false ? 'true' : 'false';
   
   renderPkgsEditor(); 
   renderSupsEditor(); 
@@ -1439,6 +1464,7 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   const order    = parseInt(document.getElementById('gameOrder').value)||0;
   const provider = document.getElementById('gameProvider').value; 
   const productType = document.getElementById('productType').value;
+  const isGlobal = document.getElementById('gameIsGlobal').value === 'true';
 
   const rawId    = document.getElementById('gameId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'').substring(0,20);
   const finalId  = rawId||'game-'+Date.now();
@@ -1453,7 +1479,7 @@ document.getElementById('saveGameBtn').addEventListener('click', async () => {
   btn.textContent='⏳...';
   
   try {
-    const data={name,icon,logo,bg,desc,badge,order,pkgs,sups,provider,productType};
+    const data={name,icon,logo,bg,desc,badge,order,pkgs,sups,provider,productType,isGlobal};
     if (editingGameId) {
       await updateDoc(doc(db,'games',editingGameId),data);
     } else {

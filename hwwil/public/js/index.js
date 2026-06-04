@@ -473,8 +473,22 @@ window.renderGamesList = function(list, containerId, emptyMsg) {
   container.innerHTML = list.map(g=>`<div class="game-card" onclick="openModal('${g.id}')"> <div class="game-cover" style="background:${g.bg||'#1a1a2e'}"> ${g.logo ?`<img src="${g.logo}" alt="${g.name}" class="game-cover-img" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px 12px 0 0;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><span style="display:none;font-size:3.5rem">${g.icon||'🎮'}</span>`:`<span style="font-size:3.5rem">${g.icon||'🎮'}</span>`} ${g.badge?`<div class="game-badge">${g.badge}</div>`:''} </div> <div class="game-body"><div class="game-name">${g.name}</div><div class="game-desc">${g.desc||''}</div> <div class="packages-grid">${(g.pkgs||[]).slice(0,3).map(p=>`<div class="pkg"><div class="pkg-amount">${p.amount}</div><div class="pkg-price">${fmt(p.price)} أوقية</div></div>`).join('')}</div> </div> </div>`).join('');
 };
 
+// 🟢 قاموس ترجمة رموز الدول (يمكنك إضافة أي دولة مستقبلاً هنا)
+const REGION_NAMES = {
+  'US': '🇺🇸 أمريكي',
+  'FR': '🇫🇷 فرنسي',
+  'AE': '🇦🇪 إماراتي',
+  'SA': '🇸🇦 سعودي',
+  'TR': '🇹🇷 تركي',
+  'UK': '🇬🇧 بريطاني',
+  'Global': '🌍 عالمي'
+};
+
+// 🟢 1. دالة فتح النافذة المنبثقة (معالجة الدول والتحديد التلقائي)
 window.openModal = function(gameId){
-  selectedGame = GAMES.find(g=>g.id===gameId); selectedPkg  = null; window.currentImageBase64 = "";
+  selectedGame = GAMES.find(g=>g.id===gameId); 
+  selectedPkg  = null; 
+  window.currentImageBase64 = "";
   if(!selectedGame) return;
 
   if(document.getElementById('modalTitle')) document.getElementById('modalTitle').textContent = selectedGame.name;
@@ -489,11 +503,7 @@ window.openModal = function(gameId){
   const playerIdInput = document.getElementById('modalPlayerId');
   if(playerIdInput) {
     playerIdInput.value = '';
-    if(selectedGame.productType === 'service') {
-      playerIdInput.parentElement.style.display = 'none';
-    } else {
-      playerIdInput.parentElement.style.display = 'block';
-    }
+    playerIdInput.parentElement.style.display = selectedGame.productType === 'service' ? 'none' : 'block';
   }
 
   if(document.getElementById('modalPhone')) document.getElementById('modalPhone').value='';
@@ -506,9 +516,38 @@ window.openModal = function(gameId){
 
   const pkgsCont = document.getElementById('modalPkgs');
   if(pkgsCont) {
-    pkgsCont.innerHTML=(selectedGame.pkgs||[]).map((p,i)=>{
-      return ` <div class="modal-pkg" onclick="selectPkg(${i})"> <div class="modal-pkg-amount">${p.amount}</div><div class="modal-pkg-price">${fmt(p.price)} أوقية</div> </div>`;
-    }).join('');
+    // 🟢 التحقق مما إذا كانت البطاقة إقليمية ولديها دول مدخلة
+    if (selectedGame.isGlobal === false && selectedGame.pkgs && selectedGame.pkgs.some(p => p.region)) {
+      
+      pkgsCont.innerHTML = `
+        <div id="modalRegionsContainer" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px;"></div>
+        <div id="modalPkgsList" class="modal-pkgs" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; transition: opacity 0.3s ease;"></div>
+      `;
+
+      // استخراج الرموز الفريدة للدول
+      const availableRegions = [...new Set(selectedGame.pkgs.filter(p => p.region).map(p => p.region.trim()))];
+      const regionsCont = document.getElementById('modalRegionsContainer');
+      
+      regionsCont.innerHTML = availableRegions.map((regionCode, idx) => {
+        const displayName = REGION_NAMES[regionCode] || regionCode;
+        return `
+        <button class="region-btn" 
+                onclick="filterModalPkgsByRegion('${regionCode}', this)" 
+                style="flex: 1; min-width: 100px; padding: 0.6rem; border: 1.5px solid ${idx === 0 ? 'var(--green)' : 'var(--sand)'}; background: ${idx === 0 ? 'var(--green-light)' : 'var(--white)'}; border-radius: 10px; font-size: 0.9rem; font-weight: 800; color: var(--ink); cursor: pointer; transition: all 0.2s; text-align: center;">
+          ${displayName}
+        </button>
+      `}).join('');
+
+      // تفعيل الدولة الأولى افتراضياً
+      if (availableRegions.length > 0) {
+        window.filterModalPkgsByRegion(availableRegions[0], null);
+      }
+    } else {
+      // 🟢 البطاقة العالمية: العودة للتصميم الافتراضي
+      pkgsCont.innerHTML = (selectedGame.pkgs||[]).map((p,i)=>{
+        return ` <div class="modal-pkg" onclick="selectPkg(${i})"> <div class="modal-pkg-amount">${p.amount}</div><div class="modal-pkg-price">${fmt(p.price)} أوقية</div> </div>`;
+      }).join('');
+    }
   }
 
   // تحديد أول بنك دفع افتراضياً
@@ -528,12 +567,63 @@ window.openModal = function(gameId){
   if(modal) modal.classList.add('open');
 };
 
-window.selectPkg = function(i){
-  selectedPkg = selectedGame.pkgs[i];
-  document.querySelectorAll('.modal-pkg').forEach((el,idx)=>{ el.classList.toggle('active',idx===i); });
-  if(document.getElementById('modalTotal')) document.getElementById('modalTotal').textContent=fmt(selectedPkg.price)+' أوقية';
+// 🟢 2. دالة فلترة الباقات (تأثير الانتقال والتحديد التلقائي)
+window.filterModalPkgsByRegion = function(region, btnElement) {
+  const pkgsList = document.getElementById('modalPkgsList');
+  if(!pkgsList || !selectedGame || !selectedGame.pkgs) return;
+
+  if (btnElement) {
+    document.querySelectorAll('.region-btn').forEach(btn => {
+      btn.style.borderColor = 'var(--sand)';
+      btn.style.background = 'var(--white)';
+    });
+    btnElement.style.borderColor = 'var(--green)';
+    btnElement.style.background = 'var(--green-light)';
+  }
+
+  pkgsList.style.opacity = 0;
+
+  setTimeout(() => {
+    let filteredPkgs = selectedGame.pkgs.filter(p => p.region === region);
+
+    pkgsList.innerHTML = filteredPkgs.map((p) => {
+      const originalIndex = selectedGame.pkgs.findIndex(origPkg => origPkg === p);
+      return `
+        <div class="modal-pkg" id="pkg-btn-${originalIndex}" onclick="selectPkg(${originalIndex})" style="width: 100%;"> 
+          <div class="modal-pkg-amount">${p.amount}</div>
+          <div class="modal-pkg-price">${fmt(p.price)} أوقية</div> 
+        </div>
+      `;
+    }).join('');
+
+    pkgsList.style.opacity = 1;
+
+    if(filteredPkgs.length > 0) {
+      const firstOrigIndex = selectedGame.pkgs.findIndex(origPkg => origPkg === filteredPkgs[0]);
+      window.selectPkg(firstOrigIndex);
+    } else {
+      selectedPkg = null;
+      if(document.getElementById('modalTotal')) document.getElementById('modalTotal').textContent = 'اختر باقة أولاً';
+    }
+  }, 150);
 };
 
+// 🟢 3. دالة اختيار الباقة
+window.selectPkg = function(i){
+  selectedPkg = selectedGame.pkgs[i];
+  document.querySelectorAll('.modal-pkg').forEach((el)=>{ 
+      el.classList.remove('active');
+  });
+  
+  const activeBtn = document.getElementById(`pkg-btn-${i}`) || document.querySelectorAll('.modal-pkg')[i];
+  if(activeBtn) activeBtn.classList.add('active');
+
+  if(document.getElementById('modalTotal')) {
+      document.getElementById('modalTotal').textContent = fmt(selectedPkg.price) + ' أوقية';
+  }
+};
+
+// 🟢 4. دالة الإغلاق
 window.closeModal = function(e){
   const modal = document.getElementById('modal');
   if(!e || e.target === modal) {
@@ -565,12 +655,16 @@ window.submitCard = async function(){
   if(btn) { btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...'; }
 
   try {
+    // 🟢 تضمين الدولة في الطلب المُرسل للأدمن
+    const regionName = selectedPkg.region ? (REGION_NAMES[selectedPkg.region] || selectedPkg.region) : '';
+    const pkgDisplayAmount = regionName ? `[${regionName}] ${selectedPkg.amount}` : selectedPkg.amount;
+
     await addDoc(collection(db,'cards'),{
       uid: currentUser.uid,
       ref,
       game:selectedGame.name,
       gameId:selectedGame.id,
-      package:selectedPkg.amount,
+      package: pkgDisplayAmount,
       price:selectedPkg.price,
       paymentBank: paymentBankName,
       playerId:pid || 'غير مطلوب',
@@ -585,8 +679,7 @@ window.submitCard = async function(){
     window.showToast('✅ تم إرسال طلبك بنجاح!');
     alert('✅ تم استلام طلبك بنجاح!\n\nرقم طلبك للتتبع هو: ' + ref);
 
-    // إرسال الإشعار لتليجرام مضافاً إليه اسم البنك
-    const tMsg = `🎮 طلب منتج رقمي جديد!\nالرقم: ${ref}\nالمنتج: ${selectedGame.name}\nالباقة: ${selectedPkg.amount}\nالسعر: ${fmt(selectedPkg.price)} أوقية\nدفع عبر: ${paymentBankName}\nالهاتف: ${phone}`;
+    const tMsg = `🎮 طلب منتج رقمي جديد!\nالرقم: ${ref}\nالمنتج: ${selectedGame.name}\nالباقة: ${pkgDisplayAmount}\nالسعر: ${fmt(selectedPkg.price)} أوقية\nدفع عبر: ${paymentBankName}\nالهاتف: ${phone}`;
     if(window.sendTelegramNotification) window.sendTelegramNotification(tMsg);
 
     localStorage.setItem('activeOrderId', ref);
