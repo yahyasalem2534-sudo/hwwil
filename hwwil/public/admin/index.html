@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"/>
@@ -134,43 +134,38 @@ tr:hover td{background:var(--bg)}
 .content-section-hdr{padding:1rem 1.4rem;border-bottom:1.5px solid var(--sand);display:flex;align-items:center;justify-content:space-between}
 .content-section-title{font-size:1rem;font-weight:800}
 
-/* CODE INPUT NEW */
+/* CODE INPUT */
 .code-input-field {
-width: 140px;
-padding: 0.4rem 0.6rem;
-border: 1.5px dashed var(--green);
-border-radius: 8px;
-font-family: monospace;
-font-size: 0.8rem;
-outline: none;
-background: var(--green-light);
-color: var(--ink);
-font-weight: bold;
-transition: all 0.2s;
+  width: 140px;
+  padding: 0.4rem 0.6rem;
+  border: 1.5px dashed var(--green);
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 0.8rem;
+  outline: none;
+  background: var(--green-light);
+  color: var(--ink);
+  font-weight: bold;
+  transition: all 0.2s;
 }
 .code-input-field:focus { border-style: solid; box-shadow: 0 0 0 3px rgba(10,124,78,.1); }
 
-/* =========================================
-💡 أكواد الإخفاء الذكية الخاصة بالمدير
-========================================= */
-/* إخفاء العمود بالكامل في قسم المخزون فقط للعامل */
+/* صلاحيات الأدمن */
 .admin-col { display: none !important; }
 body.is-admin .admin-col { display: table-cell !important; }
-
-/* إخفاء النص فقط في جداول التحويلات والبطاقات */
 .admin-text { display: none !important; }
 body.is-admin .admin-text { display: inline !important; }
 
 @media(max-width:768px){
-.stats{grid-template-columns:repeat(2,1fr)}
-.main{padding:1rem}
-.search-input{width:140px}
-.cat-grid{grid-template-columns:repeat(2,1fr)}
-.tabs{flex-wrap:wrap}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .main{padding:1rem}
+  .search-input{width:140px}
+  .cat-grid{grid-template-columns:repeat(2,1fr)}
+  .tabs{flex-wrap:wrap}
 }
 @media(max-width:480px){
-.stats{grid-template-columns:1fr 1fr}
-.topbar-logo span{display:none}
+  .stats{grid-template-columns:1fr 1fr}
+  .topbar-logo span{display:none}
 }
 </style>
 </head>
@@ -341,6 +336,7 @@ body.is-admin .admin-text { display: inline !important; }
   </div>
 </div>
 
+<!-- Modal: معاينة الصورة -->
 <div class="modal-overlay" id="imagePreviewModal" onclick="this.classList.remove('open')" style="z-index: 9999;">
   <div style="max-width: 90%; max-height: 90%; margin: auto; position: relative;">
     <span style="position:absolute; top:-40px; right:0; color:white; font-size:2.5rem; cursor:pointer; font-weight:bold;">&times;</span>
@@ -348,6 +344,7 @@ body.is-admin .admin-text { display: inline !important; }
   </div>
 </div>
 
+<!-- Modal: السلايدر -->
 <div class="modal-overlay" id="sliderModal">
   <div class="cm-modal">
     <div class="modal-hdr">
@@ -377,6 +374,7 @@ body.is-admin .admin-text { display: inline !important; }
   </div>
 </div>
 
+<!-- Modal: بنك دفع -->
 <div class="modal-overlay" id="paymentBankModal">
   <div class="cm-modal">
     <div class="modal-hdr">
@@ -399,6 +397,7 @@ body.is-admin .admin-text { display: inline !important; }
   </div>
 </div>
 
+<!-- Modal: المخزون -->
 <div class="modal-overlay" id="stockModal">
   <div class="modal-box">
     <div class="modal-hdr">
@@ -441,6 +440,7 @@ body.is-admin .admin-text { display: inline !important; }
   </div>
 </div>
 
+<!-- Modal: البنك -->
 <div class="modal-overlay" id="bankModal">
   <div class="cm-modal">
     <div class="modal-hdr">
@@ -465,6 +465,7 @@ body.is-admin .admin-text { display: inline !important; }
   </div>
 </div>
 
+<!-- Modal: المنتج/اللعبة -->
 <div class="modal-overlay" id="gameModal">
   <div class="cm-modal">
     <div class="modal-hdr">
@@ -1347,7 +1348,6 @@ window.gameSupUpdate = (i,f,v) => {
     gameSups[i][f]=v; 
 };
 
-// 🟢 دالة عرض الباقات (تدعم Datalist)
 window.renderPkgsEditor = function() {
   const cont = document.getElementById('pkgsEditor');
   

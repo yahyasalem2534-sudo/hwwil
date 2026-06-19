@@ -60,7 +60,7 @@ window.toggleTheme = function() {
   }
 };
 
-// ── إرسال إشعار تليجرام السري (الاستشعار) ──
+// ── إرسال إشعار تليجرام ──
 window.sendTelegramNotification = function(message) {
   const token = "8710007016:AAEYafJuYblld43Las00My1W5F5ymzNPxhQ";
   const chatId = "2109725437";
@@ -176,13 +176,11 @@ function loadContent() {
     }
   });
 
-  // جلب السلايدر
   onSnapshot(query(collection(db,'sliders'), orderBy('order','asc')), snap => {
     SLIDERS = snap.docs.map(d => ({id:d.id, ...d.data()}));
     window.renderSliders();
   });
 
-  // جلب بنوك الدفع
   onSnapshot(query(collection(db,'payment_banks'), orderBy('order','asc')), snap => {
     PAYMENT_BANKS = snap.docs.map(d => ({id:d.id, ...d.data()}));
     window.renderPaymentBanks();
@@ -290,14 +288,8 @@ window.selectPaymentBank = function(id, name) {
     selectedEl.style.borderColor = 'var(--green)';
     selectedEl.style.background = 'var(--green-light)';
   }
-
-  const payBoxes = document.querySelectorAll('#modal .calc-box ~ div[style*="background: var(--green-light)"]');
-  if(payBoxes.length > 0) {
-    const title = payBoxes[0].querySelector('div:first-child');
-    if(title) {
-      title.innerHTML = `📱 للطلب يرجى الدفع عبر ${name} للرقم:`;
-    }
-  }
+  const lbl = document.getElementById('paymentMethodLabel');
+  if(lbl) lbl.textContent = name;
 };
 
 // ── معالجة وضغط الصور ──
@@ -424,7 +416,6 @@ window.submitTransfer = async function(){
 
     window.showToast('✅ تم إرسال طلبك بنجاح!');
 
-    // إرسال الإشعار لتليجرام
     const tMsg = `🔔 طلب تحويل بنكي جديد!\nالرقم: ${ref}\nالاسم: ${name}\nالمبلغ: ${fmt(amount)} أوقية\nمن: ${fb?.name||selectedFrom} ➡️ إلى: ${tb?.name||selectedTo}`;
     if(window.sendTelegramNotification) window.sendTelegramNotification(tMsg);
 
@@ -473,7 +464,10 @@ window.renderGamesList = function(list, containerId, emptyMsg) {
   container.innerHTML = list.map(g=>`<div class="game-card" onclick="openModal('${g.id}')"> <div class="game-cover" style="background:${g.bg||'#1a1a2e'}"> ${g.logo ?`<img src="${g.logo}" alt="${g.name}" class="game-cover-img" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px 12px 0 0;" onerror="this.style.display='none';this.nextElementSibling.style.display='block'"/><span style="display:none;font-size:3.5rem">${g.icon||'🎮'}</span>`:`<span style="font-size:3.5rem">${g.icon||'🎮'}</span>`} ${g.badge?`<div class="game-badge">${g.badge}</div>`:''} </div> <div class="game-body"><div class="game-name">${g.name}</div><div class="game-desc">${g.desc||''}</div> <div class="packages-grid">${(g.pkgs||[]).slice(0,3).map(p=>`<div class="pkg"><div class="pkg-amount">${p.amount}</div><div class="pkg-price">${fmt(p.price)} أوقية</div></div>`).join('')}</div> </div> </div>`).join('');
 };
 
-// 🟢 قاموس ترجمة رموز الدول (يمكنك إضافة أي دولة مستقبلاً هنا)
+// ══════════════════════════════════════════════════════════
+// ✨ NETFLIX-STYLE PACKAGE SELECTOR — المنطق الكامل
+// ══════════════════════════════════════════════════════════
+
 const REGION_NAMES = {
   'US': '🇺🇸 أمريكي',
   'FR': '🇫🇷 فرنسي',
@@ -484,7 +478,133 @@ const REGION_NAMES = {
   'Global': '🌍 عالمي'
 };
 
-// 🟢 1. دالة فتح النافذة المنبثقة (معالجة الدول والتحديد التلقائي)
+function buildNFSelector(game) {
+  const cont = document.getElementById('nfPkgSelector');
+  if(!cont || !game) return;
+
+  const pkgs = game.pkgs || [];
+
+  if(!pkgs.length) {
+    cont.innerHTML = '<div class="nf-empty">لا توجد باقات متاحة حالياً</div>';
+    return;
+  }
+
+  const isRegional = game.isGlobal === false && pkgs.some(p => p.region);
+
+  if(isRegional) {
+    const regions = [...new Set(pkgs.filter(p => p.region).map(p => p.region.trim()))];
+    cont.innerHTML = `
+      <div class="nf-regions" id="nfRegions">
+        ${regions.map((code, i) => `
+          <button class="nf-region-btn ${i === 0 ? 'active' : ''}"
+                  onclick="nfSelectRegion('${code}', this)">
+            ${REGION_NAMES[code] || code}
+          </button>
+        `).join('')}
+      </div>
+      <div id="nfTabsWrap"></div>
+    `;
+    if(regions.length) nfRenderTabsForRegion(regions[0], game);
+  } else {
+    cont.innerHTML = `<div id="nfTabsWrap"></div>`;
+    nfRenderTabs(pkgs, game, null);
+  }
+}
+
+window.nfSelectRegion = function(regionCode, btnEl) {
+  document.querySelectorAll('.nf-region-btn').forEach(b => b.classList.remove('active'));
+  if(btnEl) btnEl.classList.add('active');
+
+  selectedPkg = null;
+  const totalEl = document.getElementById('modalTotal');
+  if(totalEl) totalEl.textContent = 'اختر باقة أولاً';
+
+  nfRenderTabsForRegion(regionCode, selectedGame);
+};
+
+function nfRenderTabsForRegion(regionCode, game) {
+  const pkgs = (game.pkgs || []).filter(p => p.region === regionCode);
+  nfRenderTabs(pkgs, game, regionCode);
+}
+
+function nfRenderTabs(pkgs, game, regionCode) {
+  const wrap = document.getElementById('nfTabsWrap');
+  if(!wrap) return;
+
+  if(!pkgs.length) {
+    wrap.innerHTML = '<div class="nf-empty">لا توجد باقات لهذه المنطقة</div>';
+    return;
+  }
+
+  const tabsHtml = pkgs.map((p, i) => {
+    const origIdx = game.pkgs.findIndex(orig => orig === p);
+    
+    return `
+      <button class="nf-pkg-tab ${i === 0 ? 'active' : ''}"
+              id="nfTab-${origIdx}"
+              onclick="nfActivateTab(${origIdx}, this)"
+              data-orig-idx="${origIdx}">
+        <div class="nf-tab-amount">${p.amount}</div>
+        <div class="nf-tab-price">${fmt(p.price)} أوقية</div>
+        <div class="nf-tab-check">✓</div>
+      </button>
+    `;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div class="nf-pkg-tabs">
+      ${tabsHtml}
+    </div>
+    <div class="nf-pkg-details" id="nfDetails"></div>
+  `;
+
+  const firstOrigIdx = game.pkgs.findIndex(orig => orig === pkgs[0]);
+  nfActivateTab(firstOrigIdx, document.getElementById(`nfTab-${firstOrigIdx}`), true);
+}
+
+window.nfActivateTab = function(origIdx, btnEl, skipAnimation = false) {
+  const pkg = selectedGame?.pkgs?.[origIdx];
+  if(!pkg) return;
+
+  selectedPkg = pkg;
+
+  document.querySelectorAll('.nf-pkg-tab').forEach(b => b.classList.remove('active'));
+  if(btnEl) btnEl.classList.add('active');
+
+  const totalEl = document.getElementById('modalTotal');
+  if(totalEl) totalEl.textContent = fmt(pkg.price) + ' أوقية';
+
+  const details = document.getElementById('nfDetails');
+  if(!details) return;
+
+  if(!skipAnimation) {
+    details.classList.add('fading');
+  }
+
+  const updateDetails = () => {
+    // عرض السعر الكبير فقط، بدون مواصفات
+    details.innerHTML = `
+      <div class="nf-price-row" style="justify-content: center;">
+        <span class="nf-price-amount">${fmt(pkg.price)}</span>
+        <span class="nf-price-currency">أوقية موريتانية</span>
+      </div>
+    `;
+
+    if(!skipAnimation) {
+      details.classList.remove('fading');
+    }
+  };
+
+  if(skipAnimation) {
+    updateDetails();
+  } else {
+    setTimeout(updateDetails, 200);
+  }
+};
+
+// ══════════════════════════════════════════════════════════
+// نافذة المنتج — openModal
+// ══════════════════════════════════════════════════════════
 window.openModal = function(gameId){
   selectedGame = GAMES.find(g=>g.id===gameId); 
   selectedPkg  = null; 
@@ -514,116 +634,21 @@ window.openModal = function(gameId){
   if(document.getElementById('modalUploadPlaceholder')) document.getElementById('modalUploadPlaceholder').style.display = 'block';
   if(document.getElementById('modalReceiptImage')) document.getElementById('modalReceiptImage').value = '';
 
-  const pkgsCont = document.getElementById('modalPkgs');
-  if(pkgsCont) {
-    // 🟢 التحقق مما إذا كانت البطاقة إقليمية ولديها دول مدخلة
-    if (selectedGame.isGlobal === false && selectedGame.pkgs && selectedGame.pkgs.some(p => p.region)) {
-      
-      pkgsCont.innerHTML = `
-        <div id="modalRegionsContainer" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:15px;"></div>
-        <div id="modalPkgsList" class="modal-pkgs" style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; transition: opacity 0.3s ease;"></div>
-      `;
+  buildNFSelector(selectedGame);
 
-      // استخراج الرموز الفريدة للدول
-      const availableRegions = [...new Set(selectedGame.pkgs.filter(p => p.region).map(p => p.region.trim()))];
-      const regionsCont = document.getElementById('modalRegionsContainer');
-      
-      regionsCont.innerHTML = availableRegions.map((regionCode, idx) => {
-        const displayName = REGION_NAMES[regionCode] || regionCode;
-        return `
-        <button class="region-btn" 
-                onclick="filterModalPkgsByRegion('${regionCode}', this)" 
-                style="flex: 1; min-width: 100px; padding: 0.6rem; border: 1.5px solid ${idx === 0 ? 'var(--green)' : 'var(--sand)'}; background: ${idx === 0 ? 'var(--green-light)' : 'var(--white)'}; border-radius: 10px; font-size: 0.9rem; font-weight: 800; color: var(--ink); cursor: pointer; transition: all 0.2s; text-align: center;">
-          ${displayName}
-        </button>
-      `}).join('');
-
-      // تفعيل الدولة الأولى افتراضياً
-      if (availableRegions.length > 0) {
-        window.filterModalPkgsByRegion(availableRegions[0], null);
-      }
-    } else {
-      // 🟢 البطاقة العالمية: العودة للتصميم الافتراضي
-      pkgsCont.innerHTML = (selectedGame.pkgs||[]).map((p,i)=>{
-        return ` <div class="modal-pkg" onclick="selectPkg(${i})"> <div class="modal-pkg-amount">${p.amount}</div><div class="modal-pkg-price">${fmt(p.price)} أوقية</div> </div>`;
-      }).join('');
-    }
-  }
-
-  // تحديد أول بنك دفع افتراضياً
   if(PAYMENT_BANKS.length > 0) {
     window.selectPaymentBank(PAYMENT_BANKS[0].id, PAYMENT_BANKS[0].name);
     const firstInput = document.querySelector(`input[name="selectedPB"][value="${PAYMENT_BANKS[0].name}"]`);
     if(firstInput) firstInput.checked = true;
   } else {
-    const payBoxes = document.querySelectorAll('#modal .calc-box ~ div[style*="background: var(--green-light)"]');
-    if(payBoxes.length > 0) {
-      const title = payBoxes[0].querySelector('div:first-child');
-      if(title) title.innerHTML = `📱 للطلب يرجى الدفع للرقم:`;
-    }
+    const lbl = document.getElementById('paymentMethodLabel');
+    if(lbl) lbl.textContent = '—';
   }
 
   const modal = document.getElementById('modal');
   if(modal) modal.classList.add('open');
 };
 
-// 🟢 2. دالة فلترة الباقات (تأثير الانتقال والتحديد التلقائي)
-window.filterModalPkgsByRegion = function(region, btnElement) {
-  const pkgsList = document.getElementById('modalPkgsList');
-  if(!pkgsList || !selectedGame || !selectedGame.pkgs) return;
-
-  if (btnElement) {
-    document.querySelectorAll('.region-btn').forEach(btn => {
-      btn.style.borderColor = 'var(--sand)';
-      btn.style.background = 'var(--white)';
-    });
-    btnElement.style.borderColor = 'var(--green)';
-    btnElement.style.background = 'var(--green-light)';
-  }
-
-  pkgsList.style.opacity = 0;
-
-  setTimeout(() => {
-    let filteredPkgs = selectedGame.pkgs.filter(p => p.region === region);
-
-    pkgsList.innerHTML = filteredPkgs.map((p) => {
-      const originalIndex = selectedGame.pkgs.findIndex(origPkg => origPkg === p);
-      return `
-        <div class="modal-pkg" id="pkg-btn-${originalIndex}" onclick="selectPkg(${originalIndex})" style="width: 100%;"> 
-          <div class="modal-pkg-amount">${p.amount}</div>
-          <div class="modal-pkg-price">${fmt(p.price)} أوقية</div> 
-        </div>
-      `;
-    }).join('');
-
-    pkgsList.style.opacity = 1;
-
-    if(filteredPkgs.length > 0) {
-      const firstOrigIndex = selectedGame.pkgs.findIndex(origPkg => origPkg === filteredPkgs[0]);
-      window.selectPkg(firstOrigIndex);
-    } else {
-      selectedPkg = null;
-      if(document.getElementById('modalTotal')) document.getElementById('modalTotal').textContent = 'اختر باقة أولاً';
-    }
-  }, 150);
-};
-
-// 🟢 3. دالة اختيار الباقة
-window.selectPkg = function(i){
-  selectedPkg = selectedGame.pkgs[i];
-  document.querySelectorAll('.modal-pkg').forEach((el)=>{ 
-      el.classList.remove('active');
-  });
-  
-  const activeBtn = document.getElementById(`pkg-btn-${i}`) || document.querySelectorAll('.modal-pkg')[i];
-  if(activeBtn) activeBtn.classList.add('active');
-
-  if(document.getElementById('modalTotal')) {
-      document.getElementById('modalTotal').textContent = fmt(selectedPkg.price) + ' أوقية';
-  }
-};
-
-// 🟢 4. دالة الإغلاق
 window.closeModal = function(e){
   const modal = document.getElementById('modal');
   if(!e || e.target === modal) {
@@ -655,7 +680,6 @@ window.submitCard = async function(){
   if(btn) { btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...'; }
 
   try {
-    // 🟢 تضمين الدولة في الطلب المُرسل للأدمن
     const regionName = selectedPkg.region ? (REGION_NAMES[selectedPkg.region] || selectedPkg.region) : '';
     const pkgDisplayAmount = regionName ? `[${regionName}] ${selectedPkg.amount}` : selectedPkg.amount;
 

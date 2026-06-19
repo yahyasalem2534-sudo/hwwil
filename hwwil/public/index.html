@@ -1,49 +1,49 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta name="google-site-verification" content="wZn0Ly3qdV8YL1zXf5QxvAl361QUA0ZazM_RmFTi9qs" />
+<head>
+  <meta name="google-site-verification" content="wZn0Ly3qdV8YL1zXf5QxvAl361QUA0ZazM_RmFTi9qs" />
   <link rel="manifest" href="manifest.json">
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>حوّل | خدمات التحويل والبطاقات الرقمية</title>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>حوّل | خدمات التحويل والبطاقات الرقمية</title>
 
-<meta name="description" content="موقع حوّل (Hawwil) - المنصة الموريتانية الأسرع والأكثر أماناً للتحويل المالي بين البنوك وشراء البطاقات الرقمية وبطاقات الألعاب.">
-<meta name="keywords" content="حوّل, hawwil, تحويل بنكي موريتانيا, بنكيلي, السداد, مصروفي, بطاقات جوجل بلاي, شحن ألعاب, موريتانيا">
-<meta name="author" content="Hawwil">
+  <meta name="description" content="موقع حوّل (Hawwil) - المنصة الموريتانية الأسرع والأكثر أماناً للتحويل المالي بين البنوك وشراء البطاقات الرقمية وبطاقات الألعاب.">
+  <meta name="keywords" content="حوّل, hawwil, تحويل بنكي موريتانيا, بنكيلي, السداد, مصروفي, بطاقات جوجل بلاي, شحن ألعاب, موريتانيا">
+  <meta name="author" content="Hawwil">
 
-<meta property="og:title" content="حوّل | خدمات التحويل والبطاقات الرقمية">
-<meta property="og:description" content="المنصة الموريتانية الأسرع والأكثر أماناً للتحويل المالي وشراء البطاقات الرقمية.">
-<meta property="og:image" content="/apple-icon.png">
-<meta property="og:type" content="website">
+  <meta property="og:title" content="حوّل | خدمات التحويل والبطاقات الرقمية">
+  <meta property="og:description" content="المنصة الموريتانية الأسرع والأكثر أماناً للتحويل المالي وشراء البطاقات الرقمية.">
+  <meta property="og:image" content="/apple-icon.png">
+  <meta property="og:type" content="website">
 
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="حوّل">
-<meta name="application-name" content="حوّل">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="حوّل">
+  <meta name="application-name" content="حوّل">
 
-<link rel="apple-touch-icon" href="/apple-icon.png">
-<link rel="icon" type="image/png" href="/apple-icon.png">
+  <link rel="apple-touch-icon" href="/apple-icon.png">
+  <link rel="icon" type="image/png" href="/apple-icon.png">
 
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="css/index.css"/>
-<link rel="stylesheet" href="css/main.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="css/index.css"/>
+  <link rel="stylesheet" href="css/main.css"/>
 
-<script>
-  const savedTheme = localStorage.getItem('theme') || 'light';
-  document.documentElement.setAttribute('data-theme', savedTheme);
-</script>
+  <script>
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+  </script>
 
 <style>
-  /* ✅ متغيرات الوضع الليلي المحسنة (سواد أعمق وتباين أفضل) */
+  /* ✅ متغيرات الوضع الليلي المحسنة */
   [data-theme="dark"] {
-    --white: #141414; /* خلفية البطاقات والمربعات */
-    --sand: #080808;  /* خلفية الموقع الأساسية (أسود عميق) */
-    --ink: #fdfdfd;   /* لون النصوص */
+    --white: #141414;
+    --sand: #080808;
+    --ink: #fdfdfd;
     --mid: #a0a0a5;
-    --shadow: 0 12px 40px rgba(0, 0, 0, 0.95); /* شادو أسود كثيف وقوي */
+    --shadow: 0 12px 40px rgba(0, 0, 0, 0.95);
     --green-light: rgba(10, 124, 78, 0.2);
   }
 
-  /* ✅ إبراز الشادو الأسود والحدود الخفيفة للبطاقات في الوضع الليلي فقط */
   [data-theme="dark"] .order-card, 
   [data-theme="dark"] .search-order-container, 
   [data-theme="dark"] .game-card, 
@@ -51,18 +51,16 @@
   [data-theme="dark"] .modal,
   [data-theme="dark"] .success-card { 
       box-shadow: var(--shadow) !important; 
-      border-color: #222 !important; /* لون حدود خفيف جداً لتمييز المربع */
+      border-color: #222 !important;
   }
   
-  body { background-color: var(--sand); color: var(--ink); transition: background-color 0.3s ease, color 0.3s ease; }
+  body { background-color: var(--sand); color: var(--ink); transition: background-color 0.3s ease, color 0.3s ease; overflow-x: hidden; }
   
-  /* ✅ حل مشكلة الفوتر: يتم تغيير ألوانه للقائمة والفوتر فقط في الوضع الليلي */
   nav, footer { transition: background-color 0.3s ease, border-color 0.3s ease; }
   [data-theme="dark"] nav, [data-theme="dark"] footer { background-color: var(--white) !important; }
   [data-theme="dark"] nav { border-bottom: 1px solid var(--sand) !important; }
   [data-theme="dark"] footer { border-top: 1px solid var(--sand) !important; }
   
-  /* ✅ تحسين ألوان نصوص الفوتر في الوضع الليلي */
   [data-theme="dark"] .footer-desc, 
   [data-theme="dark"] .footer-contact-item, 
   [data-theme="dark"] .fl a, 
@@ -71,7 +69,7 @@
 
   .order-card, .search-order-container, .game-card, .form-card, .modal { transition: background-color 0.3s ease, border-color 0.3s ease; }
 
-  /* ✅ تأثيرات التحميل الوهمية (Skeleton Loaders) */
+  /* Skeleton Loaders */
   @keyframes pulse-bg {
     0% { background-color: var(--sand); }
     50% { background-color: rgba(150, 150, 150, 0.2); }
@@ -89,7 +87,7 @@
   .status-done { background: var(--green-light); color: var(--green); }
   .status-rejected { background: var(--red-light); color: var(--red); }
 
-  /* السلايدر والتصميم السابق */
+  /* السلايدر الأصلي العريض */
   .main-slider { 
       position: relative; width: 100vw; left: 50%; right: 50%; margin-left: -50vw; margin-right: -50vw; 
       margin-top: 3.5rem; margin-bottom: 2rem; overflow: hidden; aspect-ratio: 21/6; background: #000; 
@@ -115,63 +113,143 @@
   .game-cover { padding: 0 !important; display: block !important; position: relative; overflow: hidden; height: 180px; }
   .game-cover-img { width: 100% !important; height: 100% !important; object-fit: cover !important; border-radius: 12px 12px 0 0 !important; }
 
+  /* ══════════════════════════════════════════
+     ✨ NETFLIX-STYLE PACKAGE SELECTOR
+  ══════════════════════════════════════════ */
+
+  .nf-pkg-selector {
+    background: var(--white);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 1.2rem;
+  }
+
+  .nf-pkg-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important; 
+    gap: 0.6rem;
+    padding: 1rem 0.5rem;
+    background: transparent;
+  }
+
+  .nf-pkg-tab {
+    width: 100% !important;
+    height: 100px !important;
+    background: var(--white);
+    border: 2px solid var(--sand) !important;
+    border-radius: 12px !important;
+    padding: 0.8rem 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center; 
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    text-align: center;
+    color: var(--mid);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+  }
+
+  .nf-pkg-tab:hover {
+    border-color: var(--green-light) !important;
+    transform: translateY(-2px);
+  }
+
+  .nf-pkg-tab.active {
+    background: linear-gradient(135deg, var(--green-dark), var(--green)) !important;
+    border-color: transparent !important;
+    color: #fff !important;
+    transform: scale(1.03) translateY(-2px);
+    box-shadow: 0 12px 25px rgba(10, 124, 78, 0.35);
+    z-index: 2;
+  }
+
+  .nf-tab-amount {
+    font-weight: 900;
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+    color: var(--ink);
+    transition: color 0.3s;
+    line-height: 1.2;
+  }
+  .nf-pkg-tab.active .nf-tab-amount {
+    color: #fff;
+  }
+
+  .nf-tab-price {
+    font-size: 0.75rem;
+    font-weight: 700;
+    transition: color 0.3s;
+  }
+  .nf-pkg-tab.active .nf-tab-price {
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  .nf-tab-check {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    width: 20px;
+    height: 20px;
+    background: #fff;
+    color: var(--green);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: 900;
+    opacity: 0;
+    transform: scale(0.5);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .nf-pkg-tab.active .nf-tab-check {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  /* لوحة السعر فقط (بدون المواصفات) */
+  .nf-pkg-details {
+    padding: 1rem;
+    transition: opacity 0.25s ease;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    align-items: center !important;
+    margin-top: 0.5rem;
+  }
+
+  .nf-pkg-details.fading { opacity: 0; }
+
+  .nf-price-row { display: flex; align-items: baseline; justify-content: center; gap: 0.4rem; }
+  .nf-price-amount { font-size: 2.2rem; font-weight: 900; color: var(--ink); line-height: 1; }
+  .nf-price-currency { font-size: 0.9rem; color: var(--mid); font-weight: 700; }
+
+  /* أزرار الدول */
+  .nf-regions { display: flex; flex-wrap: wrap; gap: 0.6rem; padding: 1rem 1rem 0; }
+  .nf-region-btn { padding: 0.6rem 1.2rem; border: 1.5px solid var(--sand); border-radius: 99px; background: var(--white); font-family: inherit; font-size: 0.85rem; font-weight: 800; color: var(--mid); cursor: pointer; transition: all 0.2s; }
+  .nf-region-btn.active, .nf-region-btn:hover { border-color: var(--green); background: var(--green-light); color: var(--green); }
+  .nf-empty { padding: 3rem 1rem; text-align: center; color: var(--mid); font-size: 1rem; font-weight: 700; }
+
+  /* ── Responsive القائمة العلوية والجوال ── */
   @media (max-width: 800px) {
-      /* 1. ترتيب القائمة العلوية بشكل أنيق ومدمج جداً */
-      nav { 
-          flex-wrap: wrap !important; 
-          padding: 8px 15px !important; 
-          justify-content: space-between !important;
-      }
+      nav { flex-wrap: wrap !important; padding: 8px 15px !important; justify-content: space-between !important; }
       .logo { order: 1; margin-bottom: 5px; }
-      .nav-right { 
-          order: 2; 
-          display: flex;
-          align-items: center;
-          gap: 8px; 
-          margin-bottom: 5px;
-      }
-      #navLoginBtn, .whatsapp-btn {
-          padding: 0.35rem 0.6rem !important;
-          font-size: 0.75rem !important;
-          margin: 0 !important;
-      }
+      .nav-right { order: 2; display: flex; align-items: center; gap: 8px; margin-bottom: 5px; }
+      #navLoginBtn, .whatsapp-btn { padding: 0.35rem 0.6rem !important; font-size: 0.75rem !important; margin: 0 !important; }
+      .nav-tabs { display: flex !important; order: 3; width: 100%; margin-top: 2px !important; padding-top: 8px !important; padding-bottom: 5px !important; border-top: 1px solid var(--sand); overflow-x: auto; white-space: nowrap; justify-content: center !important; gap: 15px; }
+      .nav-tab { font-size: 0.85rem !important; padding: 0.4rem 0.8rem !important; }
       
-      /* التبويبات بخط فاصل وتوسيط مثالي */
-      .nav-tabs { 
-          display: flex !important; 
-          order: 3; 
-          width: 100%; 
-          margin-top: 2px !important; 
-          padding-top: 8px !important;
-          padding-bottom: 5px !important;
-          border-top: 1px solid var(--sand); 
-          overflow-x: auto; 
-          white-space: nowrap; 
-          justify-content: center !important; 
-          gap: 15px;
-      }
-      .nav-tab {
-          font-size: 0.85rem !important;
-          padding: 0.4rem 0.8rem !important;
-      }
-      
-      /* 2. إرجاع السلايدر ليمتد على كامل الشاشة (من الحافة للحافة) بدون حواف دائرية */
-      .main-slider { 
-          position: relative !important;
-          width: 100vw !important;
-          left: 50% !important;
-          right: 50% !important;
-          margin-left: -50vw !important;
-          margin-right: -50vw !important;
-          border-radius: 0 !important; 
-          margin-top: 2.5rem !important; 
-          aspect-ratio: 16/9 !important; 
-      } 
-      .slider-shop-btn { 
-          padding: 8px 30px !important; 
-          font-size: 0.95rem !important; 
-          bottom: 20px !important; 
-      }
+      .main-slider { position: relative !important; width: 100vw !important; left: 50% !important; right: 50% !important; margin-left: -50vw !important; margin-right: -50vw !important; margin-top: 2.5rem !important; aspect-ratio: 16/9 !important; border-radius: 0 !important; } 
+      .slider-shop-btn { padding: 8px 30px !important; font-size: 0.95rem !important; bottom: 20px !important; }
+
+      .nf-pkg-tabs { grid-template-columns: repeat(3, 1fr) !important; gap: 0.4rem; padding: 0.5rem 0; }
+      .nf-pkg-tab { height: 90px !important; padding: 0.5rem 0.2rem; }
+      .nf-tab-amount { font-size: 0.9rem; margin-bottom: 0.2rem; }
+      .nf-tab-price { font-size: 0.7rem; }
+      .nf-price-amount { font-size: 1.8rem; }
   }
 </style>
 </head>
@@ -234,15 +312,14 @@
       </div>
     </div>
 
-<div class="search-order-container" style="max-width:800px; margin: 2rem auto; padding: 1.5rem; background: var(--white); border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
-  <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; font-size: 1.1rem; color: var(--ink);">🔍 تتبع حالة طلبك اللحظية</h3>
-  <div style="display: flex; gap: .5rem;">
-    <input type="text" id="orderIdInput" class="form-input" placeholder="أدخل رقم الطلب (مثلاً: HW-12345 أو CRD-12345)" style="flex: 1; border: 1.5px solid #DDE8E3;">
-    <button onclick="checkOrderStatus()" style="background: var(--green); color: white; border: none; padding: .8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit;">بحث</button>
-  </div>
-  <div id="orderStatusResult" style="margin-top: 1rem; text-align: center; font-weight: 800; font-size: 1.1rem;"></div>
-</div>
-
+    <div class="search-order-container" style="max-width:800px; margin: 2rem auto; padding: 1.5rem; background: var(--white); border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
+      <h3 style="margin-bottom: 1rem; display: flex; align-items: center; gap: .5rem; font-size: 1.1rem; color: var(--ink);">🔍 تتبع حالة طلبك اللحظية</h3>
+      <div style="display: flex; gap: .5rem;">
+        <input type="text" id="orderIdInput" class="form-input" placeholder="أدخل رقم الطلب (مثلاً: HW-12345 أو CRD-12345)" style="flex: 1; border: 1.5px solid #DDE8E3;">
+        <button onclick="checkOrderStatus()" style="background: var(--green); color: white; border: none; padding: .8rem 1.5rem; border-radius: 10px; cursor: pointer; font-weight: bold; font-family: inherit;">بحث</button>
+      </div>
+      <div id="orderStatusResult" style="margin-top: 1rem; text-align: center; font-weight: 800; font-size: 1.1rem;"></div>
+    </div>
   </div>
 
   <div class="stats-bar">
@@ -320,52 +397,52 @@
       <div class="form-section-title" style="margin-top:1.5rem"><div class="form-section-icon">📤</div>بنك الإرسال</div>
       <div class="banks-grid" id="fromBanks"></div>
 
-  <div class="divider">⬇ سيتم التحويل إلى</div>
-  <div class="form-section-title"><div class="form-section-icon">📥</div>بنك الاستلام</div>
-  <div class="banks-grid" id="toBanks"></div>
-  
-  <div class="form-group full" style="margin-top:1.2rem">
-    <label>رقم حساب المستلم (أو رقم الهاتف المربوط بالبنك) *</label>
-    <input class="form-input" id="toAccount" type="text" placeholder="مثال: 0000123456 أو 33334444"/>
-  </div>
-  
-  <div class="form-group" style="margin-top:.8rem">
-    <label>ملاحظات إضافية (اختياري)</label>
-    <input class="form-input" id="notes" type="text" placeholder="أي معلومات إضافية..."/>
-  </div>
+      <div class="divider">⬇ سيتم التحويل إلى</div>
+      <div class="form-section-title"><div class="form-section-icon">📥</div>بنك الاستلام</div>
+      <div class="banks-grid" id="toBanks"></div>
+      
+      <div class="form-group full" style="margin-top:1.2rem">
+        <label>رقم حساب المستلم (أو رقم الهاتف المربوط بالبنك) *</label>
+        <input class="form-input" id="toAccount" type="text" placeholder="مثال: 0000123456 أو 33334444"/>
+      </div>
+      
+      <div class="form-group" style="margin-top:.8rem">
+        <label>ملاحظات إضافية (اختياري)</label>
+        <input class="form-input" id="notes" type="text" placeholder="أي معلومات إضافية..."/>
+      </div>
 
-  <div style="background: var(--green-light); border: 2px dashed var(--green); border-radius: 12px; padding: 1.5rem; text-align: center; margin-top: 1.5rem;">
-    <div style="font-weight: 800; color: var(--green); font-size: 1.1rem; margin-bottom: 0.5rem;">📱 رقمنا لاستلام الحوالات</div>
-    <div style="font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; color: var(--ink);">34362534</div>
-    <div style="font-size: 0.9rem; color: var(--mid); margin-top: 0.5rem;">يرجى تحويل المبلغ الإجمالي إلى هذا الرقم أولاً، ثم إرفاق صورة الوصل أدناه لتأكيد الطلب.</div>
-  </div>
-  
-  <div class="form-section-title" style="margin-top:1.5rem"><div class="form-section-icon">📸</div>إرفاق صورة الوصل (الدليل) *</div>
-  <div class="form-group full" style="margin-top:1rem">
-    <input type="file" id="receiptImage" accept="image/*" style="display: none;" onchange="handleImagePreview(event, 'transfer')">
-    
-    <div id="uploadPlaceholder" onclick="document.getElementById('receiptImage').click()" style="border: 2px dashed var(--green); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; background: var(--white); transition: all 0.2s;">
-      <div style="font-size: 2rem; margin-bottom: 0.5rem;">📥</div>
-      <div style="font-weight: 700; color: var(--green);">اضغط هنا لاختيار صورة الوصل</div>
-      <div style="font-size: 0.8rem; color: var(--mid); margin-top: 0.3rem;">يدعم JPG, PNG</div>
+      <div style="background: var(--green-light); border: 2px dashed var(--green); border-radius: 12px; padding: 1.5rem; text-align: center; margin-top: 1.5rem;">
+        <div style="font-weight: 800; color: var(--green); font-size: 1.1rem; margin-bottom: 0.5rem;">📱 رقمنا لاستلام الحوالات</div>
+        <div style="font-size: 1.8rem; font-weight: 900; letter-spacing: 2px; color: var(--ink);">34362534</div>
+        <div style="font-size: 0.9rem; color: var(--mid); margin-top: 0.5rem;">يرجى تحويل المبلغ الإجمالي إلى هذا الرقم أولاً، ثم إرفاق صورة الوصل أدناه لتأكيد الطلب.</div>
+      </div>
+      
+      <div class="form-section-title" style="margin-top:1.5rem"><div class="form-section-icon">📸</div>إرفاق صورة الوصل (الدليل) *</div>
+      <div class="form-group full" style="margin-top:1rem">
+        <input type="file" id="receiptImage" accept="image/*" style="display: none;" onchange="handleImagePreview(event, 'transfer')">
+        
+        <div id="uploadPlaceholder" onclick="document.getElementById('receiptImage').click()" style="border: 2px dashed var(--green); border-radius: 12px; padding: 2rem; text-align: center; cursor: pointer; background: var(--white); transition: all 0.2s;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">📥</div>
+          <div style="font-weight: 700; color: var(--green);">اضغط هنا لاختيار صورة الوصل</div>
+          <div style="font-size: 0.8rem; color: var(--mid); margin-top: 0.3rem;">يدعم JPG, PNG</div>
+        </div>
+
+        <div id="imagePreviewContainer" style="display: none; margin-top: 1rem; position: relative; width: fit-content;">
+          <img id="imgPreview" src="#" alt="معاينة الوصل" style="max-width: 100%; height: auto; max-height: 250px; border-radius: 12px; border: 2px solid var(--green); box-shadow: var(--shadow);">
+          <button type="button" onclick="document.getElementById('receiptImage').click()" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem;">🔄 تغيير الصورة</button>
+        </div>
+      </div>
+
+      <button class="submit-btn" style="margin-top:1.5rem" onclick="submitTransfer()">✅ إرسال طلب التحويل</button>
     </div>
 
-    <div id="imagePreviewContainer" style="display: none; margin-top: 1rem; position: relative; width: fit-content;">
-      <img id="imgPreview" src="#" alt="معاينة الوصل" style="max-width: 100%; height: auto; max-height: 250px; border-radius: 12px; border: 2px solid var(--green); box-shadow: var(--shadow);">
-      <button type="button" onclick="document.getElementById('receiptImage').click()" style="position: absolute; bottom: 10px; right: 10px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.5rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.8rem;">🔄 تغيير الصورة</button>
+    <div class="success-card" id="successCard">
+      <div class="success-icon">✅</div>
+      <div class="success-title">تم استلام طلبك بنجاح!</div>
+      <div class="success-sub">سيتم مراجعة طلبك وإتمام التحويل. يمكنك تتبع طلبك عبر الصفحة الرئيسية.</div>
+      <div class="success-ref" id="successRef">رقم الطلب: #——</div>
+      <button class="btn-main" onclick="resetTransfer()" style="width:100%">طلب تحويل جديد</button>
     </div>
-  </div>
-
-  <button class="submit-btn" style="margin-top:1.5rem" onclick="submitTransfer()">✅ إرسال طلب التحويل</button>
-</div>
-
-<div class="success-card" id="successCard">
-  <div class="success-icon">✅</div>
-  <div class="success-title">تم استلام طلبك بنجاح!</div>
-  <div class="success-sub">سيتم مراجعة طلبك وإتمام التحويل. يمكنك تتبع طلبك عبر الصفحة الرئيسية.</div>
-  <div class="success-ref" id="successRef">رقم الطلب: #——</div>
-  <button class="btn-main" onclick="resetTransfer()" style="width:100%">طلب تحويل جديد</button>
-</div>
   </div>
 </div>
 
@@ -380,23 +457,23 @@
       <div class="slider-dots" id="sliderDots"></div>
     </div>
 
-<div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow); margin-top: 2rem;">
-  <h3 class="section-title-sm"><span>🎮</span> شحن الألعاب</h3>
-  <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">شحن فوري لأشهر الألعاب (ببجي، فري فاير، والمزيد)</p>
-  <div class="games-grid" id="gamesOnlyGrid">
-    <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
-    <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
-  </div>
-</div>
+    <div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow); margin-top: 2rem;">
+      <h3 class="section-title-sm"><span>🎮</span> شحن الألعاب</h3>
+      <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">شحن فوري لأشهر الألعاب (ببجي، فري فاير، والمزيد)</p>
+      <div class="games-grid" id="gamesOnlyGrid">
+        <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+        <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+      </div>
+    </div>
 
-<div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
-  <h3 class="section-title-sm"><span>💳</span> بطاقات واشتراكات</h3>
-  <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">اشتراكات وبطاقات هدايا (نتفلكس، آبل، بلايستيشن، والمزيد)</p>
-  <div class="games-grid" id="servicesOnlyGrid">
-    <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
-    <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
-  </div>
-</div>
+    <div style="margin-bottom: 3.5rem; background: var(--white); padding: 2rem; border-radius: 16px; border: 1.5px solid var(--sand); box-shadow: var(--shadow);">
+      <h3 class="section-title-sm"><span>💳</span> بطاقات واشتراكات</h3>
+      <p style="color: var(--muted); margin-bottom: 1.5rem; font-size: 0.9rem;">اشتراكات وبطاقات هدايا (نتفلكس، آبل، بلايستيشن، والمزيد)</p>
+      <div class="games-grid" id="servicesOnlyGrid">
+        <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+        <div class="game-card" style="border-color: var(--sand);"><div class="game-cover skeleton" style="height: 180px; border-radius: 12px 12px 0 0;"></div><div class="game-body"><div class="skeleton" style="height: 1.2rem; width: 70%; margin-bottom: 0.8rem;"></div><div class="skeleton" style="height: 0.9rem; width: 40%;"></div></div></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -408,20 +485,18 @@
       <button onclick="logoutUser()" class="btn-outline" style="margin-top:1rem; border-color:var(--red); color:var(--red); padding: .4rem 1rem;">تسجيل الخروج</button>
     </div>
 
-<div style="display:flex; gap:1rem; margin-bottom:1.5rem; border-bottom:1.5px solid var(--sand); padding-bottom:1rem;">
-  <button class="nav-tab active" id="tabMyTransfers" onclick="switchProfileTab('transfers')">🏦 تحويلاتي</button>
-  <button class="nav-tab" id="tabMyCards" onclick="switchProfileTab('cards')">🎮 بطاقاتي</button>
-</div>
+    <div style="display:flex; gap:1rem; margin-bottom:1.5rem; border-bottom:1.5px solid var(--sand); padding-bottom:1rem;">
+      <button class="nav-tab active" id="tabMyTransfers" onclick="switchProfileTab('transfers')">🏦 تحويلاتي</button>
+      <button class="nav-tab" id="tabMyCards" onclick="switchProfileTab('cards')">🎮 بطاقاتي</button>
+    </div>
 
-<div id="myTransfersContainer">
-  <div id="myTransfersList">
-  </div>
-</div>
+    <div id="myTransfersContainer">
+      <div id="myTransfersList"></div>
+    </div>
 
-<div id="myCardsContainer" style="display:none;">
-  <div id="myCardsList">
-  </div>
-</div>
+    <div id="myCardsContainer" style="display:none;">
+      <div id="myCardsList"></div>
+    </div>
   </div>
 </div>
 
@@ -437,48 +512,43 @@
         <div><div class="modal-game-name" id="modalGameName"></div><div class="modal-game-sub">اختر الكمية المناسبة</div></div>
       </div>
 
-  <div class="modal-pkgs" id="modalPkgs"></div>
-  
-  <div class="form-section-title" style="margin-top:1.2rem"><div class="form-section-icon">🏦</div>اختر بنك الدفع</div>
-  <div class="banks-grid" id="paymentBanks" style="margin-bottom: 1.2rem; gap: 0.5rem; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));">
-    </div>
-  
-  <div class="form-group" style="margin-bottom:1rem">
-      <label>معرّف اللاعب / الحساب (اختياري للبطاقات)</label>
-      <input class="form-input" id="modalPlayerId" type="text" placeholder="أدخل معرفك أو حسابك"/>
-  </div>
-  
-  <div class="form-group" style="margin-bottom:1.2rem">
-      <label>رقم هاتفك للتأكيد</label>
-      <input class="form-input" id="modalPhone" type="tel" placeholder="2222 00 222"/>
-  </div>
-  
-  <div class="calc-box" style="margin-bottom:1.2rem">
-    <div class="calc-row calc-total"><span class="calc-label">💰 إجمالي المبلغ</span><span class="calc-val" id="modalTotal">اختر باقة أولاً</span></div>
-  </div>
+      <div id="nfPkgSelector"></div>
 
-  <div style="background: var(--green-light); border: 2px dashed var(--green); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 1.5rem;">
-    <div style="font-weight: 800; color: var(--green); font-size: 1rem; margin-bottom: 0.3rem;">📱 للطلب يرجى الدفع للرقم:</div>
-    <div style="font-size: 1.5rem; font-weight: 900; letter-spacing: 2px; color: var(--ink);">34362534</div>
-  </div>
+      <div class="form-section-title" style="margin-top:1.2rem"><div class="form-section-icon">🏦</div>اختر بنك الدفع</div>
+      <div class="banks-grid" id="paymentBanks" style="margin-bottom: 1.2rem; gap: 0.5rem; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));"></div>
+      
+      <div class="form-group" style="margin-bottom:1rem">
+          <label>معرّف اللاعب / الحساب (اختياري للبطاقات)</label>
+          <input class="form-input" id="modalPlayerId" type="text" placeholder="أدخل معرفك أو حسابك"/>
+      </div>
+      
+      <div class="form-group" style="margin-bottom:1.2rem">
+          <label>رقم هاتفك للتأكيد</label>
+          <input class="form-input" id="modalPhone" type="tel" placeholder="2222 00 222"/>
+      </div>
 
-  <div class="form-group full" style="margin-bottom:1.5rem">
-    <label style="font-weight: 800; display: block; margin-bottom: 0.5rem;">صورة الوصل (إلزامي) *</label>
-    <input type="file" id="modalReceiptImage" accept="image/*" style="display: none;" onchange="handleImagePreview(event, 'card')">
-    
-    <div id="modalUploadPlaceholder" onclick="document.getElementById('modalReceiptImage').click()" style="border: 2px dashed var(--green); border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; background: var(--white); transition: all 0.2s;">
-      <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📥</div>
-      <div style="font-weight: 700; color: var(--green); font-size: 0.9rem;">اضغط لإرفاق وصل الدفع</div>
-    </div>
+      <div style="background: var(--green-light); border: 2px dashed var(--green); border-radius: 12px; padding: 1rem; text-align: center; margin-bottom: 1.5rem;">
+        <div style="font-weight: 800; color: var(--green); font-size: 1rem; margin-bottom: 0.3rem;">📱 للطلب يرجى الدفع عبر <span id="paymentMethodLabel">—</span> للرقم:</div>
+        <div style="font-size: 1.5rem; font-weight: 900; letter-spacing: 2px; color: var(--ink);">34362534</div>
+      </div>
 
-    <div id="modalImagePreviewContainer" style="display: none; margin-top: 0.5rem; position: relative; width: 100%; text-align: center;">
-      <img id="modalImgPreview" src="#" alt="معاينة الوصل" style="max-width: 100%; height: auto; max-height: 150px; border-radius: 10px; border: 2px solid var(--green);">
-      <button type="button" onclick="document.getElementById('modalReceiptImage').click()" style="position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">🔄 تغيير</button>
+      <div class="form-group full" style="margin-bottom:1.5rem">
+        <label style="font-weight: 800; display: block; margin-bottom: 0.5rem;">صورة الوصل (إلزامي) *</label>
+        <input type="file" id="modalReceiptImage" accept="image/*" style="display: none;" onchange="handleImagePreview(event, 'card')">
+        
+        <div id="modalUploadPlaceholder" onclick="document.getElementById('modalReceiptImage').click()" style="border: 2px dashed var(--green); border-radius: 10px; padding: 1.5rem; text-align: center; cursor: pointer; background: var(--white); transition: all 0.2s;">
+          <div style="font-size: 1.5rem; margin-bottom: 0.5rem;">📥</div>
+          <div style="font-weight: 700; color: var(--green); font-size: 0.9rem;">اضغط لإرفاق وصل الدفع</div>
+        </div>
+
+        <div id="modalImagePreviewContainer" style="display: none; margin-top: 0.5rem; position: relative; width: 100%; text-align: center;">
+          <img id="modalImgPreview" src="#" alt="معاينة الوصل" style="max-width: 100%; height: auto; max-height: 150px; border-radius: 10px; border: 2px solid var(--green);">
+          <button type="button" onclick="document.getElementById('modalReceiptImage').click()" style="position: absolute; bottom: 5px; right: 5px; background: rgba(0,0,0,0.7); color: white; border: none; padding: 0.3rem 0.6rem; border-radius: 6px; cursor: pointer; font-size: 0.75rem;">🔄 تغيير</button>
+        </div>
+      </div>
+      
+      <button class="submit-btn" onclick="submitCard()">✅ إرسال الطلب الآن</button>
     </div>
-  </div>
-  
-  <button class="submit-btn" onclick="submitCard()">✅ إرسال الطلب الآن</button>
-</div>
   </div>
 </div>
 
@@ -494,22 +564,22 @@
         <button class="nav-tab" id="authRegisterTab" style="flex:1; text-align:center;" onclick="switchAuthMode('register')">حساب جديد</button>
       </div>
 
-  <div class="form-group"><label>البريد الإلكتروني</label><input class="form-input" id="authEmail" type="email" placeholder="example@gmail.com"/></div>
-  <div class="form-group" style="margin-bottom:1.5rem"><label>كلمة المرور</label><input class="form-input" id="authPass" type="password" placeholder="••••••••"/></div>
-  <div id="authErrorMsg" style="color:var(--red); font-size:.85rem; margin-bottom:1rem; text-align:center; display:none;"></div>
-  
-  <button class="submit-btn" id="authSubmitBtn" onclick="handleAuthEmail()">تسجيل الدخول</button>
+      <div class="form-group"><label>البريد الإلكتروني</label><input class="form-input" id="authEmail" type="email" placeholder="example@gmail.com"/></div>
+      <div class="form-group" style="margin-bottom:1.5rem"><label>كلمة المرور</label><input class="form-input" id="authPass" type="password" placeholder="••••••••"/></div>
+      <div id="authErrorMsg" style="color:var(--red); font-size:.85rem; margin-bottom:1rem; text-align:center; display:none;"></div>
+      
+      <button class="submit-btn" id="authSubmitBtn" onclick="handleAuthEmail()">تسجيل الدخول</button>
 
-  <div style="text-align:center; margin:1.5rem 0; color:var(--muted); font-size:.85rem; position:relative;">
-    <hr style="border:none; border-top:1px solid var(--sand); position:absolute; top:50%; width:100%; z-index:1;">
-    <span style="background:var(--white); padding:0 10px; position:relative; z-index:2;">أو</span>
-  </div>
+      <div style="text-align:center; margin:1.5rem 0; color:var(--muted); font-size:.85rem; position:relative;">
+        <hr style="border:none; border-top:1px solid var(--sand); position:absolute; top:50%; width:100%; z-index:1;">
+        <span style="background:var(--white); padding:0 10px; position:relative; z-index:2;">أو</span>
+      </div>
 
-  <button class="submit-btn" style="background:var(--white); color:var(--ink); border:1.5px solid var(--sand); display:flex; align-items:center; justify-content:center; gap:.8rem;" onclick="handleAuthGoogle()">
-    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;">
-    المتابعة باستخدام Google
-  </button>
-</div>
+      <button class="submit-btn" style="background:var(--white); color:var(--ink); border:1.5px solid var(--sand); display:flex; align-items:center; justify-content:center; gap:.8rem;" onclick="handleAuthGoogle()">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" style="width:20px;">
+        المتابعة باستخدام Google
+      </button>
+    </div>
   </div>
 </div>
 
@@ -556,17 +626,13 @@
     </div>
   </div>
 </footer>
+
 <div id="pwa-splash" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #ffffff; z-index: 999999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: 'Tajawal', sans-serif; transition: opacity 0.4s ease;">
-  
   <img src="apple-icon.png" alt="شعار حوّل" style="width: 120px; height: 120px; border-radius: 25px; box-shadow: 0 15px 35px rgba(10,124,78,0.2); margin-bottom: 25px; animation: float 3s ease-in-out infinite;">
-  
   <h1 style="font-size: 2rem; color: #0A7C4E; font-weight: 900; margin: 0 0 10px 0;">حوّل</h1>
   <p style="font-size: 1.1rem; color: #555; text-align: center; max-width: 80%; margin: 0 0 40px 0; line-height: 1.6;">المنصة الأسرع والأكثر أماناً. ثبّت التطبيق الآن لتجربة أسهل وأسرع.</p>
-  
   <button onclick="handleAppInstall()" style="background: linear-gradient(135deg, #0A7C4E, #11A066); color: white; border: none; padding: 16px 0; width: 85%; max-width: 350px; border-radius: 14px; font-size: 1.2rem; font-weight: bold; cursor: pointer; box-shadow: 0 8px 20px rgba(10,124,78,0.3); margin-bottom: 15px; font-family: inherit;">📲 تثبيت التطبيق</button>
-  
   <button onclick="skipSplash()" style="background: transparent; color: #888; border: none; font-size: 1.1rem; cursor: pointer; text-decoration: underline; font-family: inherit; padding: 10px;">تخطي والدخول للموقع</button>
-
   <style>
     @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
     @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
@@ -588,32 +654,27 @@
   const splashScreen = document.getElementById('pwa-splash');
   const iosModal = document.getElementById('ios-instructions');
 
-  // إخفاء الواجهة فوراً إذا كان المستخدم قد دخل مسبقاً (تخطي أو تثبيت)
   if (localStorage.getItem('hawwil_splash_dismissed') === 'true') {
     splashScreen.style.display = 'none';
   }
 
-  // التقاط حدث الأندرويد للتثبيت
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
   });
 
   function handleAppInstall() {
-    // التحقق هل الجهاز آيفون/آيباد
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
 
     if (isIOS || isSafari) {
-      // إظهار تعليمات الآيفون
       iosModal.style.display = 'block';
     } else {
-      // تنفيذ تثبيت أندرويد
       if (deferredPrompt) {
         deferredPrompt.prompt();
         deferredPrompt.userChoice.then((choiceResult) => {
           if (choiceResult.outcome === 'accepted') {
-            skipSplash(); // إخفاء الواجهة إذا قبل التثبيت
+            skipSplash();
           }
           deferredPrompt = null;
         });
@@ -629,7 +690,6 @@
     setTimeout(() => { splashScreen.style.display = 'none'; }, 400);
   }
 
-  // تفعيل ملف sw.js الضروري
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
       navigator.serviceWorker.register('/sw.js');
