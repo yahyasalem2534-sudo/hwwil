@@ -1,4 +1,4 @@
-!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8"/>
@@ -86,8 +86,8 @@ tr:hover td{background:var(--bg)}
 /* STOCK BTN */
 .stock-btn{background:var(--green);color:#fff;border:none;border-radius:8px;padding:.4rem .9rem;font-family:inherit;font-size:.85rem;font-weight:700;cursor:pointer;transition:background .2s;display:inline-flex;align-items:center;gap:.4rem}
 .stock-btn:hover{background:var(--green-dark)}
-.del-btn{background:var(--red-light);color:var(--red);border:none;border-radius:6px;padding:.25rem .6rem;font-size:.75rem;font-weight:700;cursor:pointer;transition:background .15s}
-.del-btn:hover{background:#FCA5A5}
+.del-btn{background:var(--red-light);color:var(--red);border:none;border-radius:6px;padding:.25rem .6rem;font-size:.75rem;font-weight:700;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;justify-content:center;}
+.del-btn:hover{background:#FCA5A5; color:var(--red) !important;}
 
 /* MODALS */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:500;align-items:flex-start;justify-content:center;padding:1.5rem 1rem;overflow-y:auto;backdrop-filter:blur(4px)}
@@ -218,8 +218,10 @@ body.is-admin .admin-text { display: inline !important; }
       <button class="tab" data-tab="cards">🎮 الطلبات الرقمية</button>
       <button class="tab" data-tab="stock">📦 المخزون</button>
       <button class="tab" data-tab="content">⚙️ إدارة المحتوى</button>
+      <button class="tab" data-tab="banned" style="color:var(--red);">🚫 المحظورين</button>
     </div>
 
+    <!-- جدول التحويلات -->
     <div id="tabTransfers" class="table-card">
       <div class="table-header">
         <div class="table-title">طلبات التحويل البنكي</div>
@@ -233,6 +235,7 @@ body.is-admin .admin-text { display: inline !important; }
       </div>
     </div>
 
+    <!-- جدول البطاقات -->
     <div id="tabCards" class="table-card" style="display:none">
       <div class="table-header">
         <div class="table-title">طلبات البطاقات والخدمات الرقمية</div>
@@ -246,6 +249,7 @@ body.is-admin .admin-text { display: inline !important; }
       </div>
     </div>
 
+    <!-- المخزون -->
     <div id="tabStock" style="display:none">
       <div class="stats" style="margin-bottom:1.2rem">
         <div class="stat-card green"><div class="stat-icon">🃏</div><div class="stat-val" id="stTotal">—</div><div class="stat-label">إجمالي البطاقات</div></div>
@@ -279,8 +283,8 @@ body.is-admin .admin-text { display: inline !important; }
       </div>
     </div>
 
+    <!-- إدارة المحتوى -->
     <div id="tabContent" style="display:none">
-      
       <div class="content-section">
         <div class="content-section-hdr">
           <div class="content-section-title">🖼️ إدارة السلايدر (العروض المتحركة)</div>
@@ -333,6 +337,29 @@ body.is-admin .admin-text { display: inline !important; }
         </div>
       </div>
     </div>
+
+    <!-- جدول المحظورين -->
+    <div id="tabBanned" class="table-card" style="display:none; border-color:var(--red-light);">
+      <div class="table-header">
+        <div class="table-title" style="color:var(--red);">🚫 قائمة الحسابات المحظورة</div>
+        <input class="search-input" id="searchBanned" placeholder="🔍 بحث بالإيميل أو المعرف..."/>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>الحساب (الإيميل / المعرف)</th>
+              <th>سبب الحظر</th>
+              <th>تاريخ الحظر</th>
+              <th>بواسطة</th>
+              <th>إجراء</th>
+            </tr>
+          </thead>
+          <tbody id="bannedBody"><tr><td colspan="5" class="loading">⏳ جاري التحميل...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -341,6 +368,35 @@ body.is-admin .admin-text { display: inline !important; }
   <div style="max-width: 90%; max-height: 90%; margin: auto; position: relative;">
     <span style="position:absolute; top:-40px; right:0; color:white; font-size:2.5rem; cursor:pointer; font-weight:bold;">&times;</span>
     <img id="largeImagePreview" src="" style="max-width: 100%; max-height: 85vh; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+  </div>
+</div>
+
+<!-- Modal: سبب الرفض -->
+<div class="modal-overlay" id="rejectModal" style="z-index: 1000;">
+  <div class="modal-box" style="max-width: 450px;">
+    <div class="modal-hdr">
+      <div style="font-size:1.1rem;font-weight:900;color:var(--red);">❌ تحديد سبب الرفض</div>
+      <button class="modal-x" id="closeRejectBtn">✕</button>
+    </div>
+    <div class="modal-bod">
+      <div class="form-row">
+        <label class="flabel">اختر السبب التلقائي (سيصل للمستخدم)</label>
+        <select class="finput" id="rejectReasonSelect" style="border-color:var(--red); font-weight:bold;">
+          <option value="">— اختر السبب —</option>
+          <option value="إيصال مزيف أو معدل">إيصال مزيف أو معدل</option>
+          <option value="إيصال مستخدم سابقاً">إيصال مستخدم سابقاً</option>
+          <option value="المبلغ المحول غير مطابق للطلب">المبلغ المحول غير مطابق للطلب</option>
+          <option value="الصورة غير واضحة">الصورة غير واضحة (يرجى إعادة التصوير)</option>
+          <option value="رقم الحساب أو بيانات التحويل خاطئة">رقم الحساب أو بيانات التحويل خاطئة</option>
+          <option value="other">سبب آخر (كتابة يدوية)</option>
+        </select>
+      </div>
+      <div class="form-row" id="customRejectRow" style="display:none;">
+        <label class="flabel">اكتب السبب بدقة</label>
+        <input class="finput" type="text" id="customRejectInput" placeholder="أدخل سبب الرفض هنا..."/>
+      </div>
+      <button class="save-btn" id="confirmRejectBtn" style="background:var(--red);margin-top:1rem;">تأكيد الرفض ❌</button>
+    </div>
   </div>
 </div>
 
@@ -608,7 +664,7 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && document.getElementById('loginWrap').style.display !== 'none') doLogin();
 });
 
-let allTransfers = [], allCards = [], allStock = [], allBanks = [], allGames = [], allSliders = [], allPaymentBanks = [];
+let allTransfers = [], allCards = [], allStock = [], allBanks = [], allGames = [], allSliders = [], allPaymentBanks = [], allBanned = [];
 
 function startListeners() {
   onSnapshot(query(collection(db,'transfers'), orderBy('createdAt','desc')), snap => {
@@ -646,9 +702,14 @@ function startListeners() {
     allPaymentBanks = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderPaymentBanksTable();
   });
+
+  onSnapshot(query(collection(db,'banned_users'), orderBy('bannedAt','desc')), snap => {
+    allBanned = snap.docs.map(d => ({id:d.id,...d.data()}));
+    renderBannedUsers();
+  });
 }
 
-const TAB_IDS = ['transfers','cards','stock','content'];
+const TAB_IDS = ['transfers','cards','stock','content', 'banned'];
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
     const tab = btn.dataset.tab;
@@ -697,6 +758,88 @@ window.deleteOrder = async (collectionName, docId) => {
   }
 };
 
+// ============================================
+// نظام إدارة المحظورين (Ban & Unban)
+// ============================================
+
+window.banUser = async (email, uid) => {
+  if (!email && !uid) {
+    showToast('⚠️ بيانات المستخدم (البريد أو المعرف) غير متوفرة في هذا الطلب');
+    return;
+  }
+  
+  const targetId = uid || (email ? email.replace(/[^a-zA-Z0-9]/g, '') : null);
+  const displayTarget = email || uid;
+
+  if (!confirm(`هل أنت متأكد من حظر هذا المستخدم نهائياً ومنعه من إرسال الطلبات؟\n\nالحساب: ${displayTarget}`)) return;
+
+  try {
+    await setDoc(doc(db, 'banned_users', targetId), {
+      email: email || '',
+      uid: uid || '',
+      bannedAt: serverTimestamp(),
+      bannedBy: 'admin',
+      reason: 'حظر يدوي من الإدارة'
+    });
+
+    if (uid) {
+      try { await updateDoc(doc(db, 'users', uid), { isBanned: true }); } catch(e){}
+    } else if (email) {
+      const q = query(collection(db, 'users'), where('email', '==', email));
+      const snap = await getDocs(q);
+      snap.forEach(d => {
+         updateDoc(doc(db, 'users', d.id), { isBanned: true });
+      });
+    }
+    showToast('🚫 تم حظر المستخدم بنجاح!');
+  } catch(e) {
+    showToast('❌ خطأ أثناء الحظر: ' + e.message);
+  }
+};
+
+window.unbanUser = async (docId, email, uid) => {
+  if(!confirm('هل أنت متأكد من فك الحظر عن هذا المستخدم والسماح له بالدخول مجدداً؟')) return;
+  try {
+    await deleteDoc(doc(db, 'banned_users', docId));
+
+    if (uid) {
+      try { await updateDoc(doc(db, 'users', uid), { isBanned: false }); } catch(e){}
+    } else if (email) {
+      const q = query(collection(db, 'users'), where('email', '==', email));
+      const snap = await getDocs(q);
+      snap.forEach(d => updateDoc(doc(db, 'users', d.id), { isBanned: false }));
+    }
+    showToast('✅ تم فك الحظر بنجاح');
+  } catch(e) {
+    showToast('❌ حدث خطأ أثناء فك الحظر: ' + e.message);
+  }
+};
+
+function renderBannedUsers() {
+  const tbody = document.getElementById('bannedBody');
+  const q = document.getElementById('searchBanned')?.value.toLowerCase() || '';
+  const data = allBanned.filter(b => (b.email||'').toLowerCase().includes(q) || (b.uid||'').toLowerCase().includes(q));
+
+  if (!data.length) {
+      tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">✅</div>لا يوجد مستخدمين محظورين</div></td></tr>`;
+      return;
+  }
+  
+  tbody.innerHTML = data.map(b => `<tr>
+    <td dir="ltr" style="font-weight:bold">${b.email || b.uid || b.id}</td>
+    <td style="color:var(--red)">${b.reason || '—'}</td>
+    <td style="font-size:.78rem">${fmtDate(b.bannedAt)}</td>
+    <td>${b.bannedBy || 'admin'}</td>
+    <td>
+      <button class="stock-btn" style="background:var(--green); font-size:.75rem; padding:.4rem .8rem" onclick="unbanUser('${b.id}', '${b.email||''}', '${b.uid||''}')">✅ فك الحظر</button>
+    </td>
+  </tr>`).join('');
+}
+
+document.getElementById('searchBanned').addEventListener('input', renderBannedUsers);
+
+// ============================================
+
 function renderTransfers(data) {
   const tbody = document.getElementById('transfersBody');
   if (!data.length) { 
@@ -717,13 +860,19 @@ function renderTransfers(data) {
     <td style="font-size:.78rem">${fmtDate(r.createdAt)}</td>
     <td>${imgUrl ? `<img src="${imgUrl}" onclick="previewImage('${imgUrl}')" style="width:38px;height:38px;border-radius:6px;object-fit:cover;border:1px solid var(--sand);cursor:pointer;" title="اضغط لتكبير الصورة">` : '<span style="color:var(--muted);font-size:.7rem">لا يوجد</span>'}</td>
     <td>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <select class="status-select" onchange="changeStatus('transfers','${r.id}',this.value)">
-          <option value="pending" ${r.status==='pending'?'selected':''}>⏳ معلق</option>
-          <option value="done" ${r.status==='done'?'selected':''}>✅ مكتمل</option>
-          <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ مرفوض</option>
-        </select>
-        ${currentUserRole === 'admin' ? `<button class="del-btn" onclick="deleteOrder('transfers', '${r.id}')" title="حذف الطلب">🗑️</button>` : ''}
+      <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <select class="status-select" onchange="changeStatus('transfers','${r.id}',this.value, this)">
+            <option value="pending" ${r.status==='pending'?'selected':''}>⏳ معلق</option>
+            <option value="done" ${r.status==='done'?'selected':''}>✅ مكتمل</option>
+            <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ مرفوض</option>
+          </select>
+          ${currentUserRole === 'admin' ? `
+             <button class="del-btn" style="background:var(--ink); color:#fff !important;" onclick="banUser('${r.email || ''}', '${r.uid || r.userId || ''}')" title="حظر هذا المستخدم 🚫">🚫</button>
+             <button class="del-btn" onclick="deleteOrder('transfers', '${r.id}')" title="حذف الطلب">🗑️</button>
+          ` : ''}
+        </div>
+        ${r.status === 'rejected' && r.rejectionReason ? `<div style="font-size:0.75rem; color:var(--red); background:var(--red-light); padding:2px 6px; border-radius:4px; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${r.rejectionReason}">السبب: ${r.rejectionReason}</div>` : ''}
       </div>
     </td></tr>`;
   }).join('');
@@ -781,13 +930,19 @@ function renderCards(data) {
     <td style="font-size:.78rem">${fmtDate(r.createdAt)}</td>
     <td>${imgUrl ? `<img src="${imgUrl}" onclick="previewImage('${imgUrl}')" style="width:38px;height:38px;border-radius:6px;object-fit:cover;border:1px solid var(--sand);cursor:pointer;" title="اضغط لتكبير الصورة">` : '<span style="color:var(--muted);font-size:.7rem">لا يوجد</span>'}</td>
     <td>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <select class="status-select" onchange="changeStatus('cards','${r.id}',this.value)">
-          <option value="pending" ${r.status==='pending'?'selected':''}>⏳ معلق</option>
-          <option value="done" ${r.status==='done'?'selected':''}>✅ مكتمل</option>
-          <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ مرفوض</option>
-        </select>
-        ${currentUserRole === 'admin' ? `<button class="del-btn" onclick="deleteOrder('cards', '${r.id}')" title="حذف الطلب">🗑️</button>` : ''}
+      <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-start;">
+        <div style="display:flex; gap:8px; align-items:center;">
+          <select class="status-select" onchange="changeStatus('cards','${r.id}',this.value, this)">
+            <option value="pending" ${r.status==='pending'?'selected':''}>⏳ معلق</option>
+            <option value="done" ${r.status==='done'?'selected':''}>✅ مكتمل</option>
+            <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ مرفوض</option>
+          </select>
+          ${currentUserRole === 'admin' ? `
+             <button class="del-btn" style="background:var(--ink); color:#fff !important;" onclick="banUser('${r.email || ''}', '${r.uid || r.userId || ''}')" title="حظر هذا المستخدم 🚫">🚫</button>
+             <button class="del-btn" onclick="deleteOrder('cards', '${r.id}')" title="حذف الطلب">🗑️</button>
+          ` : ''}
+        </div>
+        ${r.status === 'rejected' && r.rejectionReason ? `<div style="font-size:0.75rem; color:var(--red); background:var(--red-light); padding:2px 6px; border-radius:4px; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${r.rejectionReason}">السبب: ${r.rejectionReason}</div>` : ''}
       </div>
     </td></tr>`;
   }).join('');
@@ -826,7 +981,7 @@ function renderStock() {
     <td>${s.cardType||'—'}</td><td>${s.value||'—'}</td>
     <td><span class="code-cell" onclick="copyCode('${s.code}')">${s.code||'—'}</span></td>
     <td style="font-size:.78rem">${fmtDate(s.createdAt)}</td>
-    <td><select class="status-select" onchange="changeStatus('stock','${s.id}',this.value)">
+    <td><select class="status-select" onchange="changeStatus('stock','${s.id}',this.value, this)">
       <option value="available" ${s.status==='available'?'selected':''}>✅ متاح</option>
       <option value="used" ${s.status==='used'?'selected':''}>📤 مستخدم</option>
     </select></td>
@@ -934,14 +1089,88 @@ function renderPaymentBanksTable() {
   </tr>`).join('');
 }
 
-window.changeStatus = async (col, docId, status) => {
+// ============================================
+// نظام تغيير الحالة وأسباب الرفض الجديد
+// ============================================
+let rejectingCol = null;
+let rejectingDocId = null;
+let rejectingSelect = null;
+
+window.changeStatus = async (col, docId, status, selectEl) => {
+  if (status === 'rejected') {
+    rejectingCol = col;
+    rejectingDocId = docId;
+    rejectingSelect = selectEl;
+    
+    document.getElementById('rejectReasonSelect').value = '';
+    document.getElementById('customRejectRow').style.display = 'none';
+    document.getElementById('customRejectInput').value = '';
+    document.getElementById('rejectModal').classList.add('open');
+    return;
+  }
+  
   try { 
-      await updateDoc(doc(db,col,docId),{status}); 
-      showToast('✅ تم تحديث الحالة'); 
-  } catch { 
+      await updateDoc(doc(db, col, docId), { status, rejectionReason: null }); 
+      showToast('✅ تم تحديث الحالة بنجاح'); 
+  } catch(e) { 
       showToast('❌ خطأ في التحديث'); 
   }
 };
+
+document.getElementById('rejectReasonSelect').addEventListener('change', function() {
+    document.getElementById('customRejectRow').style.display = this.value === 'other' ? 'block' : 'none';
+});
+
+function closeRejectModal() {
+   document.getElementById('rejectModal').classList.remove('open');
+   if(rejectingCol && rejectingDocId && rejectingSelect) {
+       const arr = rejectingCol === 'transfers' ? allTransfers : (rejectingCol === 'cards' ? allCards : allStock);
+       const item = arr.find(x => x.id === rejectingDocId);
+       if(item) rejectingSelect.value = item.status;
+   }
+   rejectingCol = null; rejectingDocId = null; rejectingSelect = null;
+}
+
+document.getElementById('closeRejectBtn').addEventListener('click', closeRejectModal);
+document.getElementById('rejectModal').addEventListener('click', e => { if(e.target===document.getElementById('rejectModal')) closeRejectModal(); });
+
+document.getElementById('confirmRejectBtn').addEventListener('click', async () => {
+    const selVal = document.getElementById('rejectReasonSelect').value;
+    const customVal = document.getElementById('customRejectInput').value.trim();
+    const reason = selVal === 'other' ? customVal : selVal;
+
+    if (!reason) { showToast('⚠️ يرجى تحديد أو كتابة سبب الرفض'); return; }
+
+    const btn = document.getElementById('confirmRejectBtn');
+    btn.disabled = true;
+    btn.textContent = '⏳ جاري الإرسال...';
+
+    try {
+        await updateDoc(doc(db, rejectingCol, rejectingDocId), { 
+            status: 'rejected', 
+            rejectionReason: reason 
+        });
+        
+        // التحقق من الحظر الآلي (إذا اختار السبب "إيصال مزيف")
+        if (reason === 'إيصال مزيف أو معدل') {
+            const arr = rejectingCol === 'transfers' ? allTransfers : allCards;
+            const targetOrder = arr.find(x => x.id === rejectingDocId);
+            if(targetOrder && (targetOrder.email || targetOrder.uid)) {
+                await banUser(targetOrder.email, targetOrder.uid);
+            }
+        }
+        
+        showToast('✅ تم رفض الطلب وإرسال السبب للمستخدم');
+        document.getElementById('rejectModal').classList.remove('open');
+        rejectingCol = null; rejectingDocId = null; rejectingSelect = null;
+    } catch(e) {
+        showToast('❌ خطأ أثناء الرفض: ' + e.message);
+    }
+
+    btn.disabled = false;
+    btn.textContent = 'تأكيد الرفض ❌';
+});
+// ============================================
 
 window.deleteStock = async (id) => {
   if (currentUserRole !== 'admin') return;

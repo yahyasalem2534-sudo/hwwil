@@ -255,6 +255,24 @@
 </head>
 <body style="margin: 0; padding: 0; overflow-x: hidden;">
 
+<!-- ========================================== -->
+<!-- 🚫 شاشة الحظر (تظهر فقط للمستخدمين المحظورين) -->
+<!-- ========================================== -->
+<div id="bannedScreen" style="display: none; position: fixed; inset: 0; background: var(--white); z-index: 9999999; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center;">
+  <div style="font-size: 5rem; margin-bottom: 1rem;">🚫</div>
+  <h1 style="color: var(--red); font-weight: 900; margin-bottom: 1rem; font-size: 2.2rem;">تم إيقاف حسابك</h1>
+  <p style="color: var(--mid); font-size: 1.1rem; line-height: 1.6; max-width: 450px; margin-bottom: 2rem; font-weight: 500;">
+    عذراً، لقد تم إيقاف حسابك ومنعك من استخدام خدمات المنصة بسبب مخالفة شروط الاستخدام أو رصد نشاط غير اعتيادي متكرر.
+  </p>
+  <button onclick="contactSupportForBan()" style="background: #25D366; color: white; border: none; padding: 1rem 2rem; border-radius: 12px; font-size: 1.1rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3); transition: transform 0.2s;">
+    📱 تواصل مع الدعم لرفع الحظر
+  </button>
+  <button onclick="if(window.logoutUser) window.logoutUser(); else { localStorage.clear(); sessionStorage.clear(); location.reload(); }" style="margin-top: 1.5rem; background: transparent; border: 1.5px solid var(--red); color: var(--red); padding: 0.6rem 2rem; border-radius: 8px; cursor: pointer; font-weight: bold; font-family: inherit; transition: background 0.2s;">
+    تسجيل الخروج
+  </button>
+</div>
+<!-- ========================================== -->
+
 <nav>
   <a href="#" class="logo" style="display: flex; align-items: center; gap: 0.5rem;">
     <img src="/apple-icon.png" alt="شعار حوّل" style="width: 35px; height: 35px; border-radius: 8px; object-fit: cover;">حوّل
@@ -689,6 +707,16 @@
     splashScreen.style.opacity = '0';
     setTimeout(() => { splashScreen.style.display = 'none'; }, 400);
   }
+
+  // إضافة دالة لدعم زر التواصل في شاشة الحظر
+  window.contactSupportForBan = function() {
+      let identifier = '';
+      // سيتم ربط هذه الدالة بمتغيرات المستخدم من ملف js/index.js
+      if (window.currentUser) {
+          identifier = window.currentUser.email || window.currentUser.uid;
+      }
+      window.open('https://wa.me/22234362534?text=' + encodeURIComponent('مرحباً، تم حظر حسابي وأريد مراجعة الأمر. المعرّف الخاص بي هو: ' + identifier), '_blank');
+  };
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
