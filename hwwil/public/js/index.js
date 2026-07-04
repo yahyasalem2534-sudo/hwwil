@@ -30,7 +30,10 @@ let selectedTo   = null;
 let selectedGame = null;
 let selectedPkg  = null;
 let activeOrderListener = null;
-let currentUser = null;
+
+// ── متغيرات المستخدم والحظر ──
+window.currentUser = null;
+let banListener = null;
 
 let currentSlide = 0;
 let sliderInterval = null;
@@ -68,9 +71,76 @@ window.sendTelegramNotification = function(message) {
   fetch(url).catch(err => console.error("Telegram Notification Error", err));
 };
 
+// ── مراقب حالة الحظر (Ban Listener) ──
+function listenToBanStatus(user) {
+  if (banListener) { banListener(); banListener = null; }
+  
+  if (!user) {
+    document.getElementById('bannedScreen').style.display = 'none';
+    return;
+  }
+
+  const targetId = user.uid;
+  const targetEmail = user.email ? user.email.replace(/[^a-zA-Z0-9]/g, '') : null;
+
+  // فحص الحظر بالـ UID
+  banListener = onSnapshot(query(collection(db, 'banned_users'), where('uid', '==', targetId)), snap => {
+      if(!snap.empty) {
+          document.getElementById('bannedScreen').style.display = 'flex';
+      } else {
+          // فحص الحظر بالإيميل كاحتياط
+          if(targetEmail) {
+             onSnapshot(query(collection(db, 'banned_users'), where('email', '==', user.email)), snapEmail => {
+                 if(!snapEmail.empty) document.getElementById('bannedScreen').style.display = 'flex';
+                 else document.getElementById('bannedScreen').style.display = 'none';
+             });
+          } else {
+             document.getElementById('bannedScreen').style.display = 'none';
+          }
+      }
+  });
+}
+
+// ── نظام الحماية (Anti-Spam) ──
+// يمنع إرسال أكثر من 4 طلبات خلال ساعة واحدة
+async function checkSpamLimit() {
+  if (!window.currentUser) return false;
+  
+  const oneHourAgo = new Date();
+  oneHourAgo.setHours(oneHourAgo.getHours() - 1);
+
+  try {
+    // جلب طلبات التحويل في آخر ساعة
+    const tQ = query(collection(db, 'transfers'), 
+      where('uid', '==', window.currentUser.uid),
+      where('createdAt', '>=', oneHourAgo)
+    );
+    const tSnap = await getDocs(tQ);
+
+    // جلب طلبات البطاقات في آخر ساعة
+    const cQ = query(collection(db, 'cards'), 
+      where('uid', '==', window.currentUser.uid),
+      where('createdAt', '>=', oneHourAgo)
+    );
+    const cSnap = await getDocs(cQ);
+
+    const recentOrdersCount = tSnap.size + cSnap.size;
+
+    if (recentOrdersCount >= 4) {
+      return true; // المستخدم تخطى الحد المسموح (Spam)
+    }
+    return false; // آمن
+  } catch(e) {
+    console.error("Spam Check Error:", e);
+    return false;
+  }
+}
+
 // ── مراقب حالة تسجيل الدخول ──
 onAuthStateChanged(auth, (user) => {
-  currentUser = user;
+  window.currentUser = user;
+  listenToBanStatus(user);
+
   const loginBtn = document.getElementById('navLoginBtn');
   const profileBtn = document.getElementById('navProfileBtn');
 
@@ -378,9 +448,16 @@ window.calcAmount = function(){
 
 // ── إرسال التحويل البنكي ──
 window.submitTransfer = async function(){
-  if(!currentUser) {
+  if(!window.currentUser) {
     window.showToast('⚠️ يرجى تسجيل الدخول أولاً لإتمام التحويل');
     window.openAuthModal();
+    return;
+  }
+
+  // التأكد من الحماية من الـ Spam
+  const isSpammer = await checkSpamLimit();
+  if(isSpammer) {
+    window.showToast('🚫 عذراً، لقد تجاوزت الحد المسموح للطلبات. يرجى الانتظار والمحاولة لاحقاً.');
     return;
   }
 
@@ -404,7 +481,8 @@ window.submitTransfer = async function(){
   try {
     const fb = BANKS.find(b=>b.id===selectedFrom); const tb = BANKS.find(b=>b.id===selectedTo);
     await addDoc(collection(db,'transfers'),{
-      uid: currentUser.uid,
+      uid: window.currentUser.uid,
+      email: window.currentUser.email || '',
       ref: ref, name: name, phone: phone, amount: amount, commRate: rate, commission: comm, receive: recv,
       fromBank: fb?.name||selectedFrom, toBank: tb?.name||selectedTo, account: account, notes: notes,
       image: window.currentImageBase64, status: 'pending', createdAt: serverTimestamp()
@@ -582,7 +660,6 @@ window.nfActivateTab = function(origIdx, btnEl, skipAnimation = false) {
   }
 
   const updateDetails = () => {
-    // عرض السعر الكبير فقط، بدون مواصفات
     details.innerHTML = `
       <div class="nf-price-row" style="justify-content: center;">
         <span class="nf-price-amount">${fmt(pkg.price)}</span>
@@ -658,9 +735,16 @@ window.closeModal = function(e){
 
 // ── إرسال طلب البطاقة ──
 window.submitCard = async function(){
-  if(!currentUser) {
+  if(!window.currentUser) {
     window.showToast('⚠️ يرجى تسجيل الدخول أولاً لإتمام الشراء');
     window.openAuthModal();
+    return;
+  }
+
+  // التأكد من الحماية من الـ Spam
+  const isSpammer = await checkSpamLimit();
+  if(isSpammer) {
+    window.showToast('🚫 عذراً، لقد تجاوزت الحد المسموح للطلبات. يرجى الانتظار والمحاولة لاحقاً.');
     return;
   }
 
@@ -684,7 +768,8 @@ window.submitCard = async function(){
     const pkgDisplayAmount = regionName ? `[${regionName}] ${selectedPkg.amount}` : selectedPkg.amount;
 
     await addDoc(collection(db,'cards'),{
-      uid: currentUser.uid,
+      uid: window.currentUser.uid,
+      email: window.currentUser.email || '',
       ref,
       game:selectedGame.name,
       gameId:selectedGame.id,
@@ -737,7 +822,7 @@ window.getStatusBadge = function(status) {
 };
 
 window.loadUserOrders = async function() {
-  if(!currentUser) return;
+  if(!window.currentUser) return;
   const transList = document.getElementById('myTransfersList');
   const cardsList = document.getElementById('myCardsList');
 
@@ -745,7 +830,7 @@ window.loadUserOrders = async function() {
   if(cardsList) cardsList.innerHTML = '<p style="text-align:center; padding:2rem;">⏳ جاري جلب البطاقات...</p>';
 
   try {
-    const tQ = query(collection(db, 'transfers'), where('uid', '==', currentUser.uid));
+    const tQ = query(collection(db, 'transfers'), where('uid', '==', window.currentUser.uid));
     const tSnap = await getDocs(tQ);
     let transfers = tSnap.docs.map(d => d.data());
     transfers.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
@@ -762,13 +847,14 @@ window.loadUserOrders = async function() {
               </div>
               <div style="font-size:0.9rem; margin-bottom:5px;"><strong>المبلغ المُرسل:</strong> ${fmt(t.amount)} أوقية</div>
               <div style="font-size:0.9rem; margin-bottom:5px;"><strong>من:</strong> ${t.fromBank} ➡️ <strong>إلى:</strong> ${t.toBank}</div>
-              <div style="font-size:0.9rem; color:var(--green); font-weight:bold;"><strong>يستلم:</strong> ${fmt(t.receive)} أوقية</div>
+              <div style="font-size:0.9rem; color:var(--green); font-weight:bold; margin-bottom:5px;"><strong>يستلم:</strong> ${fmt(t.receive)} أوقية</div>
+              ${t.status === 'rejected' && t.rejectionReason ? `<div style="font-size:0.8rem; color:var(--red); font-weight:bold; margin-top:8px;">السبب: ${t.rejectionReason}</div>` : ''}
             </div>
           `).join('');
         }
     }
 
-    const cQ = query(collection(db, 'cards'), where('uid', '==', currentUser.uid));
+    const cQ = query(collection(db, 'cards'), where('uid', '==', window.currentUser.uid));
     const cSnap = await getDocs(cQ);
     let cards = cSnap.docs.map(d => d.data());
     cards.sort((a,b) => (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0));
@@ -795,7 +881,8 @@ window.loadUserOrders = async function() {
                 ${window.getStatusBadge(c.status)}
               </div>
               <div style="font-size:0.9rem; margin-bottom:5px;"><strong>المنتج:</strong> ${c.game} (${c.package})</div>
-              <div style="font-size:0.9rem;"><strong>السعر:</strong> ${fmt(c.price)} أوقية</div>
+              <div style="font-size:0.9rem; margin-bottom:5px;"><strong>السعر:</strong> ${fmt(c.price)} أوقية</div>
+              ${c.status === 'rejected' && c.rejectionReason ? `<div style="font-size:0.8rem; color:var(--red); font-weight:bold; margin-top:8px;">السبب: ${c.rejectionReason}</div>` : ''}
               ${codeHtml}
             </div>
           `;
@@ -833,7 +920,12 @@ window.trackLiveOrder = function(ref) {
       localStorage.removeItem('activeOrderId');
       if(activeOrderListener) { activeOrderListener(); activeOrderListener = null; }
     } else if(data.status === 'rejected') {
-      res.innerHTML = `<div style="color:var(--red); font-weight:bold;">❌ عذراً، تم رفض الطلب. يرجى التواصل مع الدعم.</div>`;
+      let html = `<div style="color:var(--red); font-weight:bold;">❌ عذراً، تم رفض الطلب.</div>`;
+      if(data.rejectionReason) {
+         html += `<div style="font-size:0.9rem; color:var(--red); margin-top:5px;">السبب: ${data.rejectionReason}</div>`;
+      }
+      html += `<button onclick="window.open('https://wa.me/22234362534','_blank')" style="margin-top:10px; background:#25D366; color:white; border:none; padding:8px 15px; border-radius:8px; cursor:pointer; font-weight:bold;">📞 تواصل مع الدعم</button>`;
+      res.innerHTML = html;
     } else {
       res.innerHTML = `<div style="color:#D4A853; font-weight:bold;">⏳ طلبك قيد المراجعة... (سيتم تحديث هذه الخانة تلقائياً)</div>`;
     }
