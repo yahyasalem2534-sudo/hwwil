@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>لوحة الأدمن | حوّل</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap" rel="stylesheet"/>
+<!-- إضافة مكتبة SheetJS لتصدير ملفات Excel -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -57,7 +59,11 @@ body{font-family:'Tajawal',sans-serif;background:var(--bg);color:var(--ink);dire
 .tab.active{background:var(--green);color:#fff}
 
 /* STATS */
-.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+body.is-admin .stats-admin-5 { grid-template-columns: repeat(5, 1fr); }
+.admin-only-card { display: none !important; }
+body.is-admin .admin-only-card { display: block !important; }
+
 .stat-card{background:var(--white);border-radius:16px;padding:1.2rem 1.4rem;box-shadow:var(--shadow);border:1.5px solid var(--sand)}
 .stat-icon{font-size:1.6rem;margin-bottom:.6rem}
 .stat-val{font-size:1.7rem;font-weight:900;color:var(--ink);letter-spacing:-.02em}
@@ -156,8 +162,13 @@ body.is-admin .admin-col { display: table-cell !important; }
 .admin-text { display: none !important; }
 body.is-admin .admin-text { display: inline !important; }
 
+@media(max-width:1024px){
+  .stats{grid-template-columns:repeat(3,1fr)}
+  body.is-admin .stats-admin-5 { grid-template-columns: repeat(3, 1fr); }
+}
 @media(max-width:768px){
   .stats{grid-template-columns:repeat(2,1fr)}
+  body.is-admin .stats-admin-5 { grid-template-columns: repeat(2, 1fr); }
   .main{padding:1rem}
   .search-input{width:140px}
   .cat-grid{grid-template-columns:repeat(2,1fr)}
@@ -165,6 +176,7 @@ body.is-admin .admin-text { display: inline !important; }
 }
 @media(max-width:480px){
   .stats{grid-template-columns:1fr 1fr}
+  body.is-admin .stats-admin-5 { grid-template-columns: 1fr 1fr; }
   .topbar-logo span{display:none}
 }
 </style>
@@ -206,11 +218,14 @@ body.is-admin .admin-text { display: inline !important; }
 
   <div class="main">
 
-    <div class="stats">
+    <div class="stats stats-admin-5">
       <div class="stat-card green"><div class="stat-icon">📋</div><div class="stat-val" id="sTotal">—</div><div class="stat-label">إجمالي الطلبات</div></div>
       <div class="stat-card"><div class="stat-icon">⏳</div><div class="stat-val" id="sPending">—</div><div class="stat-label">طلبات معلقة</div></div>
       <div class="stat-card green"><div class="stat-icon">✅</div><div class="stat-val" id="sDone">—</div><div class="stat-label">طلبات مكتملة</div></div>
-      <div class="stat-card gold"><div class="stat-icon">💰</div><div class="stat-val" id="sAmount">—</div><div class="stat-label">إجمالي المبالغ (أوقية)</div></div>
+      <div class="stat-card gold"><div class="stat-icon">💰</div><div class="stat-val" id="sAmount">—</div><div class="stat-label">إجمالي الإيرادات (أوقية)</div></div>
+      
+      <!-- مربع صافي الأرباح يظهر فقط للأدمن -->
+      <div class="stat-card gold admin-only-card" id="profitCard"><div class="stat-icon">📈</div><div class="stat-val" id="sProfit">—</div><div class="stat-label">صافي الأرباح (أوقية)</div></div>
     </div>
 
     <div class="tabs">
@@ -225,10 +240,13 @@ body.is-admin .admin-text { display: inline !important; }
     <div id="tabTransfers" class="table-card">
       <div class="table-header">
         <div class="table-title">طلبات التحويل البنكي</div>
-        <input class="search-input" id="searchTransfer" placeholder="🔍 بحث..."/>
+        <div style="display:flex;gap:.5rem;">
+          <input class="search-input" id="searchTransfer" placeholder="🔍 بحث..."/>
+          <button class="stock-btn" style="background:#107c41" onclick="exportToExcel('transfers')">📥 تصدير Excel</button>
+        </div>
       </div>
       <div class="table-wrap">
-        <table>
+        <table id="transfersTable">
           <thead><tr><th>رقم الطلب</th><th>الاسم</th><th>الهاتف</th><th>المبلغ</th><th>العمولة</th><th>يستلم</th><th>من بنك</th><th>إلى بنك</th><th>رقم الحساب</th><th>التاريخ</th><th>الوصل</th><th>الحالة<span class="admin-text"> والإجراء</span></th></tr></thead>
           <tbody id="transfersBody"><tr><td colspan="12" class="loading">⏳ جاري التحميل...</td></tr></tbody>
         </table>
@@ -239,10 +257,13 @@ body.is-admin .admin-text { display: inline !important; }
     <div id="tabCards" class="table-card" style="display:none">
       <div class="table-header">
         <div class="table-title">طلبات البطاقات والخدمات الرقمية</div>
-        <input class="search-input" id="searchCards" placeholder="🔍 بحث..."/>
+        <div style="display:flex;gap:.5rem;">
+          <input class="search-input" id="searchCards" placeholder="🔍 بحث..."/>
+          <button class="stock-btn" style="background:#107c41" onclick="exportToExcel('cards')">📥 تصدير Excel</button>
+        </div>
       </div>
       <div class="table-wrap">
-        <table>
+        <table id="cardsTable">
           <thead><tr><th>رقم الطلب</th><th>المنتج</th><th>الباقة</th><th>دفع عبر</th><th>تسليم الكود</th><th>شراء من المورد</th><th>بيانات الحساب</th><th>الهاتف</th><th>التاريخ</th><th>الوصل</th><th>الحالة<span class="admin-text"> والإجراء</span></th></tr></thead>
           <tbody id="cardsBody"><tr><td colspan="11" class="loading">⏳ جاري التحميل...</td></tr></tbody>
         </table>
@@ -586,7 +607,7 @@ body.is-admin .admin-text { display: inline !important; }
       </div>
 
       <div class="form-row" style="margin-top:1rem">
-        <label class="flabel">الباقات والأسعار</label>
+        <label class="flabel">الباقات (التكلفة وسعر البيع)</label>
         <div id="pkgsEditor" style="margin-top:.5rem"></div>
       </div>
       <button class="save-btn" id="saveGameBtn" style="margin-top:1rem">💾 حفظ المنتج</button>
@@ -690,7 +711,7 @@ function startListeners() {
   onSnapshot(collection(db,'games'), snap => {
     allGames = snap.docs.map(d => ({id:d.id,...d.data()}));
     renderGamesTable();
-    if(allCards.length > 0) renderCards(allCards);
+    if(allCards.length > 0) { renderCards(allCards); updateStats(); }
   });
 
   onSnapshot(query(collection(db,'sliders'), orderBy('order','asc')), snap => {
@@ -722,14 +743,40 @@ document.querySelectorAll('.tab').forEach(btn => {
   });
 });
 
+// ============================================
+// نظام تحديث الإحصائيات والأرباح
+// ============================================
 function updateStats() {
   const all = [...allTransfers,...allCards];
   document.getElementById('sTotal').textContent   = fmt(all.length);
   document.getElementById('sPending').textContent = fmt(all.filter(r=>r.status==='pending').length);
   document.getElementById('sDone').textContent    = fmt(all.filter(r=>r.status==='done').length);
-  document.getElementById('sAmount').textContent  = fmt(Math.round(
-    allTransfers.reduce((s,r)=>s+(r.amount||0),0)+allCards.reduce((s,r)=>s+(r.price||0),0)
-  ));
+  
+  let totalRevenue = 0;
+  let totalProfit = 0;
+
+  allTransfers.forEach(r => {
+      totalRevenue += (r.amount || 0);
+      totalProfit += (r.commission || 0);
+  });
+
+  allCards.forEach(r => {
+      totalRevenue += (r.price || 0);
+      let cost = r.cost !== undefined ? r.cost : 0;
+      
+      // جلب التكلفة من المنتجات إذا لم تكن موجودة في الطلب مباشرة
+      if(cost === 0) {
+          const g = allGames.find(x => x.id === r.gameId || x.name === r.game);
+          if(g && g.pkgs) {
+              const pkg = g.pkgs.find(p => (r.package||'').includes(p.amount));
+              if(pkg) cost = pkg.cost || 0;
+          }
+      }
+      totalProfit += ((r.price || 0) - cost);
+  });
+
+  document.getElementById('sAmount').textContent  = fmt(Math.round(totalRevenue));
+  if(document.getElementById('sProfit')) document.getElementById('sProfit').textContent = fmt(Math.round(totalProfit));
 }
 
 function updateStockStats() {
@@ -738,6 +785,65 @@ function updateStockStats() {
   document.getElementById('stUsed').textContent       = fmt(allStock.filter(s=>s.status==='used').length);
   document.getElementById('stCategories').textContent = fmt(new Set(allStock.map(s=>s.category)).size);
 }
+
+// ============================================
+// نظام التصدير إلى Excel
+// ============================================
+window.exportToExcel = function(type) {
+  try {
+      let data = type === 'transfers' ? allTransfers : allCards;
+      if(!data.length) { showToast('⚠️ لا توجد بيانات للتصدير'); return; }
+      
+      let ws_data = data.map(r => {
+          if(type === 'transfers') {
+              return {
+                  "رقم الطلب": r.ref || '',
+                  "الاسم": r.name || '',
+                  "الهاتف": r.phone || '',
+                  "المبلغ": r.amount || 0,
+                  "العمولة (الربح)": r.commission || 0,
+                  "يستلم": r.receive || 0,
+                  "من بنك": r.fromBank || '',
+                  "إلى بنك": r.toBank || '',
+                  "رقم الحساب": r.account || '',
+                  "تاريخ الطلب": fmtDate(r.createdAt),
+                  "الحالة": r.status === 'done' ? 'مكتمل' : (r.status === 'rejected' ? 'مرفوض' : 'معلق')
+              };
+          } else {
+              let cost = r.cost !== undefined ? r.cost : 0;
+              if(cost === 0) {
+                  const g = allGames.find(x => x.id === r.gameId || x.name === r.game);
+                  if(g && g.pkgs) {
+                      const pkg = g.pkgs.find(p => (r.package||'').includes(p.amount));
+                      if(pkg) cost = pkg.cost || 0;
+                  }
+              }
+              return {
+                  "رقم الطلب": r.ref || '',
+                  "المنتج": r.game || '',
+                  "الباقة": r.package || '',
+                  "سعر البيع": r.price || 0,
+                  "التكلفة": cost,
+                  "صافي الربح": (r.price || 0) - cost,
+                  "دفع عبر": r.paymentBank || '',
+                  "الهاتف": r.phone || '',
+                  "بيانات الحساب": r.playerId || '',
+                  "تاريخ الطلب": fmtDate(r.createdAt),
+                  "الحالة": r.status === 'done' ? 'مكتمل' : (r.status === 'rejected' ? 'مرفوض' : 'معلق')
+              };
+          }
+      });
+      
+      const ws = XLSX.utils.json_to_sheet(ws_data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, type === 'transfers' ? "التحويلات" : "البطاقات");
+      XLSX.writeFile(wb, `Hawwil_${type}_${new Date().getTime()}.xlsx`);
+      showToast('✅ تم التصدير بنجاح');
+  } catch(e) {
+      console.error(e);
+      showToast('❌ حدث خطأ أثناء التصدير');
+  }
+};
 
 window.previewImage = function(url) {
   document.getElementById('largeImagePreview').src = url;
@@ -761,58 +867,37 @@ window.deleteOrder = async (collectionName, docId) => {
 // ============================================
 // نظام إدارة المحظورين (Ban & Unban)
 // ============================================
-
 window.banUser = async (email, uid) => {
-  if (!email && !uid) {
-    showToast('⚠️ بيانات المستخدم (البريد أو المعرف) غير متوفرة في هذا الطلب');
-    return;
-  }
-  
+  if (!email && !uid) { showToast('⚠️ بيانات المستخدم غير متوفرة'); return; }
   const targetId = uid || (email ? email.replace(/[^a-zA-Z0-9]/g, '') : null);
   const displayTarget = email || uid;
 
   if (!confirm(`هل أنت متأكد من حظر هذا المستخدم نهائياً ومنعه من إرسال الطلبات؟\n\nالحساب: ${displayTarget}`)) return;
 
   try {
-    await setDoc(doc(db, 'banned_users', targetId), {
-      email: email || '',
-      uid: uid || '',
-      bannedAt: serverTimestamp(),
-      bannedBy: 'admin',
-      reason: 'حظر يدوي من الإدارة'
-    });
-
-    if (uid) {
-      try { await updateDoc(doc(db, 'users', uid), { isBanned: true }); } catch(e){}
-    } else if (email) {
+    await setDoc(doc(db, 'banned_users', targetId), { email: email || '', uid: uid || '', bannedAt: serverTimestamp(), bannedBy: 'admin', reason: 'حظر يدوي من الإدارة' });
+    if (uid) { try { await updateDoc(doc(db, 'users', uid), { isBanned: true }); } catch(e){} }
+    else if (email) {
       const q = query(collection(db, 'users'), where('email', '==', email));
       const snap = await getDocs(q);
-      snap.forEach(d => {
-         updateDoc(doc(db, 'users', d.id), { isBanned: true });
-      });
+      snap.forEach(d => { updateDoc(doc(db, 'users', d.id), { isBanned: true }); });
     }
     showToast('🚫 تم حظر المستخدم بنجاح!');
-  } catch(e) {
-    showToast('❌ خطأ أثناء الحظر: ' + e.message);
-  }
+  } catch(e) { showToast('❌ خطأ أثناء الحظر: ' + e.message); }
 };
 
 window.unbanUser = async (docId, email, uid) => {
   if(!confirm('هل أنت متأكد من فك الحظر عن هذا المستخدم والسماح له بالدخول مجدداً؟')) return;
   try {
     await deleteDoc(doc(db, 'banned_users', docId));
-
-    if (uid) {
-      try { await updateDoc(doc(db, 'users', uid), { isBanned: false }); } catch(e){}
-    } else if (email) {
+    if (uid) { try { await updateDoc(doc(db, 'users', uid), { isBanned: false }); } catch(e){} }
+    else if (email) {
       const q = query(collection(db, 'users'), where('email', '==', email));
       const snap = await getDocs(q);
       snap.forEach(d => updateDoc(doc(db, 'users', d.id), { isBanned: false }));
     }
     showToast('✅ تم فك الحظر بنجاح');
-  } catch(e) {
-    showToast('❌ حدث خطأ أثناء فك الحظر: ' + e.message);
-  }
+  } catch(e) { showToast('❌ حدث خطأ أثناء فك الحظر: ' + e.message); }
 };
 
 function renderBannedUsers() {
@@ -820,32 +905,14 @@ function renderBannedUsers() {
   const q = document.getElementById('searchBanned')?.value.toLowerCase() || '';
   const data = allBanned.filter(b => (b.email||'').toLowerCase().includes(q) || (b.uid||'').toLowerCase().includes(q));
 
-  if (!data.length) {
-      tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">✅</div>لا يوجد مستخدمين محظورين</div></td></tr>`;
-      return;
-  }
-  
-  tbody.innerHTML = data.map(b => `<tr>
-    <td dir="ltr" style="font-weight:bold">${b.email || b.uid || b.id}</td>
-    <td style="color:var(--red)">${b.reason || '—'}</td>
-    <td style="font-size:.78rem">${fmtDate(b.bannedAt)}</td>
-    <td>${b.bannedBy || 'admin'}</td>
-    <td>
-      <button class="stock-btn" style="background:var(--green); font-size:.75rem; padding:.4rem .8rem" onclick="unbanUser('${b.id}', '${b.email||''}', '${b.uid||''}')">✅ فك الحظر</button>
-    </td>
-  </tr>`).join('');
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">✅</div>لا يوجد مستخدمين محظورين</div></td></tr>`; return; }
+  tbody.innerHTML = data.map(b => `<tr><td dir="ltr" style="font-weight:bold">${b.email || b.uid || b.id}</td><td style="color:var(--red)">${b.reason || '—'}</td><td style="font-size:.78rem">${fmtDate(b.bannedAt)}</td><td>${b.bannedBy || 'admin'}</td><td><button class="stock-btn" style="background:var(--green); font-size:.75rem; padding:.4rem .8rem" onclick="unbanUser('${b.id}', '${b.email||''}', '${b.uid||''}')">✅ فك الحظر</button></td></tr>`).join('');
 }
-
 document.getElementById('searchBanned').addEventListener('input', renderBannedUsers);
-
-// ============================================
 
 function renderTransfers(data) {
   const tbody = document.getElementById('transfersBody');
-  if (!data.length) { 
-      tbody.innerHTML=`<tr><td colspan="12"><div class="empty"><div class="empty-icon">📭</div>لا توجد طلبات</div></td></tr>`; 
-      return; 
-  }
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="12"><div class="empty"><div class="empty-icon">📭</div>لا توجد طلبات</div></td></tr>`; return; }
   tbody.innerHTML = data.map(r=>{
     const imgUrl = r.image || r.receipt || r.img || "";
     return `<tr>
@@ -867,10 +934,7 @@ function renderTransfers(data) {
             <option value="done" ${r.status==='done'?'selected':''}>✅ مكتمل</option>
             <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ مرفوض</option>
           </select>
-          ${currentUserRole === 'admin' ? `
-             <button class="del-btn" style="background:var(--ink); color:#fff !important;" onclick="banUser('${r.email || ''}', '${r.uid || r.userId || ''}')" title="حظر هذا المستخدم 🚫">🚫</button>
-             <button class="del-btn" onclick="deleteOrder('transfers', '${r.id}')" title="حذف الطلب">🗑️</button>
-          ` : ''}
+          ${currentUserRole === 'admin' ? `<button class="del-btn" style="background:var(--ink); color:#fff !important;" onclick="banUser('${r.email || ''}', '${r.uid || r.userId || ''}')" title="حظر هذا المستخدم 🚫">🚫</button> <button class="del-btn" onclick="deleteOrder('transfers', '${r.id}')" title="حذف الطلب">🗑️</button>` : ''}
         </div>
         ${r.status === 'rejected' && r.rejectionReason ? `<div style="font-size:0.75rem; color:var(--red); background:var(--red-light); padding:2px 6px; border-radius:4px; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${r.rejectionReason}">السبب: ${r.rejectionReason}</div>` : ''}
       </div>
@@ -880,50 +944,27 @@ function renderTransfers(data) {
 
 function renderCards(data) {
   const tbody = document.getElementById('cardsBody');
-  if (!data.length) { 
-      tbody.innerHTML=`<tr><td colspan="11"><div class="empty"><div class="empty-icon">🎮</div>لا توجد طلبات</div></td></tr>`; 
-      return; 
-  }
-  
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="11"><div class="empty"><div class="empty-icon">🎮</div>لا توجد طلبات</div></td></tr>`; return; }
   tbody.innerHTML = data.map(r=>{
     const imgUrl = r.image || r.receipt || r.img || ""; 
     const specificGame = allGames.find(g => (g.id && r.gameId && g.id === r.gameId) || g.name === r.game);
     const paymentBank = r.paymentBank || '—';
-    
     let gameSups = [];
     if(specificGame) {
-       if (specificGame.sups && specificGame.sups.length > 0) {
-           gameSups = specificGame.sups;
-       } 
-       else if (specificGame.supName && specificGame.supLink) {
-           gameSups = [{ name: specificGame.supName, link: specificGame.supLink }];
-       }
+       if (specificGame.sups && specificGame.sups.length > 0) { gameSups = specificGame.sups; } 
+       else if (specificGame.supName && specificGame.supLink) { gameSups = [{ name: specificGame.supName, link: specificGame.supLink }]; }
     }
-
     let dropdownHtml = '';
     if(gameSups.length > 0) {
        let optionsHtml = gameSups.map((s, idx) => `<option value="${s.link}" ${idx===0?'selected':''}>🛒 ${s.name}</option>`).join('');
-       dropdownHtml = `
-       <div style="display:flex; gap:4px; align-items:center; min-width:140px;">
-          <select id="sup_${r.id}" class="status-select" style="flex:1; font-size:0.75rem; padding:4px; max-width:100px;">
-             ${optionsHtml}
-          </select>
-          <button onclick="const l=document.getElementById('sup_${r.id}').value; if(l){ window.open(l, '_blank'); }" style="background:var(--gold); color:white; border:none; border-radius:6px; padding:4px 8px; cursor:pointer; font-weight:bold; font-size:0.75rem;">شراء</button>
-       </div>`;
-    } else {
-       dropdownHtml = `<span style="font-size:0.75rem; color:var(--muted);">لا يوجد مورد</span>`;
-    }
-
+       dropdownHtml = `<div style="display:flex; gap:4px; align-items:center; min-width:140px;"> <select id="sup_${r.id}" class="status-select" style="flex:1; font-size:0.75rem; padding:4px; max-width:100px;">${optionsHtml}</select> <button onclick="const l=document.getElementById('sup_${r.id}').value; if(l){ window.open(l, '_blank'); }" style="background:var(--gold); color:white; border:none; border-radius:6px; padding:4px 8px; cursor:pointer; font-weight:bold; font-size:0.75rem;">شراء</button></div>`;
+    } else { dropdownHtml = `<span style="font-size:0.75rem; color:var(--muted);">لا يوجد مورد</span>`; }
     return `<tr>
     <td><span class="ref">${r.ref||'—'}</span></td>
     <td><strong>${r.game||'—'}</strong></td>
     <td>${r.package||'—'}</td>
     <td style="color:var(--green); font-weight:bold;">${paymentBank}</td>
-    <td>
-      <input type="text" class="code-input-field" placeholder="الصق الكود هنا..." 
-             value="${r.deliveredCode || ''}" 
-             onchange="updateDeliveredCode('${r.id}', this.value)">
-    </td>
+    <td><input type="text" class="code-input-field" placeholder="الصق الكود هنا..." value="${r.deliveredCode || ''}" onchange="updateDeliveredCode('${r.id}', this.value)"></td>
     <td>${dropdownHtml}</td>
     <td dir="ltr">${r.playerId||'—'}</td>
     <td dir="ltr">${r.phone||'—'}</td>
@@ -937,10 +978,7 @@ function renderCards(data) {
             <option value="done" ${r.status==='done'?'selected':''}>✅ مكتمل</option>
             <option value="rejected" ${r.status==='rejected'?'selected':''}>❌ مرفوض</option>
           </select>
-          ${currentUserRole === 'admin' ? `
-             <button class="del-btn" style="background:var(--ink); color:#fff !important;" onclick="banUser('${r.email || ''}', '${r.uid || r.userId || ''}')" title="حظر هذا المستخدم 🚫">🚫</button>
-             <button class="del-btn" onclick="deleteOrder('cards', '${r.id}')" title="حذف الطلب">🗑️</button>
-          ` : ''}
+          ${currentUserRole === 'admin' ? `<button class="del-btn" style="background:var(--ink); color:#fff !important;" onclick="banUser('${r.email || ''}', '${r.uid || r.userId || ''}')" title="حظر هذا المستخدم 🚫">🚫</button> <button class="del-btn" onclick="deleteOrder('cards', '${r.id}')" title="حذف الطلب">🗑️</button>` : ''}
         </div>
         ${r.status === 'rejected' && r.rejectionReason ? `<div style="font-size:0.75rem; color:var(--red); background:var(--red-light); padding:2px 6px; border-radius:4px; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${r.rejectionReason}">السبب: ${r.rejectionReason}</div>` : ''}
       </div>
@@ -948,46 +986,17 @@ function renderCards(data) {
   }).join('');
 }
 
-window.updateDeliveredCode = async (id, code) => {
-  try {
-    await updateDoc(doc(db, 'cards', id), { deliveredCode: code });
-    showToast('✅ تم حفظ الكود بالطلب!');
-  } catch (e) {
-    showToast('❌ حدث خطأ أثناء حفظ الكود');
-  }
-};
+window.updateDeliveredCode = async (id, code) => { try { await updateDoc(doc(db, 'cards', id), { deliveredCode: code }); showToast('✅ تم حفظ الكود بالطلب!'); } catch (e) { showToast('❌ حدث خطأ أثناء حفظ الكود'); } };
 
 function renderStock() {
   const catF   = document.getElementById('filterCat').value;
   const statF  = document.getElementById('filterStatus').value;
   const searchF= document.getElementById('searchStock').value.toLowerCase();
-  
-  const data   = allStock.filter(s => {
-    if (catF   && s.category !== catF)  return false;
-    if (statF  && s.status   !== statF) return false;
-    if (searchF && !(s.code||'').toLowerCase().includes(searchF)) return false;
-    return true;
-  });
-  
+  const data   = allStock.filter(s => { if (catF && s.category !== catF) return false; if (statF && s.status !== statF) return false; if (searchF && !(s.code||'').toLowerCase().includes(searchF)) return false; return true; });
   document.getElementById('stockCount').textContent = `${fmt(data.length)} بطاقة`;
   const tbody = document.getElementById('stockBody');
-  if (!data.length) { 
-      tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">📭</div>لا توجد بطاقات</div></td></tr>`; 
-      return; 
-  }
-  
-  tbody.innerHTML = data.map(s=>`<tr>
-    <td><strong>${s.category||'—'}</strong></td>
-    <td>${s.cardType||'—'}</td><td>${s.value||'—'}</td>
-    <td><span class="code-cell" onclick="copyCode('${s.code}')">${s.code||'—'}</span></td>
-    <td style="font-size:.78rem">${fmtDate(s.createdAt)}</td>
-    <td><select class="status-select" onchange="changeStatus('stock','${s.id}',this.value, this)">
-      <option value="available" ${s.status==='available'?'selected':''}>✅ متاح</option>
-      <option value="used" ${s.status==='used'?'selected':''}>📤 مستخدم</option>
-    </select></td>
-    <td class="admin-col">
-      <button class="del-btn" onclick="deleteStock('${s.id}')">🗑️</button>
-    </td></tr>`).join('');
+  if (!data.length) { tbody.innerHTML=`<tr><td colspan="7"><div class="empty"><div class="empty-icon">📭</div>لا توجد بطاقات</div></td></tr>`; return; }
+  tbody.innerHTML = data.map(s=>`<tr><td><strong>${s.category||'—'}</strong></td><td>${s.cardType||'—'}</td><td>${s.value||'—'}</td><td><span class="code-cell" onclick="copyCode('${s.code}')">${s.code||'—'}</span></td><td style="font-size:.78rem">${fmtDate(s.createdAt)}</td><td><select class="status-select" onchange="changeStatus('stock','${s.id}',this.value, this)"><option value="available" ${s.status==='available'?'selected':''}>✅ متاح</option><option value="used" ${s.status==='used'?'selected':''}>📤 مستخدم</option></select></td><td class="admin-col"><button class="del-btn" onclick="deleteStock('${s.id}')">🗑️</button></td></tr>`).join('');
 }
 
 function updateCatFilter() {
@@ -1000,93 +1009,36 @@ function updateCatFilter() {
 function renderBanksTable() {
   const tbody = document.getElementById('banksBody'); 
   if (!tbody) return;
-  if (!allBanks.length) { 
-      tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">🏦</div>لا توجد بنوك — أضف بنكاً الآن</div></td></tr>`; 
-      return; 
-  }
-  
-  tbody.innerHTML = allBanks.map(b=>`<tr>
-    <td><div style="display:flex;align-items:center;gap:.7rem">
-      <div style="width:40px;height:40px;border-radius:8px;background:${b.color||'#888'};display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
-        ${b.logo?`<img src="${b.logo}" style="width:36px;height:36px;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:800;font-size:.75rem>${(b.name||'').substring(0,3)}</span>'">`:`<span style="color:#fff;font-weight:800;font-size:.75rem">${(b.name||'').substring(0,3)}</span>`}
-      </div><strong>${b.name||'—'}</strong></div></td>
-    <td><span style="font-size:.75rem;color:var(--muted)">${b.logo?b.logo.substring(0,40)+'...':'لا يوجد'}</span></td>
-    <td><div style="width:24px;height:24px;border-radius:50%;background:${b.color||'#888'}"></div></td>
-    <td>${b.order||0}</td>
-    <td><div style="display:flex;gap:.4rem">
-      <button class="stock-btn" style="font-size:.75rem;padding:.3rem .7rem" onclick="openEditBank('${b.id}')">✏️</button>
-      <button class="del-btn" onclick="deleteBank('${b.id}')">🗑️</button>
-    </div></td></tr>`).join('');
+  if (!allBanks.length) { tbody.innerHTML=`<tr><td colspan="5"><div class="empty"><div class="empty-icon">🏦</div>لا توجد بنوك — أضف بنكاً الآن</div></td></tr>`; return; }
+  tbody.innerHTML = allBanks.map(b=>`<tr><td><div style="display:flex;align-items:center;gap:.7rem"><div style="width:40px;height:40px;border-radius:8px;background:${b.color||'#888'};display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">${b.logo?`<img src="${b.logo}" style="width:36px;height:36px;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:800;font-size:.75rem>${(b.name||'').substring(0,3)}</span>'">`:`<span style="color:#fff;font-weight:800;font-size:.75rem">${(b.name||'').substring(0,3)}</span>`}</div><strong>${b.name||'—'}</strong></div></td><td><span style="font-size:.75rem;color:var(--muted)">${b.logo?b.logo.substring(0,40)+'...':'لا يوجد'}</span></td><td><div style="width:24px;height:24px;border-radius:50%;background:${b.color||'#888'}"></div></td><td>${b.order||0}</td><td><div style="display:flex;gap:.4rem"><button class="stock-btn" style="font-size:.75rem;padding:.3rem .7rem" onclick="openEditBank('${b.id}')">✏️</button><button class="del-btn" onclick="deleteBank('${b.id}')">🗑️</button></div></td></tr>`).join('');
 }
 
 function renderGamesTable() {
   const tbody = document.getElementById('gamesBody'); 
   if (!tbody) return;
-  if (!allGames.length) { 
-      tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">🎮</div>لا توجد منتجات — أضف منتجاً الآن</div></td></tr>`; 
-      return; 
-  }
-  
+  if (!allGames.length) { tbody.innerHTML=`<tr><td colspan="6"><div class="empty"><div class="empty-icon">🎮</div>لا توجد منتجات — أضف منتجاً الآن</div></td></tr>`; return; }
   tbody.innerHTML = allGames.map(g=>{
     const typeLabel = g.productType === 'service' ? '💳 خدمة' : '🎮 لعبة';
-    return `<tr>
-    <td><div style="display:flex;align-items:center;gap:.7rem">
-      <div style="width:44px;height:44px;border-radius:10px;background:${g.bg||'#1a1a2e'};display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">
-        ${g.logo?`<img src="${g.logo}" style="width:38px;height:38px;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=font-size:1.4rem>${g.icon||'🎮'}</span>'">`:`<span style="font-size:1.4rem">${g.icon||'🎮'}</span>`}
-      </div>
-      <div><div style="font-weight:800">${g.name||'—'}</div><div style="font-size:.75rem;color:var(--muted)">${g.desc||''}</div></div>
-    </div></td>
-    <td><span style="background:var(--bg);padding:0.2rem 0.5rem;border-radius:6px;font-size:0.8rem;font-weight:bold;">${typeLabel}</span></td>
-    <td>${g.badge||'—'}</td>
-    <td>${(g.pkgs||[]).length} باقة</td>
-    <td>${g.order||0}</td>
-    <td><div style="display:flex;gap:.4rem">
-      <button class="stock-btn" style="font-size:.75rem;padding:.3rem .7rem" onclick="openEditGame('${g.id}')">✏️</button>
-      <button class="del-btn" onclick="deleteGame('${g.id}')">🗑️</button>
-    </div></td></tr>`;
+    return `<tr><td><div style="display:flex;align-items:center;gap:.7rem"><div style="width:44px;height:44px;border-radius:10px;background:${g.bg||'#1a1a2e'};display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0">${g.logo?`<img src="${g.logo}" style="width:38px;height:38px;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=font-size:1.4rem>${g.icon||'🎮'}</span>'">`:`<span style="font-size:1.4rem">${g.icon||'🎮'}</span>`}</div><div><div style="font-weight:800">${g.name||'—'}</div><div style="font-size:.75rem;color:var(--muted)">${g.desc||''}</div></div></div></td><td><span style="background:var(--bg);padding:0.2rem 0.5rem;border-radius:6px;font-size:0.8rem;font-weight:bold;">${typeLabel}</span></td><td>${g.badge||'—'}</td><td>${(g.pkgs||[]).length} باقة</td><td>${g.order||0}</td><td><div style="display:flex;gap:.4rem"><button class="stock-btn" style="font-size:.75rem;padding:.3rem .7rem" onclick="openEditGame('${g.id}')">✏️</button><button class="del-btn" onclick="deleteGame('${g.id}')">🗑️</button></div></td></tr>`;
   }).join('');
 }
 
 function renderSlidersTable() {
   const tbody = document.getElementById('slidersBody'); 
   if(!tbody) return;
-  if(!allSliders.length) { 
-      tbody.innerHTML=`<tr><td colspan="4"><div class="empty"><div class="empty-icon">🖼️</div>لا توجد عروض</div></td></tr>`; 
-      return; 
-  }
+  if(!allSliders.length) { tbody.innerHTML=`<tr><td colspan="4"><div class="empty"><div class="empty-icon">🖼️</div>لا توجد عروض</div></td></tr>`; return; }
   tbody.innerHTML = allSliders.map(s => {
     const linkedGame = allGames.find(g => g.id === s.gameId);
     const gameName = linkedGame ? linkedGame.name : '—';
-    const imgHtml = (s.bannerUrl) 
-      ? `<img src="${s.bannerUrl}" style="height:50px; width:80px; object-fit:cover; border-radius:8px;">` 
-      : `<div style="height:50px; width:80px; border-radius:8px; background:${linkedGame?linkedGame.bg:'#eee'}; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">${linkedGame?linkedGame.icon:'🎮'}</div>`;
-    return `<tr>
-    <td>${imgHtml}</td>
-    <td><strong>${gameName}</strong></td>
-    <td>${s.order||0}</td>
-    <td><button class="del-btn" onclick="deleteSlider('${s.id}')">🗑️</button></td>
-  </tr>`}).join('');
+    const imgHtml = (s.bannerUrl) ? `<img src="${s.bannerUrl}" style="height:50px; width:80px; object-fit:cover; border-radius:8px;">` : `<div style="height:50px; width:80px; border-radius:8px; background:${linkedGame?linkedGame.bg:'#eee'}; display:flex; align-items:center; justify-content:center; font-size:1.5rem;">${linkedGame?linkedGame.icon:'🎮'}</div>`;
+    return `<tr><td>${imgHtml}</td><td><strong>${gameName}</strong></td><td>${s.order||0}</td><td><button class="del-btn" onclick="deleteSlider('${s.id}')">🗑️</button></td></tr>`}).join('');
 }
 
 function renderPaymentBanksTable() {
   const tbody = document.getElementById('paymentBanksBody'); 
   if(!tbody) return;
-  if(!allPaymentBanks.length) { 
-      tbody.innerHTML=`<tr><td colspan="3"><div class="empty"><div class="empty-icon">💳</div>لا توجد بنوك دفع</div></td></tr>`; 
-      return; 
-  }
-  tbody.innerHTML = allPaymentBanks.map(b => `<tr>
-    <td>
-      <div style="display:flex;align-items:center;gap:.7rem">
-        <div style="width:36px;height:36px;border-radius:8px;background:${b.color||'#0A7C4E'};display:flex;align-items:center;justify-content:center;overflow:hidden;">
-          ${b.logo?`<img src="${b.logo}" style="width:100%;height:100%;object-fit:contain">`:`<span style="color:#fff;font-size:.7rem;font-weight:bold">${(b.name||'').substring(0,3)}</span>`}
-        </div>
-        <strong>${b.name||'—'}</strong>
-      </div>
-    </td>
-    <td>${b.order||0}</td>
-    <td><button class="del-btn" onclick="deletePaymentBank('${b.id}')">🗑️</button></td>
-  </tr>`).join('');
+  if(!allPaymentBanks.length) { tbody.innerHTML=`<tr><td colspan="3"><div class="empty"><div class="empty-icon">💳</div>لا توجد بنوك دفع</div></td></tr>`; return; }
+  tbody.innerHTML = allPaymentBanks.map(b => `<tr><td><div style="display:flex;align-items:center;gap:.7rem"><div style="width:36px;height:36px;border-radius:8px;background:${b.color||'#0A7C4E'};display:flex;align-items:center;justify-content:center;overflow:hidden;">${b.logo?`<img src="${b.logo}" style="width:100%;height:100%;object-fit:contain">`:`<span style="color:#fff;font-size:.7rem;font-weight:bold">${(b.name||'').substring(0,3)}</span>`}</div><strong>${b.name||'—'}</strong></div></td><td>${b.order||0}</td><td><button class="del-btn" onclick="deletePaymentBank('${b.id}')">🗑️</button></td></tr>`).join('');
 }
 
 // ============================================
@@ -1101,25 +1053,16 @@ window.changeStatus = async (col, docId, status, selectEl) => {
     rejectingCol = col;
     rejectingDocId = docId;
     rejectingSelect = selectEl;
-    
     document.getElementById('rejectReasonSelect').value = '';
     document.getElementById('customRejectRow').style.display = 'none';
     document.getElementById('customRejectInput').value = '';
     document.getElementById('rejectModal').classList.add('open');
     return;
   }
-  
-  try { 
-      await updateDoc(doc(db, col, docId), { status, rejectionReason: null }); 
-      showToast('✅ تم تحديث الحالة بنجاح'); 
-  } catch(e) { 
-      showToast('❌ خطأ في التحديث'); 
-  }
+  try { await updateDoc(doc(db, col, docId), { status, rejectionReason: null }); showToast('✅ تم تحديث الحالة بنجاح'); } catch(e) { showToast('❌ خطأ في التحديث'); }
 };
 
-document.getElementById('rejectReasonSelect').addEventListener('change', function() {
-    document.getElementById('customRejectRow').style.display = this.value === 'other' ? 'block' : 'none';
-});
+document.getElementById('rejectReasonSelect').addEventListener('change', function() { document.getElementById('customRejectRow').style.display = this.value === 'other' ? 'block' : 'none'; });
 
 function closeRejectModal() {
    document.getElementById('rejectModal').classList.remove('open');
@@ -1142,88 +1085,21 @@ document.getElementById('confirmRejectBtn').addEventListener('click', async () =
     if (!reason) { showToast('⚠️ يرجى تحديد أو كتابة سبب الرفض'); return; }
 
     const btn = document.getElementById('confirmRejectBtn');
-    btn.disabled = true;
-    btn.textContent = '⏳ جاري الإرسال...';
+    btn.disabled = true; btn.textContent = '⏳ جاري الإرسال...';
 
     try {
-        await updateDoc(doc(db, rejectingCol, rejectingDocId), { 
-            status: 'rejected', 
-            rejectionReason: reason 
-        });
-        
-        // التحقق من الحظر الآلي (إذا اختار السبب "إيصال مزيف")
+        await updateDoc(doc(db, rejectingCol, rejectingDocId), { status: 'rejected', rejectionReason: reason });
         if (reason === 'إيصال مزيف أو معدل') {
             const arr = rejectingCol === 'transfers' ? allTransfers : allCards;
             const targetOrder = arr.find(x => x.id === rejectingDocId);
-            if(targetOrder && (targetOrder.email || targetOrder.uid)) {
-                await banUser(targetOrder.email, targetOrder.uid);
-            }
+            if(targetOrder && (targetOrder.email || targetOrder.uid)) { await banUser(targetOrder.email, targetOrder.uid); }
         }
-        
         showToast('✅ تم رفض الطلب وإرسال السبب للمستخدم');
         document.getElementById('rejectModal').classList.remove('open');
         rejectingCol = null; rejectingDocId = null; rejectingSelect = null;
-    } catch(e) {
-        showToast('❌ خطأ أثناء الرفض: ' + e.message);
-    }
-
-    btn.disabled = false;
-    btn.textContent = 'تأكيد الرفض ❌';
+    } catch(e) { showToast('❌ خطأ أثناء الرفض: ' + e.message); }
+    btn.disabled = false; btn.textContent = 'تأكيد الرفض ❌';
 });
-// ============================================
-
-window.deleteStock = async (id) => {
-  if (currentUserRole !== 'admin') return;
-  if (!confirm('حذف هذه البطاقة؟')) return;
-  try { 
-      await deleteDoc(doc(db,'stock',id)); 
-      showToast('🗑️ تم الحذف'); 
-  } catch { 
-      showToast('❌ خطأ في الحذف'); 
-  }
-};
-
-window.copyCode = (code) => navigator.clipboard.writeText(code).then(()=>showToast('📋 تم نسخ: '+code));
-
-window.deleteBank = async (id) => {
-  if (!confirm('حذف هذا البنك؟')) return;
-  try { 
-      await deleteDoc(doc(db,'banks',id)); 
-      showToast('🗑️ تم الحذف'); 
-  } catch { 
-      showToast('❌ خطأ'); 
-  }
-};
-
-window.deleteGame = async (id) => {
-  if (!confirm('حذف هذا المنتج؟')) return;
-  try { 
-      await deleteDoc(doc(db,'games',id)); 
-      showToast('🗑️ تم الحذف'); 
-  } catch { 
-      showToast('❌ خطأ'); 
-  }
-};
-
-window.deleteSlider = async (id) => {
-  if(!confirm('حذف هذا العرض من السلايدر؟')) return;
-  try { 
-      await deleteDoc(doc(db,'sliders',id)); 
-      showToast('🗑️ تم الحذف'); 
-  } catch { 
-      showToast('❌ خطأ'); 
-  }
-};
-
-window.deletePaymentBank = async (id) => {
-  if(!confirm('حذف بنك الدفع هذا؟')) return;
-  try { 
-      await deleteDoc(doc(db,'payment_banks',id)); 
-      showToast('🗑️ تم الحذف'); 
-  } catch { 
-      showToast('❌ خطأ'); 
-  }
-};
 
 document.getElementById('searchTransfer').addEventListener('input', function() {
   const q = this.value.toLowerCase();
@@ -1257,495 +1133,208 @@ function updateCardOptions() {
   updatePreview();
 }
 
-function getCodes() {
-  return document.getElementById('codesArea').value.split('\n').map(c=>c.trim()).filter(c=>c);
-}
+function getCodes() { return document.getElementById('codesArea').value.split('\n').map(c=>c.trim()).filter(c=>c); }
 
 function updatePreview() {
-  const codes    = getCodes();
-  const cardType = document.getElementById('cardType').value;
-  
-  const box      = document.getElementById('previewBox');
-  if (!codes.length||!cardType) { 
-      box.style.display='none'; 
-      return; 
-  }
-  
+  const codes = getCodes(); const cardType = document.getElementById('cardType').value; const box = document.getElementById('previewBox');
+  if (!codes.length||!cardType) { box.style.display='none'; return; }
   box.style.display='block';
-  const preview  = codes.slice(0,3).map(c=>`<div class="code-preview">${c}</div>`).join('');
-  const more     = codes.length>3?`<div style="font-size:.78rem;color:var(--muted);margin-top:.3rem">+${codes.length-3} كود...</div>`:'';
-  
-  document.getElementById('previewContent').innerHTML=`
-    <div style="font-size:.82rem;color:var(--mid);margin-bottom:.5rem"><strong>${selectedCat}</strong> — ${cardType}</div>
-    ${preview}${more}
-    <div style="margin-top:.6rem;font-size:.82rem;font-weight:800;color:var(--green)">إجمالي: ${codes.length} بطاقة</div>`;
+  const preview = codes.slice(0,3).map(c=>`<div class="code-preview">${c}</div>`).join('');
+  const more = codes.length>3?`<div style="font-size:.78rem;color:var(--muted);margin-top:.3rem">+${codes.length-3} كود...</div>`:'';
+  document.getElementById('previewContent').innerHTML=`<div style="font-size:.82rem;color:var(--mid);margin-bottom:.5rem"><strong>${selectedCat}</strong> — ${cardType}</div>${preview}${more}<div style="margin-top:.6rem;font-size:.82rem;font-weight:800;color:var(--green)">إجمالي: ${codes.length} بطاقة</div>`;
 }
 
 document.getElementById('openStockBtn').addEventListener('click', () => {
-  document.getElementById('codesArea').value = '';
-  document.getElementById('codesCount').textContent = '٠ كود';
-  document.getElementById('previewBox').style.display = 'none';
-  updateCardOptions();
-  document.getElementById('stockModal').classList.add('open');
+  document.getElementById('codesArea').value = ''; document.getElementById('codesCount').textContent = '٠ كود';
+  document.getElementById('previewBox').style.display = 'none'; updateCardOptions(); document.getElementById('stockModal').classList.add('open');
 });
 
 document.getElementById('closeStockBtn').addEventListener('click', () => document.getElementById('stockModal').classList.remove('open'));
 document.getElementById('stockModal').addEventListener('click', e => { if(e.target===document.getElementById('stockModal')) document.getElementById('stockModal').classList.remove('open'); });
 
-document.getElementById('clearCodesBtn').addEventListener('click', () => {
-  document.getElementById('codesArea').value='';
-  document.getElementById('codesCount').textContent='٠ كود';
-  document.getElementById('previewBox').style.display='none';
-});
-
-document.getElementById('codesArea').addEventListener('input', () => {
-  document.getElementById('codesCount').textContent = getCodes().length+' كود';
-  updatePreview();
-});
+document.getElementById('clearCodesBtn').addEventListener('click', () => { document.getElementById('codesArea').value=''; document.getElementById('codesCount').textContent='٠ كود'; document.getElementById('previewBox').style.display='none'; });
+document.getElementById('codesArea').addEventListener('input', () => { document.getElementById('codesCount').textContent = getCodes().length+' كود'; updatePreview(); });
 
 document.getElementById('catGrid').addEventListener('click', e => {
-  const btn = e.target.closest('.cat-btn'); 
-  if (!btn) return;
-  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  selectedCat = btn.dataset.cat;
-  document.getElementById('customCat').style.display = selectedCat==='أخرى'?'block':'none';
-  updateCardOptions();
+  const btn = e.target.closest('.cat-btn'); if (!btn) return;
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+  selectedCat = btn.dataset.cat; document.getElementById('customCat').style.display = selectedCat==='أخرى'?'block':'none'; updateCardOptions();
 });
 
 document.getElementById('customCat').addEventListener('input', updateCardOptions);
 document.getElementById('cardType').addEventListener('change', updatePreview);
 
 document.getElementById('saveStockBtn').addEventListener('click', async () => {
-  const cardType = document.getElementById('cardType').value;
-  const codes    = getCodes();
-  const cat      = selectedCat==='أخرى'?(document.getElementById('customCat').value.trim()||'أخرى'):selectedCat;
-  
+  const cardType = document.getElementById('cardType').value; const codes = getCodes();
+  const cat = selectedCat==='أخرى'?(document.getElementById('customCat').value.trim()||'أخرى'):selectedCat;
   if (!cardType) { showToast('⚠️ اختر نوع البطاقة أولاً'); return; }
   if (!codes.length) { showToast('⚠️ أدخل كود واحد على الأقل'); return; }
-  
-  const btn = document.getElementById('saveStockBtn');
-  btn.disabled=true; 
-  btn.textContent='⏳ جاري الحفظ...';
-  
+  const btn = document.getElementById('saveStockBtn'); btn.disabled=true; btn.textContent='⏳ جاري الحفظ...';
   try {
-    await Promise.all(codes.map(code=>addDoc(collection(db,'stock'),{
-      category:cat, cardType, value:cardType,
-      code, status:'available', createdAt:serverTimestamp()
-    })));
-    showToast(`✅ تم حفظ ${codes.length} بطاقة!`);
-    document.getElementById('stockModal').classList.remove('open');
-  } catch(e) { 
-      console.error("STOCK ERROR:", e); 
-      showToast('❌ خطأ في الحفظ: '+e.message); 
-  }
-  
-  btn.disabled=false; 
-  btn.textContent='💾 حفظ البطاقات في المخزون';
+    await Promise.all(codes.map(code=>addDoc(collection(db,'stock'),{ category:cat, cardType, value:cardType, code, status:'available', createdAt:serverTimestamp() })));
+    showToast(`✅ تم حفظ ${codes.length} بطاقة!`); document.getElementById('stockModal').classList.remove('open');
+  } catch(e) { console.error("STOCK ERROR:", e); showToast('❌ خطأ في الحفظ: '+e.message); }
+  btn.disabled=false; btn.textContent='💾 حفظ البطاقات في المخزون';
 });
 
 let currentBannerBase64 = "";
 
 window.handleBannerPreview = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
+    const file = event.target.files[0]; if (!file) return;
+    const reader = new FileReader(); reader.readAsDataURL(file);
     reader.onload = e => {
-        const img = new Image();
-        img.src = e.target.result;
+        const img = new Image(); img.src = e.target.result;
         img.onload = () => {
-            const canvas = document.createElement('canvas');
-            let width = img.width, height = img.height;
+            const canvas = document.createElement('canvas'); let width = img.width, height = img.height;
             if (width > 1200) { height *= 1200 / width; width = 1200; }
-            canvas.width = width; canvas.height = height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, width, height);
+            canvas.width = width; canvas.height = height; const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0, width, height);
             currentBannerBase64 = canvas.toDataURL('image/jpeg', 0.7);
-
-            document.getElementById('bannerPreviewCont').style.display = 'block';
-            document.getElementById('bannerPreviewImg').src = currentBannerBase64;
+            document.getElementById('bannerPreviewCont').style.display = 'block'; document.getElementById('bannerPreviewImg').src = currentBannerBase64;
         };
     };
 };
 
 document.getElementById('openAddSliderBtn').addEventListener('click', () => {
   document.getElementById('sliderOrder').value = allSliders.length;
-  
-  const previewCont = document.getElementById('bannerPreviewCont');
-  if(previewCont) previewCont.style.display = 'none';
-  currentBannerBase64 = "";
-
-  const gameSelect = document.getElementById('sliderGameId');
-  gameSelect.innerHTML = '<option value="">— اختر المنتج —</option>' + allGames.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
-
+  const previewCont = document.getElementById('bannerPreviewCont'); if(previewCont) previewCont.style.display = 'none'; currentBannerBase64 = "";
+  const gameSelect = document.getElementById('sliderGameId'); gameSelect.innerHTML = '<option value="">— اختر المنتج —</option>' + allGames.map(g => `<option value="${g.id}">${g.name}</option>`).join('');
   document.getElementById('sliderModal').classList.add('open');
 });
 
 document.getElementById('closeSliderBtn').addEventListener('click', () => document.getElementById('sliderModal').classList.remove('open'));
 
 document.getElementById('saveSliderBtn').addEventListener('click', async () => {
-  const order = parseInt(document.getElementById('sliderOrder').value)||0;
-  const gameId = document.getElementById('sliderGameId').value;
-  
-  if(!gameId) { showToast('⚠️ اختر المنتج المرتبط'); return; }
-  if(!currentBannerBase64) { showToast('⚠️ ارفع صورة البانر من جهازك'); return; }
-  
-  const btn = document.getElementById('saveSliderBtn');
-  btn.disabled=true; 
-  btn.textContent='⏳...';
-  
-  try {
-    await addDoc(collection(db,'sliders'), { 
-        gameId, 
-        order, 
-        bannerUrl: currentBannerBase64, 
-        createdAt:serverTimestamp() 
-    });
-    showToast('✅ تم إضافة العرض');
-    document.getElementById('sliderModal').classList.remove('open');
-  } catch(e) { 
-      showToast('❌ '+e.message); 
-  }
-  
-  btn.disabled=false; 
-  btn.textContent='💾 حفظ العرض';
+  const order = parseInt(document.getElementById('sliderOrder').value)||0; const gameId = document.getElementById('sliderGameId').value;
+  if(!gameId) { showToast('⚠️ اختر المنتج المرتبط'); return; } if(!currentBannerBase64) { showToast('⚠️ ارفع صورة البانر من جهازك'); return; }
+  const btn = document.getElementById('saveSliderBtn'); btn.disabled=true; btn.textContent='⏳...';
+  try { await addDoc(collection(db,'sliders'), { gameId, order, bannerUrl: currentBannerBase64, createdAt:serverTimestamp() }); showToast('✅ تم إضافة العرض'); document.getElementById('sliderModal').classList.remove('open'); } catch(e) { showToast('❌ '+e.message); }
+  btn.disabled=false; btn.textContent='💾 حفظ العرض';
 });
 
 document.getElementById('openAddPaymentBankBtn').addEventListener('click', () => {
-  const select = document.getElementById('pbBankSelect');
-  select.innerHTML = '<option value="">— اختر البنك —</option>' + allBanks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
-  document.getElementById('pbOrder').value = allPaymentBanks.length;
-  document.getElementById('paymentBankModal').classList.add('open');
+  const select = document.getElementById('pbBankSelect'); select.innerHTML = '<option value="">— اختر البنك —</option>' + allBanks.map(b => `<option value="${b.id}">${b.name}</option>`).join('');
+  document.getElementById('pbOrder').value = allPaymentBanks.length; document.getElementById('paymentBankModal').classList.add('open');
 });
 
 document.getElementById('closePaymentBankBtn').addEventListener('click', () => document.getElementById('paymentBankModal').classList.remove('open'));
 
 document.getElementById('savePaymentBankBtn').addEventListener('click', async () => {
-  const bankId = document.getElementById('pbBankSelect').value;
-  const order = parseInt(document.getElementById('pbOrder').value)||0;
-  
-  if(!bankId) { 
-      showToast('⚠️ يرجى اختيار البنك'); 
-      return; 
-  }
-  
-  const selectedBank = allBanks.find(b => b.id === bankId);
-  if(!selectedBank) return;
-  
-  const name = selectedBank.name;
-  const logo = selectedBank.logo || '';
-  const color = selectedBank.color || '#0A7C4E';
-  
-  const btn = document.getElementById('savePaymentBankBtn');
-  btn.disabled=true; 
-  btn.textContent='⏳...';
-  
-  try {
-    await addDoc(collection(db,'payment_banks'), { 
-        name, 
-        logo, 
-        color, 
-        order, 
-        createdAt:serverTimestamp() 
-    });
-    showToast('✅ تم إضافة بنك الدفع');
-    document.getElementById('paymentBankModal').classList.remove('open');
-  } catch(e) { 
-      showToast('❌ '+e.message); 
-  }
-  
-  btn.disabled=false; 
-  btn.textContent='💾 إضافة البنك للدفع';
+  const bankId = document.getElementById('pbBankSelect').value; const order = parseInt(document.getElementById('pbOrder').value)||0;
+  if(!bankId) { showToast('⚠️ يرجى اختيار البنك'); return; }
+  const selectedBank = allBanks.find(b => b.id === bankId); if(!selectedBank) return;
+  const name = selectedBank.name; const logo = selectedBank.logo || ''; const color = selectedBank.color || '#0A7C4E';
+  const btn = document.getElementById('savePaymentBankBtn'); btn.disabled=true; btn.textContent='⏳...';
+  try { await addDoc(collection(db,'payment_banks'), { name, logo, color, order, createdAt:serverTimestamp() }); showToast('✅ تم إضافة بنك الدفع'); document.getElementById('paymentBankModal').classList.remove('open'); } catch(e) { showToast('❌ '+e.message); }
+  btn.disabled=false; btn.textContent='💾 إضافة البنك للدفع';
 });
 
 let editingBankId = null;
 
 function updateBankPreview() {
-  const logo  = document.getElementById('bankLogo').value.trim();
-  const color = document.getElementById('bankColor').value;
-  const name  = document.getElementById('bankName').value.trim();
-  const prev  = document.getElementById('bankPreview');
-  
-  prev.style.background = color;
-  prev.innerHTML = logo
-    ? `<img src="${logo}" style="width:40px;height:40px;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:900;font-size:.85rem>${name.substring(0,3)||'؟'}</span>'">`
-    : `<span style="color:#fff;font-weight:900;font-size:.85rem">${name.substring(0,3)||'؟'}</span>`;
+  const logo  = document.getElementById('bankLogo').value.trim(); const color = document.getElementById('bankColor').value; const name  = document.getElementById('bankName').value.trim(); const prev  = document.getElementById('bankPreview');
+  prev.style.background = color; prev.innerHTML = logo ? `<img src="${logo}" style="width:40px;height:40px;object-fit:contain" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:900;font-size:.85rem>${name.substring(0,3)||'؟'}</span>'">` : `<span style="color:#fff;font-weight:900;font-size:.85rem">${name.substring(0,3)||'؟'}</span>`;
 }
 
-document.getElementById('bankName').addEventListener('input',  updateBankPreview);
-document.getElementById('bankLogo').addEventListener('input',  updateBankPreview);
-document.getElementById('bankColor').addEventListener('input', updateBankPreview);
+document.getElementById('bankName').addEventListener('input',  updateBankPreview); document.getElementById('bankLogo').addEventListener('input',  updateBankPreview); document.getElementById('bankColor').addEventListener('input', updateBankPreview);
 
 document.getElementById('openAddBankBtn').addEventListener('click', () => {
-  editingBankId = null;
-  document.getElementById('bankModalTitle').textContent = '➕ إضافة بنك';
-  ['bankName','bankLogo','bankId'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('bankColor').value = '#0A7C4E';
-  document.getElementById('bankOrder').value = allBanks.length;
-  updateBankPreview();
-  document.getElementById('bankModal').classList.add('open');
+  editingBankId = null; document.getElementById('bankModalTitle').textContent = '➕ إضافة بنك';
+  ['bankName','bankLogo','bankId'].forEach(id=>document.getElementById(id).value=''); document.getElementById('bankColor').value = '#0A7C4E'; document.getElementById('bankOrder').value = allBanks.length;
+  updateBankPreview(); document.getElementById('bankModal').classList.add('open');
 });
 
 document.getElementById('closeBankBtn').addEventListener('click', ()=>document.getElementById('bankModal').classList.remove('open'));
 document.getElementById('bankModal').addEventListener('click', e=>{ if(e.target===document.getElementById('bankModal')) document.getElementById('bankModal').classList.remove('open'); });
 
 window.openEditBank = (id) => {
-  const b = allBanks.find(x=>x.id===id); 
-  if (!b) return;
-  
-  editingBankId = id;
-  document.getElementById('bankModalTitle').textContent = '✏️ تعديل البنك';
-  document.getElementById('bankName').value  = b.name||'';
-  document.getElementById('bankLogo').value  = b.logo||'';
-  document.getElementById('bankColor').value = b.color||'#0A7C4E';
-  document.getElementById('bankOrder').value = b.order||0;
-  document.getElementById('bankId').value    = b.id||'';
-  
-  updateBankPreview();
-  document.getElementById('bankModal').classList.add('open');
+  const b = allBanks.find(x=>x.id===id); if (!b) return;
+  editingBankId = id; document.getElementById('bankModalTitle').textContent = '✏️ تعديل البنك';
+  document.getElementById('bankName').value = b.name||''; document.getElementById('bankLogo').value = b.logo||''; document.getElementById('bankColor').value = b.color||'#0A7C4E'; document.getElementById('bankOrder').value = b.order||0; document.getElementById('bankId').value = b.id||'';
+  updateBankPreview(); document.getElementById('bankModal').classList.add('open');
 };
 
 document.getElementById('saveBankBtn').addEventListener('click', async () => {
-  const name  = document.getElementById('bankName').value.trim();
-  const logo  = document.getElementById('bankLogo').value.trim();
-  const color = document.getElementById('bankColor').value;
-  const order = parseInt(document.getElementById('bankOrder').value)||0;
-  const rawId = document.getElementById('bankId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'');
-  const finalId = rawId||'bank-'+Date.now();
-  
+  const name  = document.getElementById('bankName').value.trim(); const logo  = document.getElementById('bankLogo').value.trim(); const color = document.getElementById('bankColor').value; const order = parseInt(document.getElementById('bankOrder').value)||0; const rawId = document.getElementById('bankId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,''); const finalId = rawId||'bank-'+Date.now();
   if (!name) { showToast('⚠️ أدخل اسم البنك'); return; }
-  
-  const btn = document.getElementById('saveBankBtn');
-  btn.disabled=true; 
-  btn.textContent='⏳...';
-  
-  try {
-    if (editingBankId) {
-      await updateDoc(doc(db,'banks',editingBankId),{name,logo,color,order});
-    } else {
-      await setDoc(doc(db,'banks',finalId),{name,logo,color,order,createdAt:serverTimestamp()});
-    }
-    showToast('✅ تم حفظ البنك');
-    document.getElementById('bankModal').classList.remove('open');
-  } catch(e) { 
-      console.error("BANK ERROR:", e); 
-      showToast('❌ '+e.message); 
-  }
-  
-  btn.disabled=false; 
-  btn.textContent='💾 حفظ البنك';
+  const btn = document.getElementById('saveBankBtn'); btn.disabled=true; btn.textContent='⏳...';
+  try { if (editingBankId) { await updateDoc(doc(db,'banks',editingBankId),{name,logo,color,order}); } else { await setDoc(doc(db,'banks',finalId),{name,logo,color,order,createdAt:serverTimestamp()}); } showToast('✅ تم حفظ البنك'); document.getElementById('bankModal').classList.remove('open'); } catch(e) { console.error("BANK ERROR:", e); showToast('❌ '+e.message); }
+  btn.disabled=false; btn.textContent='💾 حفظ البنك';
 });
 
 let editingGameId = null, gamePkgs = [], gameSups = [];
 
 function updateGamePreview() {
-  const logo = document.getElementById('gameLogo').value.trim();
-  const bg   = document.getElementById('gameBg').value;
-  const icon = document.getElementById('gameIcon').value||'🎮';
-  const prev = document.getElementById('gamePreview');
-  
-  prev.style.background = bg;
-  prev.innerHTML = logo
-    ? `<img src="${logo}" style="width:48px;height:48px;object-fit:contain;border-radius:8px" onerror="this.outerHTML='<span style=font-size:2rem>${icon}</span>'">`
-    : `<span style="font-size:2rem">${icon}</span>`;
+  const logo = document.getElementById('gameLogo').value.trim(); const bg = document.getElementById('gameBg').value; const icon = document.getElementById('gameIcon').value||'🎮'; const prev = document.getElementById('gamePreview');
+  prev.style.background = bg; prev.innerHTML = logo ? `<img src="${logo}" style="width:48px;height:48px;object-fit:contain;border-radius:8px" onerror="this.outerHTML='<span style=font-size:2rem>${icon}</span>'">` : `<span style="font-size:2rem">${icon}</span>`;
 }
 
 function renderSupsEditor() {
   const cont = document.getElementById('supsEditor');
-  cont.innerHTML = gameSups.map((s,i)=>`
-    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
-      <input class="finput" style="flex:1" value="${s.name||''}" oninput="gameSupUpdate(${i},'name',this.value)" placeholder="اسم المتجر..."/>
-      <input class="finput" style="flex:2" type="url" dir="ltr" value="${s.link||''}" oninput="gameSupUpdate(${i},'link',this.value)" placeholder="https://..."/>
-      <button onclick="gameSupRemove(${i})" style="background:var(--red-light);color:var(--red);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:1rem">✕</button>
-    </div>`).join('')
-    +`<button onclick="gameSupAdd()" class="stock-btn" style="font-size:.82rem;padding:.4rem .9rem;margin-top:.3rem;background:var(--mid);">➕ إضافة مورد آخر</button>`;
+  cont.innerHTML = gameSups.map((s,i)=>`<div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem"><input class="finput" style="flex:1" value="${s.name||''}" oninput="gameSupUpdate(${i},'name',this.value)" placeholder="اسم المتجر..."/><input class="finput" style="flex:2" type="url" dir="ltr" value="${s.link||''}" oninput="gameSupUpdate(${i},'link',this.value)" placeholder="https://..."/><button onclick="gameSupRemove(${i})" style="background:var(--red-light);color:var(--red);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:1rem">✕</button></div>`).join('')+`<button onclick="gameSupAdd()" class="stock-btn" style="font-size:.82rem;padding:.4rem .9rem;margin-top:.3rem;background:var(--mid);">➕ إضافة مورد آخر</button>`;
 }
 
-window.gameSupAdd = () => { 
-    gameSups.push({name:'',link:''}); 
-    renderSupsEditor(); 
-};
-
-window.gameSupRemove = (i) => { 
-    gameSups.splice(i,1); 
-    renderSupsEditor(); 
-};
-
-window.gameSupUpdate = (i,f,v) => { 
-    gameSups[i][f]=v; 
-};
+window.gameSupAdd = () => { gameSups.push({name:'',link:''}); renderSupsEditor(); };
+window.gameSupRemove = (i) => { gameSups.splice(i,1); renderSupsEditor(); };
+window.gameSupUpdate = (i,f,v) => { gameSups[i][f]=v; };
 
 window.renderPkgsEditor = function() {
   const cont = document.getElementById('pkgsEditor');
-  
-  const gameIsGlobalElement = document.getElementById('gameIsGlobal');
-  const isGlobal = gameIsGlobalElement ? gameIsGlobalElement.value === 'true' : true;
-
+  const gameIsGlobalElement = document.getElementById('gameIsGlobal'); const isGlobal = gameIsGlobalElement ? gameIsGlobalElement.value === 'true' : true;
   let html = gamePkgs.map((p,i) => `
     <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem">
       ${!isGlobal ? `<input class="finput" list="regionsList" style="flex:1" value="${p.region||''}" oninput="gamePkgUpdate(${i},'region',this.value)" placeholder="الدولة (مثال: 🇫🇷 فرنسي)"/>` : ''}
       <input class="finput" style="flex:1" value="${p.amount||''}" oninput="gamePkgUpdate(${i},'amount',this.value)" placeholder="الباقة (مثال: 10$)"/>
-      <input class="finput" style="width:110px" type="number" value="${p.price||''}" oninput="gamePkgUpdate(${i},'price',this.value)" placeholder="السعر"/>
+      <input class="finput" style="width:90px" type="number" value="${p.cost||''}" oninput="gamePkgUpdate(${i},'cost',this.value)" placeholder="التكلفة"/>
+      <input class="finput" style="width:90px" type="number" value="${p.price||''}" oninput="gamePkgUpdate(${i},'price',this.value)" placeholder="سعر البيع"/>
       <button onclick="gamePkgRemove(${i})" style="background:var(--red-light);color:var(--red);border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:1rem">✕</button>
     </div>`).join('');
-    
   html += `<button onclick="gamePkgAdd()" class="stock-btn" style="font-size:.82rem;padding:.4rem .9rem;margin-top:.3rem; background: var(--green); color: white;">➕ إضافة باقة</button>`;
-  
-  if (!isGlobal) {
-    html += `
-      <datalist id="regionsList">
-        <option value="US">🇺🇸 أمريكي</option>
-        <option value="FR">🇫🇷 فرنسي</option>
-        <option value="AE">🇦🇪 إماراتي</option>
-        <option value="SA">🇸🇦 سعودي</option>
-        <option value="TR">🇹🇷 تركي</option>
-        <option value="UK">🇬🇧 بريطاني</option>
-      </datalist>
-    `;
-  }
-  
+  if (!isGlobal) { html += `<datalist id="regionsList"><option value="US">🇺🇸 أمريكي</option><option value="FR">🇫🇷 فرنسي</option><option value="AE">🇦🇪 إماراتي</option><option value="SA">🇸🇦 سعودي</option><option value="TR">🇹🇷 تركي</option><option value="UK">🇬🇧 بريطاني</option></datalist>`; }
   cont.innerHTML = html;
 };
 
-window.gamePkgAdd = () => { 
-    gamePkgs.push({region: '', amount:'',price:0}); 
-    renderPkgsEditor(); 
-};
+window.gamePkgAdd = () => { gamePkgs.push({region: '', amount:'', cost:0, price:0}); renderPkgsEditor(); };
+window.gamePkgRemove = (i) => { gamePkgs.splice(i,1); renderPkgsEditor(); };
+window.gamePkgUpdate = (i,f,v) => { gamePkgs[i][f] = (f === 'price' || f === 'cost') ? parseFloat(v)||0 : v; };
 
-window.gamePkgRemove = (i) => { 
-    gamePkgs.splice(i,1); 
-    renderPkgsEditor(); 
-};
-
-window.gamePkgUpdate = (i,f,v) => { 
-    gamePkgs[i][f] = f === 'price' ? parseFloat(v)||0 : v; 
-};
-
-document.getElementById('gameName').addEventListener('input', updateGamePreview);
-document.getElementById('gameLogo').addEventListener('input', updateGamePreview);
-document.getElementById('gameIcon').addEventListener('input', updateGamePreview);
-document.getElementById('gameBg').addEventListener('input',   updateGamePreview);
+document.getElementById('gameName').addEventListener('input', updateGamePreview); document.getElementById('gameLogo').addEventListener('input', updateGamePreview); document.getElementById('gameIcon').addEventListener('input', updateGamePreview); document.getElementById('gameBg').addEventListener('input', updateGamePreview);
 
 document.getElementById('openAddGameBtn').addEventListener('click', () => {
-  editingGameId=null; 
-  gamePkgs=[]; 
-  gameSups=[];
-  document.getElementById('gameModalTitle').textContent='➕ إضافة منتج / لعبة';
-  
+  editingGameId=null; gamePkgs=[]; gameSups=[]; document.getElementById('gameModalTitle').textContent='➕ إضافة منتج / لعبة';
   ['gameName','gameLogo','gameDesc','gameBadge','gameId','gameProvider'].forEach(id=>document.getElementById(id).value='');
-  document.getElementById('gameIcon').value='🎮';
-  document.getElementById('gameBg').value='#1A1A2E';
-  document.getElementById('productType').value='game';
-  document.getElementById('gameOrder').value=allGames.length;
-  document.getElementById('gameIsGlobal').value = 'true';
-  
-  renderPkgsEditor(); 
-  renderSupsEditor(); 
-  updateGamePreview();
-  
-  document.getElementById('gameModal').classList.add('open');
+  document.getElementById('gameIcon').value='🎮'; document.getElementById('gameBg').value='#1A1A2E'; document.getElementById('productType').value='game'; document.getElementById('gameOrder').value=allGames.length; document.getElementById('gameIsGlobal').value = 'true';
+  renderPkgsEditor(); renderSupsEditor(); updateGamePreview(); document.getElementById('gameModal').classList.add('open');
 });
 
 document.getElementById('closeGameBtn').addEventListener('click', ()=>document.getElementById('gameModal').classList.remove('open'));
 document.getElementById('gameModal').addEventListener('click', e=>{ if(e.target===document.getElementById('gameModal')) document.getElementById('gameModal').classList.remove('open'); });
 
 window.openEditGame = (id) => {
-  const g=allGames.find(x=>x.id===id); 
-  if (!g) return;
-  
-  editingGameId=id; 
-  gamePkgs=JSON.parse(JSON.stringify(g.pkgs||[]));
-  gameSups=JSON.parse(JSON.stringify(g.sups||[]));
-  
-  if(g.supName && g.supLink && gameSups.length === 0) {
-      gameSups.push({name: g.supName, link: g.supLink});
-  }
-
+  const g=allGames.find(x=>x.id===id); if (!g) return;
+  editingGameId=id; gamePkgs=JSON.parse(JSON.stringify(g.pkgs||[])); gameSups=JSON.parse(JSON.stringify(g.sups||[]));
+  if(g.supName && g.supLink && gameSups.length === 0) { gameSups.push({name: g.supName, link: g.supLink}); }
   document.getElementById('gameModalTitle').textContent='✏️ تعديل المنتج';
-  document.getElementById('gameName').value     = g.name||'';
-  document.getElementById('gameIcon').value     = g.icon||'🎮';
-  document.getElementById('gameLogo').value     = g.logo||'';
-  document.getElementById('gameBg').value       = g.bg||'#1A1A2E';
-  document.getElementById('gameDesc').value     = g.desc||'';
-  document.getElementById('gameBadge').value    = g.badge||'';
-  document.getElementById('gameOrder').value    = g.order||0;
-  document.getElementById('gameId').value       = g.id||'';
-  document.getElementById('gameProvider').value = g.provider||'';
-  document.getElementById('productType').value  = g.productType||'game';
-  document.getElementById('gameIsGlobal').value = g.isGlobal !== false ? 'true' : 'false';
-  
-  renderPkgsEditor(); 
-  renderSupsEditor(); 
-  updateGamePreview();
-  
-  document.getElementById('gameModal').classList.add('open');
+  document.getElementById('gameName').value = g.name||''; document.getElementById('gameIcon').value = g.icon||'🎮'; document.getElementById('gameLogo').value = g.logo||''; document.getElementById('gameBg').value = g.bg||'#1A1A2E'; document.getElementById('gameDesc').value = g.desc||''; document.getElementById('gameBadge').value = g.badge||''; document.getElementById('gameOrder').value = g.order||0; document.getElementById('gameId').value = g.id||''; document.getElementById('gameProvider').value = g.provider||''; document.getElementById('productType').value = g.productType||'game'; document.getElementById('gameIsGlobal').value = g.isGlobal !== false ? 'true' : 'false';
+  renderPkgsEditor(); renderSupsEditor(); updateGamePreview(); document.getElementById('gameModal').classList.add('open');
 };
 
 document.getElementById('saveGameBtn').addEventListener('click', async () => {
-  const name     = document.getElementById('gameName').value.trim();
-  const icon     = document.getElementById('gameIcon').value.trim()||'🎮';
-  const logo     = document.getElementById('gameLogo').value.trim();
-  const bg       = document.getElementById('gameBg').value;
-  const desc     = document.getElementById('gameDesc').value.trim();
-  const badge    = document.getElementById('gameBadge').value.trim();
-  const order    = parseInt(document.getElementById('gameOrder').value)||0;
-  const provider = document.getElementById('gameProvider').value; 
-  const productType = document.getElementById('productType').value;
-  const isGlobal = document.getElementById('gameIsGlobal').value === 'true';
-
-  const rawId    = document.getElementById('gameId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'').substring(0,20);
-  const finalId  = rawId||'game-'+Date.now();
-  
+  const name = document.getElementById('gameName').value.trim(); const icon = document.getElementById('gameIcon').value.trim()||'🎮'; const logo = document.getElementById('gameLogo').value.trim(); const bg = document.getElementById('gameBg').value; const desc = document.getElementById('gameDesc').value.trim(); const badge = document.getElementById('gameBadge').value.trim(); const order = parseInt(document.getElementById('gameOrder').value)||0; const provider = document.getElementById('gameProvider').value; const productType = document.getElementById('productType').value; const isGlobal = document.getElementById('gameIsGlobal').value === 'true';
+  const rawId = document.getElementById('gameId').value.trim()||name.toLowerCase().replace(/\s+/g,'-').replace(/[^\w-]/g,'').substring(0,20); const finalId = rawId||'game-'+Date.now();
   if (!name) { showToast('⚠️ أدخل اسم المنتج'); return; }
-  
-  const pkgs = gamePkgs.filter(p=>p.amount&&p.price>0);
-  const sups = gameSups.filter(s=>s.name&&s.link);
-  
-  const btn  = document.getElementById('saveGameBtn');
-  btn.disabled=true; 
-  btn.textContent='⏳...';
-  
+  const pkgs = gamePkgs.filter(p=>p.amount&&p.price>0); const sups = gameSups.filter(s=>s.name&&s.link);
+  const btn = document.getElementById('saveGameBtn'); btn.disabled=true; btn.textContent='⏳...';
   try {
     const data={name,icon,logo,bg,desc,badge,order,pkgs,sups,provider,productType,isGlobal};
-    if (editingGameId) {
-      await updateDoc(doc(db,'games',editingGameId),data);
-    } else {
-      await setDoc(doc(db,'games',finalId),{...data,createdAt:serverTimestamp()});
-    }
-    showToast('✅ تم الحفظ بنجاح');
-    document.getElementById('gameModal').classList.remove('open');
-  } catch(e) { 
-      console.error("GAME ERROR:", e); 
-      showToast('❌ '+e.message); 
-  }
-  
-  btn.disabled=false; 
-  btn.textContent='💾 حفظ المنتج';
+    if (editingGameId) { await updateDoc(doc(db,'games',editingGameId),data); } else { await setDoc(doc(db,'games',finalId),{...data,createdAt:serverTimestamp()}); }
+    showToast('✅ تم الحفظ بنجاح'); document.getElementById('gameModal').classList.remove('open');
+  } catch(e) { console.error("GAME ERROR:", e); showToast('❌ '+e.message); }
+  btn.disabled=false; btn.textContent='💾 حفظ المنتج';
 });
 
-function fmt(n) { 
-    return Number(n).toLocaleString('ar-MA'); 
-}
-
-function fmtDate(ts) {
-  if (!ts) return '—';
-  try {
-    const d=ts.toDate?ts.toDate():new Date(ts);
-    return d.toLocaleDateString('ar-MA',{day:'2-digit',month:'2-digit',year:'numeric'})
-      +' '+d.toLocaleTimeString('ar-MA',{hour:'2-digit',minute:'2-digit'});
-  } catch { 
-      return '—'; 
-  }
-}
-
-function showToast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; 
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
-}
+function fmt(n) { return Number(n).toLocaleString('ar-MA'); }
+function fmtDate(ts) { if (!ts) return '—'; try { const d=ts.toDate?ts.toDate():new Date(ts); return d.toLocaleDateString('ar-MA',{day:'2-digit',month:'2-digit',year:'numeric'})+' '+d.toLocaleTimeString('ar-MA',{hour:'2-digit',minute:'2-digit'}); } catch { return '—'; } }
+function showToast(msg) { const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),3000); }
 </script>
 </body>
 </html>
